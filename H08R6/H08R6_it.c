@@ -284,6 +284,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	UartRxReady = SET;
 }
 
+/**
+* @brief This function handles I2C2 global interrupt.
+*/
+void I2C2_IRQHandler(void)
+{
+	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+
+  if (hi2c2.Instance->ISR & (I2C_FLAG_BERR | I2C_FLAG_ARLO | I2C_FLAG_OVR)) {
+    HAL_I2C_ER_IRQHandler(&hi2c2);
+  } else {
+    HAL_I2C_EV_IRQHandler(&hi2c2);
+  }
+	
+	/* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
+	switch should be performed before the interrupt exists.  That ensures the
+	unblocked (higher priority) task is returned to immediately. */
+	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+}
+
+/*-----------------------------------------------------------*/
+
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	
+}
 /*-----------------------------------------------------------*/
 
 void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )

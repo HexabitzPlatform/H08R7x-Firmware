@@ -80,31 +80,37 @@ void IND_ToF_Init(void)
   PB13     ------> I2C2_SCL
   PB14     ------> I2C2_SDA
   */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+  GPIO_InitStruct.Pin = _TOF_I2C2_SCL_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF5_I2C2;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(_TOF_I2C2_SCL_PORT, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = _TOF_I2C2_SDA_PIN;
+  HAL_GPIO_Init(_TOF_I2C2_SDA_PORT, &GPIO_InitStruct);
 
   /* Peripheral clock enable */
   __HAL_RCC_I2C2_CLK_ENABLE();
+  /* I2C2 interrupt Init */
+  HAL_NVIC_SetPriority(I2C2_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(I2C2_IRQn);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PB2 - INT */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Pin = _TOF_INT_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(_TOF_INT_PORT, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PB12 - XSHUT */
-  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Pin = _TOF_XSHUT_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+  HAL_GPIO_Init(_TOF_XSHUT_PORT, &GPIO_InitStruct);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

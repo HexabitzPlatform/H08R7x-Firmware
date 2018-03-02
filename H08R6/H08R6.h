@@ -101,6 +101,12 @@
 #define _TOF_XSHUT_PIN								GPIO_PIN_12
 #define _TOF_XSHUT_GPIO_CLK()					__GPIOB_CLK_ENABLE();
 
+/* VL53L0X definition */
+#define VL53L0X_ADDR                  0x52
+
+#define vl53l0x_set_xshut_pin()       HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_SET) 
+#define vl53l0x_reset_xshut_pin()     HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_RESET) 
+
 /* Module_Status Type Definition */
 typedef enum
 {

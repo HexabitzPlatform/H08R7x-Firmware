@@ -40,6 +40,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
+
+I2C_HandleTypeDef hi2c2;
+
 /*----------------------------------------------------------------------------*/
 /* Configure I2C                                                             */
 /*----------------------------------------------------------------------------*/
@@ -61,7 +64,6 @@ void MX_I2C_Init(void)
 //-- Configure indicator LED
 void MX_I2C2_Init(void)
 {
-  I2C_HandleTypeDef hi2c2;
 
   hi2c2.Instance = I2C2;
   hi2c2.Init.Timing = 0x0000020B;
@@ -83,4 +85,30 @@ void MX_I2C2_Init(void)
   HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0);
 }
 
+int32_t VL53L0X_write_byte(uint8_t address,  uint8_t index, uint8_t data)
+{
+  HAL_StatusTypeDef result = HAL_ERROR;
+  uint8_t pTransData[2];
+
+  pTransData[0] = index;
+  pTransData[1] = data;
+
+  address = 0xFE & address;
+  result = HAL_I2C_Master_Transmit(&hi2c2, address, pTransData, 2, HAL_MAX_DELAY);
+
+  return result;
+}
+
+int32_t VL53L0X_read_byte(uint8_t address,  uint8_t index, uint8_t  *pdata)
+{
+  HAL_StatusTypeDef result = HAL_ERROR;
+
+  address = 0xFE & address;
+  result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+
+  address = 0x01 | address;
+  result |= HAL_I2C_Master_Receive(&hi2c2, address, pdata, sizeof(pdata), HAL_MAX_DELAY);
+
+  return result;
+}
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
