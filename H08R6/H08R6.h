@@ -1,22 +1,23 @@
 /*
     BitzOS (BOS) V0.1.4 - Copyright (C) 2018 Hexabitz
     All rights reserved
-		
+
     File Name     : H08R6.h
     Description   : Header file for module H08R6.
 										IR Time-if-Flight (ToF) Sensor (ST VL53L0CX)
 */
-	
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef H08R6_H
 #define H08R6_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
-#include "H08R6_uart.h"	
-#include "H08R6_gpio.h"	
-#include "H08R6_dma.h"		
-	
+#include "H08R6_uart.h"
+#include "H08R6_gpio.h"
+#include "H08R6_i2c.h"
+#include "H08R6_dma.h"
+
 /* Exported definitions -------------------------------------------------------*/
 
 #define	modulePN		_H08R6
@@ -26,11 +27,11 @@
 #define P_PROG 				P2						/* ST factory bootloader UART */
 
 /* Define available ports */
-#define _P1 
-#define _P2 
-#define _P3 
-#define _P4 
-#define _P5 
+#define _P1
+#define _P2
+#define _P3
+#define _P4
+#define _P5
 #define _P6
 
 /* Define available USARTs */
@@ -42,13 +43,13 @@
 #define _Usart6	1
 
 /* Port-UART mapping */
-#define P1uart &huart4	
+#define P1uart &huart4
 #define P2uart &huart2
 #define P3uart &huart6
 #define P4uart &huart3
 #define P5uart &huart1
 #define P6uart &huart5
-	
+
 /* Port Definitions */
 #define	USART1_TX_PIN		GPIO_PIN_9
 #define	USART1_RX_PIN		GPIO_PIN_10
@@ -100,8 +101,8 @@
 #define _TOF_XSHUT_PIN								GPIO_PIN_12
 #define _TOF_XSHUT_GPIO_CLK()					__GPIOB_CLK_ENABLE();
 
-/* Module_Status Type Definition */  
-typedef enum 
+/* Module_Status Type Definition */
+typedef enum
 {
   H08R6_OK = 0,
 	H08R6_ERR_UnknownMessage,
@@ -134,20 +135,20 @@ extern void MX_USART6_UART_Init(void);
 
 /* -----------------------------------------------------------------------
 	|														Message Codes	 														 	|
-   ----------------------------------------------------------------------- 
+   -----------------------------------------------------------------------
 */
 
 
-	
+
 /* -----------------------------------------------------------------------
 	|																APIs	 																 	|
-   ----------------------------------------------------------------------- 
+   -----------------------------------------------------------------------
 */
 
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
-   ----------------------------------------------------------------------- 
+   -----------------------------------------------------------------------
 */
 
 

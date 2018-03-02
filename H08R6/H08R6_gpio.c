@@ -54,20 +54,57 @@ void MX_GPIO_Init(void)
   __GPIOD_CLK_ENABLE();
 	__GPIOB_CLK_ENABLE();
 	__GPIOF_CLK_ENABLE();		// for HSE and Boot0
-	
+
 	IND_LED_Init();
+  IND_ToF_Init();
 }
 
 //-- Configure indicator LED
 void IND_LED_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
-	
+
 	GPIO_InitStruct.Pin = _IND_LED_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	HAL_GPIO_Init(_IND_LED_PORT, &GPIO_InitStruct);
+}
+
+//-- Configure indicator connection pins with VL53L0X ic
+void IND_ToF_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  /**I2C2 GPIO Configuration
+  PB13     ------> I2C2_SCL
+  PB14     ------> I2C2_SDA
+  */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF5_I2C2;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* Peripheral clock enable */
+  __HAL_RCC_I2C2_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PB2 - INT */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB12 - XSHUT */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
