@@ -36,6 +36,11 @@ UART_HandleTypeDef huart6;
 
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE vl53l0xReadPeriodCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 
 /* CLI command structure : vl53l0x-test */
 const CLI_Command_Definition_t vl53l0xTestBoardCommandDefinition =
@@ -44,6 +49,51 @@ const CLI_Command_Definition_t vl53l0xTestBoardCommandDefinition =
 	( const int8_t * ) "vl53l0x-test:\r\n Command to test PCB board design\r\n\r\n",
 	vl53l0xTestBoardCommand, /* The function to run. */
 	0 /* No parameters are expected. */
+};
+
+/* CLI command structure : sample */
+const CLI_Command_Definition_t vl53l0xSampleCommandDefinition =
+{
+	( const int8_t * ) "sample", /* The command string to type. */
+	( const int8_t * ) "sample:\r\nTake one sample measurement\r\n\r\n",
+	vl53l0xSampleCommand, /* The function to run. */
+	0 /* No parameters are expected. */
+};
+
+/* CLI command structure : read */
+const CLI_Command_Definition_t vl53l0xReadCommandDefinition =
+{
+	( const int8_t * ) "read", /* The command string to type. */
+	( const int8_t * ) "read:\r\nStream measurement\r\n\r\n",
+	vl53l0xReadCommand, /* The function to run. */
+	0 /* No parameters are expected. */
+};
+
+/* CLI command structure : read period */
+const CLI_Command_Definition_t vl53l0xReadPeriodCommandDefinition =
+{
+	( const int8_t * ) "read-period", /* The command string to type. */
+		( const int8_t * ) "read-period:\r\nSet period streaming in msec between measurements\r\n\r\n",
+	vl53l0xReadPeriodCommand, /* The function to run. */
+	1 /* No parameters are expected. */
+};
+
+/* CLI command structure : stop */
+const CLI_Command_Definition_t vl53l0xStopCommandDefinition =
+{
+	( const int8_t * ) "stop", /* The command string to type. */
+	( const int8_t * ) "stop:\r\nStop continuous or timed ranging\r\n\r\n",
+	vl53l0xStopCommand, /* The function to run. */
+	0 /* No parameters are expected. */
+};
+
+/* CLI command structure : units */
+const CLI_Command_Definition_t vl53l0xUnitsCommandDefinition =
+{
+	( const int8_t * ) "units", /* The command string to type. */
+		( const int8_t * ) "units:\r\nSetup the range output unit: mm, cm, inch\r\n\r\n",
+	vl53l0xUnitsCommand, /* The function to run. */
+	1 /* No parameters are expected. */
 };
 /* -----------------------------------------------------------------------
 	|												 Private Functions	 														|
@@ -98,6 +148,11 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 void RegisterModuleCLICommands(void)
 {
 	FreeRTOS_CLIRegisterCommand( &vl53l0xTestBoardCommandDefinition);
+	FreeRTOS_CLIRegisterCommand( &vl53l0xSampleCommandDefinition);
+	FreeRTOS_CLIRegisterCommand( &vl53l0xReadCommandDefinition);
+	FreeRTOS_CLIRegisterCommand( &vl53l0xReadPeriodCommandDefinition);
+	FreeRTOS_CLIRegisterCommand( &vl53l0xStopCommandDefinition);
+	FreeRTOS_CLIRegisterCommand( &vl53l0xUnitsCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
@@ -130,7 +185,55 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
    -----------------------------------------------------------------------
 */
 
+/* --- Get the port for a given UART.
+*/
+float SampleToF(void)
+{
+	float result = 0;
+  
+  
+  return result;
+}
 
+/* --- Get the port for a given UART.
+*/
+float ReadToF(uint32_t period)
+{
+	float result = 0;
+  
+  
+  return result;
+}
+
+/* --- Get the port for a given UART.
+*/
+Module_Status StopToF(void)
+{
+	Module_Status result = H08R6_OK;
+  
+  
+  return result;
+}
+
+/* --- Get the port for a given UART.
+*/
+Module_Status SetRangeUnit(float input)
+{
+	Module_Status result = H08R6_OK;
+  
+  
+  return result;
+}
+
+/* --- Get the port for a given UART.
+*/
+float GetRangeUnit(void)
+{
+	float result = 0;
+  
+  
+  return result;
+}
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
@@ -175,7 +278,97 @@ static portBASE_TYPE vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWri
 	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
   vl53l0x_reset_xshut_pin();
-	
+
+	sprintf((char *)pcWriteBuffer, "\r\n");
+
+	/* There is no more data to return after this single string, so return pdFALSE. */
+	return pdFALSE;
+}
+
+static portBASE_TYPE vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	sprintf( ( char * ) pcWriteBuffer, "vl53l0xSampleCommand\r\n");
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
+	sprintf((char *)pcWriteBuffer, "\r\n");
+
+	/* There is no more data to return after this single string, so return pdFALSE. */
+	return pdFALSE;
+}
+
+static portBASE_TYPE vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	sprintf( ( char * ) pcWriteBuffer, "vl53l0xReadCommand\r\n");
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
+	sprintf((char *)pcWriteBuffer, "\r\n");
+
+	/* There is no more data to return after this single string, so return pdFALSE. */
+	return pdFALSE;
+}
+
+static portBASE_TYPE vl53l0xReadPeriodCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	sprintf( ( char * ) pcWriteBuffer, "vl53l0xReadPeriodCommand\r\n");
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
+	sprintf((char *)pcWriteBuffer, "\r\n");
+
+	/* There is no more data to return after this single string, so return pdFALSE. */
+	return pdFALSE;
+}
+
+static portBASE_TYPE vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	sprintf( ( char * ) pcWriteBuffer, "vl53l0xStopCommand\r\n");
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
+	sprintf((char *)pcWriteBuffer, "\r\n");
+
+	/* There is no more data to return after this single string, so return pdFALSE. */
+	return pdFALSE;
+}
+
+static portBASE_TYPE vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	/* Remove compile time warnings about unused parameters, and check the
+	write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+	write buffer length is adequate, so does not check for buffer overflows. */
+	( void ) pcCommandString;
+	( void ) xWriteBufferLen;
+	configASSERT( pcWriteBuffer );
+
+	sprintf( ( char * ) pcWriteBuffer, "vl53l0xUnitsCommand\r\n");
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
 	sprintf((char *)pcWriteBuffer, "\r\n");
 
 	/* There is no more data to return after this single string, so return pdFALSE. */

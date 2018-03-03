@@ -46,6 +46,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
+#include "vl53l0x_api.h"
 
 extern I2C_HandleTypeDef hi2c2;
 

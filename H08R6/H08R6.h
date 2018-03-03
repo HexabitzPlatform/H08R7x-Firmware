@@ -151,6 +151,11 @@ extern void MX_USART6_UART_Init(void);
    -----------------------------------------------------------------------
 */
 
+float SampleToF(void);
+float ReadToF(uint32_t period);
+Module_Status StopToF(void);
+Module_Status SetRangeUnit(float input);
+float GetRangeUnit(void);
 
 /* -----------------------------------------------------------------------
 	|															Commands																 	|
