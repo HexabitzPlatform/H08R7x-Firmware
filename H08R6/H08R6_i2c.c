@@ -33,7 +33,7 @@
   */
 
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.4 - Copyright (C) 2018 Hexabitz
+    MODIFIED by Hexabitz for BitzOS (BOS) V0.1.4 - Copyright (C) 2018 Hexabitz
     All rights reserved
 */
 
@@ -55,10 +55,10 @@ void MX_I2C_Init(void)
   __GPIOC_CLK_ENABLE();
   __GPIOA_CLK_ENABLE();
   __GPIOD_CLK_ENABLE();
-	__GPIOB_CLK_ENABLE();
-	__GPIOF_CLK_ENABLE();		// for HSE and Boot0
+  __GPIOB_CLK_ENABLE();
+  __GPIOF_CLK_ENABLE();   // for HSE and Boot0
 
-	MX_I2C2_Init();
+  MX_I2C2_Init();
 }
 
 //-- Configure indicator LED
@@ -66,7 +66,8 @@ void MX_I2C2_Init(void)
 {
 
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x0000020B;
+  /* hi2c2.Init.Timing = 0x2010091A; */ /* fast mode: 400 KHz */
+  hi2c2.Init.Timing = 0x20303E5D; /* Standard mode: 100 KHz */
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -76,11 +77,11 @@ void MX_I2C2_Init(void)
   hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   HAL_I2C_Init(&hi2c2);
 
-    /**Configure Analogue filter 
+    /**Configure Analogue filter
     */
   HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE);
 
-    /**Configure Digital filter 
+    /**Configure Digital filter
     */
   HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0);
 }
@@ -221,7 +222,7 @@ int32_t VL53L0X_read_word(uint8_t address,  uint8_t index, uint16_t *pdata)
   result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 2, HAL_MAX_DELAY);
 
   *pdata = buff[0];
-	*pdata <<= 8;
+  *pdata <<= 8;
   *pdata |= buff[1];
 
   return (uint32_t)result;
@@ -244,11 +245,11 @@ int32_t VL53L0X_read_dword(uint8_t address, uint8_t index, uint32_t *pdata)
   result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 4, HAL_MAX_DELAY);
 
   *pdata = buff[0];
-	*pdata <<= 8;
+  *pdata <<= 8;
   *pdata |= buff[1];
-	*pdata <<= 8;
+  *pdata <<= 8;
   *pdata |= buff[2];
-	*pdata <<= 8;
+  *pdata <<= 8;
   *pdata |= buff[3];
 
   return (uint32_t)result;

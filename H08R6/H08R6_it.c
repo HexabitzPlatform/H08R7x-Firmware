@@ -30,7 +30,7 @@
   *
   ******************************************************************************
   */
-	
+
 /*
 		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.4 - Copyright (C) 2018 Hexabitz
     All rights reserved
@@ -49,7 +49,7 @@ extern void NotifyMessagingTaskFromISR(uint8_t port);
 
 
 /******************************************************************************/
-/*            Cortex-M0 Processor Interruption and Exception Handlers         */ 
+/*            Cortex-M0 Processor Interruption and Exception Handlers         */
 /******************************************************************************/
 
 /**
@@ -57,9 +57,9 @@ extern void NotifyMessagingTaskFromISR(uint8_t port);
 */
 void SysTick_Handler(void)
 {
-	
+
 	HAL_IncTick();
-  osSystickHandler();  
+  osSystickHandler();
 
 }
 
@@ -69,7 +69,7 @@ void SysTick_Handler(void)
 void HardFault_Handler(void)
 {
 	/* Loop here */
-	for(;;) {};  
+	for(;;) {};
 }
 
 /******************************************************************************/
@@ -85,11 +85,11 @@ void HardFault_Handler(void)
 void USART1_IRQHandler(void)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	
-#if defined (_Usart1)		
+
+#if defined (_Usart1)
   HAL_UART_IRQHandler(&huart1);
 #endif
-	
+
 	/* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
 	switch should be performed before the interrupt exists.  That ensures the
 	unblocked (higher priority) task is returned to immediately. */
@@ -104,11 +104,11 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	
-#if defined (_Usart2)	
+
+#if defined (_Usart2)
   HAL_UART_IRQHandler(&huart2);
 #endif
-	
+
 	/* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
 	switch should be performed before the interrupt exists.  That ensures the
 	unblocked (higher priority) task is returned to immediately. */
@@ -123,7 +123,7 @@ void USART2_IRQHandler(void)
 void USART3_8_IRQHandler(void)
 {
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	
+
 #if defined (_Usart3)
 	HAL_UART_IRQHandler(&huart3);
 #endif
@@ -158,7 +158,7 @@ void DMA1_Ch1_IRQHandler(void)
 	if (DMAStream1count >= DMAStream1total) {
 		StopPortPortDMA1();
 	}
-	
+
 }
 
 /*-----------------------------------------------------------*/
@@ -214,7 +214,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 	/* Give back the mutex. */
 	xSemaphoreGiveFromISR( PxTxSemaphoreHandle[GetPort(huart)], &( xHigherPriorityTaskWoken ) );
-	
+
 	UartTxReady = SET;
 }
 
@@ -227,9 +227,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 
   /* Set the UART state ready to be able to start the process again */
   huart->State = HAL_UART_STATE_READY;
-	
+
 	/* Start receiving again */
-	HAL_UART_Receive_IT(huart, (uint8_t *)&cRxedChar, 1);	
+	HAL_UART_Receive_IT(huart, (uint8_t *)&cRxedChar, 1);
 }
 
 /*-----------------------------------------------------------*/
@@ -238,50 +238,82 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	char cRxedChar = 0; uint8_t port = GetPort(huart);
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-	
-	if (portStatus[port] == FREE || portStatus[port] == MSG || portStatus[port] == CLI) 
+
+	if (portStatus[port] == FREE || portStatus[port] == MSG || portStatus[port] == CLI)
 	{
 		/* Read buffer */
 		cRxedChar = huart->Instance->RDR;
-		
+
 		/* Received CLI request? */
 		if( cRxedChar == '\r' )
 		{
 			cRxedChar = '\0';
-			PcPort = port; 
+			PcPort = port;
 			portStatus[port] = CLI;
-			
+      startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+
 			/* Activate the CLI task */
-			vTaskNotifyGiveFromISR(xCommandConsoleTaskHandle, &( xHigherPriorityTaskWoken ) );		
+			vTaskNotifyGiveFromISR(xCommandConsoleTaskHandle, &( xHigherPriorityTaskWoken ) );
 		}
 		/* Received messaging request? (any value between 1 and 50 other than \r = 0x0D) */
 		else if( (cRxedChar != '\0') && (cRxedChar <= 50) )
 		{
 			portStatus[port] = MSG;
-			messageLength[port-1] = cRxedChar;			
-				
+			messageLength[port-1] = cRxedChar;
+
 			/* Activate DMA transfer */
 			PortMemDMA1_Setup(huart, cRxedChar);
-			
-			cRxedChar = '\0';	
+
+			cRxedChar = '\0';
 		}
 		/* Message has been received? */
 		else if( cRxedChar == 0x75 )
 		{
 			/* Notify messaging tasks */
-			NotifyMessagingTaskFromISR(port);		
+			NotifyMessagingTaskFromISR(port);
 		}
-		
+
 		/* Give back the mutex */
 		xSemaphoreGiveFromISR( PxRxSemaphoreHandle[port], &( xHigherPriorityTaskWoken ) );
-		
+
 		/* Read this port again */
 		if (portStatus[port] == FREE) {
 			HAL_UART_Receive_IT(huart, (uint8_t *)&cRxedChar, 1);
 		}
 	}
-	
+
 	UartRxReady = SET;
+}
+
+/**
+* @brief This function handles EXTI line 2 and 3 interrupts.
+*/
+void EXTI2_3_IRQHandler(void)
+{
+  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+  VL53L0X_Error status = VL53L0X_ERROR_NONE;
+
+  HAL_GPIO_EXTI_IRQHandler(_TOF_INT_PIN);
+
+  if (START_MEASUREMENT_RANGING == startMeasurementRaning)
+  {
+    if(VL53L0X_ERROR_NONE == status)
+    {
+      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+    }
+    
+    if(VL53L0X_ERROR_NONE == status)
+    {
+      status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+    }
+
+    xEventGroupSetBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
+  }
+
+  /* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
+  switch should be performed before the interrupt exists.  That ensures the
+  unblocked (higher priority) task is returned to immediately. */
+  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 
 /**
@@ -296,7 +328,7 @@ void I2C2_IRQHandler(void)
   } else {
     HAL_I2C_EV_IRQHandler(&hi2c2);
   }
-	
+
 	/* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
 	switch should be performed before the interrupt exists.  That ensures the
 	unblocked (higher priority) task is returned to immediately. */
@@ -307,7 +339,7 @@ void I2C2_IRQHandler(void)
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	
+
 }
 /*-----------------------------------------------------------*/
 
