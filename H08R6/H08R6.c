@@ -363,9 +363,9 @@ float GetCurrentMeasurementValue(void)
 {
   float distance = 0.0;
   VL53L0X_RangingMeasurementData_t measurementResult;
-  
+
   VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
-  
+
   if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
   {
     distance = (float)measurementResult.RangeMilliMeter;
@@ -415,7 +415,11 @@ void SendDataMeasurement(float dataDistance)
     }
     writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
     memset((char *) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
-    Delay_us(10000);
+    readPxMutex(PcPort, (char *)pcOutputString, sizeof(char), cmd500ms, 100);
+    if ('\r' == pcOutputString[0])
+    {
+      startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+    }
   }
   else
   {
@@ -449,13 +453,10 @@ float SampleToF(void)
     VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
-  startMeasurementRaning = START_MEASUREMENT_RANGING;
   if (H08R6_OK == WaitEventFinishRanging())
   {
     distance = GetCurrentMeasurementValue();
   }
-
-  startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
   return distance;
 }
@@ -507,6 +508,7 @@ float ReadToF(uint32_t period)
       SendDataMeasurement(distance);
     }
   }
+  startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
   return distance;
 }
@@ -689,7 +691,7 @@ static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
     period = atoi( (char *)pcParameterString1);
   }
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
-  sprintf( ( char * ) pcWriteBuffer, "\r\nPress enter to stop streaming data on terminal\r\n\r\n");
+  sprintf( ( char * ) pcWriteBuffer, "\r\nPress ESC key to stop streaming data\r\n\r\n");
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
   h08r6Port = TERMINAL_PORT;
@@ -705,6 +707,8 @@ static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
 
 static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
+  Module_Status result = H08R6_OK;
+
   /* Remove compile time warnings about unused parameters, and check the
   write buffer is not NULL.  NOTE - for simplicity, this example assumes the
   write buffer length is adequate, so does not check for buffer overflows. */
@@ -712,11 +716,20 @@ static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-  sprintf( ( char * ) pcWriteBuffer, "Stop measurement\r\n");
+  result = StopToF();
+
+  if (H08R6_OK == result)
+  {
+    sprintf( ( char * ) pcWriteBuffer, "Stop measurement: Success\r\n");
+  }
+  else
+  {
+    sprintf( ( char * ) pcWriteBuffer, "Stop measurement: Failure\r\n");
+  }
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
-  StopToF();
-
+  /* clean terminal output */
+  memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
   sprintf((char *)pcWriteBuffer, "\r\n");
 
   /* There is no more data to return after this single string, so return pdFALSE. */
