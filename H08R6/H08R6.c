@@ -34,18 +34,21 @@ VL53L0X_Dev_t vl53l0x_HandleDevice;
  * 1 = cm
  * 2 = inch
  */
-uint8_t vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_MM;
+uint8_t h08r6UnitMeasurement = UNIT_MEASUREMENT_MM;
 EventGroupHandle_t handleNewReadyData = NULL;
-VL53L0X_RangingMeasurementData_t measurementResult;
 uint8_t startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
 /* Private variables ---------------------------------------------------------*/
-
+int32_t offsetCalibration = 0;
+uint8_t h08r6Port;
+uint8_t h08r6Src;
+uint8_t h08r6Dst;
 
 /* Private function prototypes -----------------------------------------------*/
 void Vl53l0xInit(void);
-Module_Status waitEventFinishRanging(void);
-float getValueCurrentUnit(uint32_t input);
+Module_Status WaitEventFinishRanging(void);
+float GetCurrentMeasurementValue(void);
+void SendDataMeasurement(float dataDistance);
 
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE Vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -142,12 +145,36 @@ void Module_Init(void)
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
 {
   Module_Status result = H08R6_OK;
+  uint32_t period = 0;
+
+  h08r6Port = port;
+  h08r6Src = src;
+  h08r6Dst = dst;
 
   switch (code)
   {
-
-
-
+    case CODE_H08R6_GET_INFO:
+      break;
+    case CODE_H08R6_SINGLE_RANGING:
+      SendDataMeasurement(SampleToF());
+      break;
+    case CODE_H08R6_CONTINUOUS_RANGING:
+      ReadToF(0);
+      break;
+    case CODE_H08R6_TIMED_RANGING:
+      memcpy(&period, &cMessage[port-1][4], sizeof(uint32_t));
+      ReadToF(period);
+      break;
+    case CODE_H08R6_STOP_RANGING:
+      SampleToF();
+      break;
+    case CODE_H08R6_SET_UNIT:
+      SetRangeUnit(cMessage[port-1][4]);
+      break;
+    case CODE_H08R6_GET_UNIT:
+      messageParams[0] = GetRangeUnit();
+      SendMessageFromPort(port, src, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
+      break;
     default:
       result = H08R6_ERR_UnknownMessage;
       break;
@@ -261,12 +288,35 @@ void Vl53l0xInit(void)
   {
     status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
                                         VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-                                        (FixPoint1616_t)(32*65536));
+                                        (FixPoint1616_t)(18*65536));
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 35000);
+    /* Timing budget for High accuracy */
+    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 200000);
+  }
+
+/*   if (status == VL53L0X_ERROR_NONE)
+  {
+    status = VL53L0X_GetOffsetCalibrationDataMicroMeter(&vl53l0x_HandleDevice, &offsetCalibration);
+  }
+
+  if (status == VL53L0X_ERROR_NONE)
+  {
+    status = VL53L0X_SetOffsetCalibrationDataMicroMeter(&vl53l0x_HandleDevice, offsetCalibration);
+  } */
+
+  if(status == VL53L0X_ERROR_NONE)
+  {
+    /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
+    /* Setup in single ranging mode */
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+  }
+
+  if (status == VL53L0X_ERROR_NONE)
+  {
+    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
   /* Setting interrupt on INT pin of VL53L0X */
@@ -294,7 +344,7 @@ void Vl53l0xInit(void)
 
 /* --- Wait event finish measurement ranging
 */
-Module_Status waitEventFinishRanging(void)
+Module_Status WaitEventFinishRanging(void)
 {
   Module_Status result = H08R6_ERR_Timeout;
   EventBits_t tEvBits;
@@ -307,28 +357,73 @@ Module_Status waitEventFinishRanging(void)
   return result;
 }
 
-/* --- Get value correct with current unit measurement
+/* --- Get current measurement ranging value
 */
-float getValueCurrentUnit(uint32_t input)
+float GetCurrentMeasurementValue(void)
 {
   float distance = 0.0;
-  if (UNIT_MEASUREMENT_MM == vl53l0x_UnitMeasurement)
+  VL53L0X_RangingMeasurementData_t measurementResult;
+  
+  VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+  
+  if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
   {
-    distance = input;
+    distance = (float)measurementResult.RangeMilliMeter;
   }
-  else if (UNIT_MEASUREMENT_CM == vl53l0x_UnitMeasurement)
+  else if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
   {
-    distance = input / 10;
+    distance = (float)measurementResult.RangeMilliMeter / 10;
   }
-  else if (UNIT_MEASUREMENT_INCH == vl53l0x_UnitMeasurement)
+  else if (UNIT_MEASUREMENT_INCH == h08r6UnitMeasurement)
   {
-    distance = input / 25.4; /* 1mm = (1/25.4)″ = 0.03937007874″ */
+    distance = (float)measurementResult.RangeMilliMeter / 25.4; /* 1mm = (1/25.4)″ = 0.03937007874″ */
   }
   else
   {
     /* nothing to do here */
   }
   return distance;
+}
+
+/* --- Send result measurement ranging to other UART port
+*/
+void SendDataMeasurement(float dataDistance)
+{
+  uint16_t numberOfParams;
+  int8_t *pcOutputString;
+  static const int8_t *pcMessageOK = ( int8_t * ) "Distance (%s): %.2f\r\n";
+  float tempData = dataDistance;
+
+  if (TERMINAL_PORT == h08r6Port)
+  {
+    pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+    if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
+    {
+      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "mm", tempData);
+    }
+    else if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
+    {
+      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "cm", tempData);
+    }
+    else if (UNIT_MEASUREMENT_INCH == h08r6UnitMeasurement)
+    {
+      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "inch", tempData);
+    }
+    else
+    {
+      /* nothing to do here */
+    }
+    writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+    memset((char *) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+    Delay_us(10000);
+  }
+  else
+  {
+    memset(messageParams, 0, sizeof(messageParams));
+    numberOfParams = sizeof(float);
+    memcpy(messageParams, &tempData, sizeof(float));
+    SendMessageFromPort(h08r6Port, h08r6Src, h08r6Dst, CODE_H08R6_RESULT_MEASUREMENT, numberOfParams);
+  }
 }
 /* -----------------------------------------------------------------------
   |                               APIs                                    |
@@ -341,7 +436,6 @@ float SampleToF(void)
 {
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
   float distance = 0.0;
-
 
   if(status == VL53L0X_ERROR_NONE)
   {
@@ -356,9 +450,9 @@ float SampleToF(void)
   }
 
   startMeasurementRaning = START_MEASUREMENT_RANGING;
-  if (H08R6_OK == waitEventFinishRanging())
+  if (H08R6_OK == WaitEventFinishRanging())
   {
-    distance = getValueCurrentUnit(measurementResult.RangeMilliMeter);
+    distance = GetCurrentMeasurementValue();
   }
 
   startMeasurementRaning = STOP_MEASUREMENT_RANGING;
@@ -367,13 +461,14 @@ float SampleToF(void)
 }
 
 /* --- steam measurement
+ * Before call this function, User need to update h08r6Port/ h08r6Src/ h08r6Dst
+ * which will be used to print/send data to Terminal App/Orther module
+ * input parameter: period (MilliSeconds)
 */
 float ReadToF(uint32_t period)
 {
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
   float distance = 0.0;
-  int8_t *pcOutputString;
-  static const int8_t *pcMessageOK = ( int8_t * ) "Distance (%s): %.2f\r\n";
 
   if (0 == period) /* Continuous Ranging */
   {
@@ -406,27 +501,10 @@ float ReadToF(uint32_t period)
   startMeasurementRaning = START_MEASUREMENT_RANGING;
   while(START_MEASUREMENT_RANGING == startMeasurementRaning)
   {
-    if (H08R6_OK == waitEventFinishRanging())
+    if (H08R6_OK == WaitEventFinishRanging())
     {
-      pcOutputString = FreeRTOS_CLIGetOutputBuffer();
-      distance = getValueCurrentUnit(measurementResult.RangeMilliMeter);
-      if (UNIT_MEASUREMENT_MM == vl53l0x_UnitMeasurement)
-      {
-        sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "mm", distance);
-      }
-      else if (UNIT_MEASUREMENT_CM == vl53l0x_UnitMeasurement)
-      {
-        sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "cm", distance);
-      }
-      else if (UNIT_MEASUREMENT_INCH == vl53l0x_UnitMeasurement)
-      {
-        sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "inch", distance);
-      }
-      else
-      {
-        /* nothing to do here */
-      }
-      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd50ms, HAL_MAX_DELAY);
+      distance = GetCurrentMeasurementValue();
+      SendDataMeasurement(distance);
     }
   }
 
@@ -437,18 +515,36 @@ float ReadToF(uint32_t period)
 */
 Module_Status StopToF(void)
 {
-  uint32_t status = 0;
+  uint32_t StopCompleted = 0;
+  uint32_t loop = 0;
   Module_Status result = H08R6_OK;
+  VL53L0X_Error status = VL53L0X_ERROR_NONE;
 
   VL53L0X_StopMeasurement(&vl53l0x_HandleDevice);
-  VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &status);
-  if (0 != status)
+  do{
+    status = VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &StopCompleted);
+    if ((0 == StopCompleted) || (VL53L0X_ERROR_NONE != status))
+    {
+      break;
+    }
+    loop++;
+    VL53L0X_PollingDelay(&vl53l0x_HandleDevice);
+  } while (loop < VL53L0X_DEFAULT_MAX_LOOP);
+
+  if (loop >= VL53L0X_DEFAULT_MAX_LOOP)
   {
-    result = H08R6_ERROR;
+    result = H08R6_ERR_Timeout;
   }
   else
   {
-    startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+    if (VL53L0X_ERROR_NONE != status)
+    {
+      result = H08R6_ERROR;
+    }
+    else
+    {
+      startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+    }
   }
 
   return result;
@@ -462,15 +558,15 @@ Module_Status SetRangeUnit(uint8_t input)
 
   if (UNIT_MEASUREMENT_MM == input)
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_MM;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_MM;
   }
   else if (UNIT_MEASUREMENT_CM == input)
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_CM;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_CM;
   }
   else if (UNIT_MEASUREMENT_INCH == input)
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_INCH;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_INCH;
   }
   else
   {
@@ -484,7 +580,7 @@ Module_Status SetRangeUnit(uint8_t input)
 */
 uint8_t GetRangeUnit(void)
 {
-  return vl53l0x_UnitMeasurement;
+  return h08r6UnitMeasurement;
 }
 
 /* -----------------------------------------------------------------------
@@ -501,6 +597,7 @@ static portBASE_TYPE Vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWri
   configASSERT( pcWriteBuffer );
 
   static const int8_t *pcPrintTestValue = ( int8_t * ) "Value at address 0x%x = 0x%x\r\n";
+  static const int8_t *msgOffset = ( int8_t * ) "Offset = %.3f\r\n";
 
   uint8_t t_a_C0 = 0xc0;
   uint8_t t_a_C1 = 0xc1;
@@ -529,6 +626,9 @@ static portBASE_TYPE Vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWri
   sprintf((char *)pcWriteBuffer, (char *)pcPrintTestValue, t_a_C2, t_v_C2);
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
+  sprintf( ( char * ) pcWriteBuffer, ( char * ) msgOffset, offsetCalibration);
+  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
   /* vl53l0x_reset_xshut_pin(); */
 
   sprintf((char *)pcWriteBuffer, "\r\n");
@@ -540,7 +640,6 @@ static portBASE_TYPE Vl53l0xTestBoardCommand( int8_t *pcWriteBuffer, size_t xWri
 static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
   float distance = 0.0;
-  static const int8_t *pcMessageOK = ( int8_t * ) "Distance (%s): %.2f\r\n";
 
   /* Remove compile time warnings about unused parameters, and check the
   write buffer is not NULL.  NOTE - for simplicity, this example assumes the
@@ -552,24 +651,9 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
   sprintf( ( char * ) pcWriteBuffer, "Command takes one sample measurement (Single Ranging)\r\n");
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
+  h08r6Port = TERMINAL_PORT;
   distance = SampleToF();
-  if (UNIT_MEASUREMENT_MM == vl53l0x_UnitMeasurement)
-  {
-    sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMessageOK, "mm", distance);
-  }
-  else if (UNIT_MEASUREMENT_CM == vl53l0x_UnitMeasurement)
-  {
-    sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMessageOK, "cm", distance);
-  }
-  else if (UNIT_MEASUREMENT_INCH == vl53l0x_UnitMeasurement)
-  {
-    sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMessageOK, "inch", distance);
-  }
-  else
-  {
-    /* nothing to do here */
-  }
-  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+  SendDataMeasurement(distance);
 
   /* clean terminal output */
   memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
@@ -607,6 +691,8 @@ static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
   sprintf( ( char * ) pcWriteBuffer, "\r\nPress enter to stop streaming data on terminal\r\n\r\n");
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+
+  h08r6Port = TERMINAL_PORT;
   ReadToF(period);
 
   /* clean terminal output */
@@ -654,17 +740,17 @@ static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBu
   pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
   if (!strncmp((const char *)pcParameterString1, "mm", 2))
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_MM;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_MM;
     strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: mm\r\n" );
   }
   else if (!strncmp((const char *)pcParameterString1, "cm", 2))
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_CM;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_CM;
     strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: cm\r\n" );
   }
   else if (!strncmp((const char *)pcParameterString1, "inch", 4))
   {
-    vl53l0x_UnitMeasurement = UNIT_MEASUREMENT_INCH;
+    h08r6UnitMeasurement = UNIT_MEASUREMENT_INCH;
     strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: inch\r\n" );
   }
   else

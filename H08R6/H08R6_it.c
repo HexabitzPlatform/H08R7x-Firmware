@@ -238,7 +238,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	char cRxedChar = 0; uint8_t port = GetPort(huart);
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-
+  
 	if (portStatus[port] == FREE || portStatus[port] == MSG || portStatus[port] == CLI)
 	{
 		/* Read buffer */
@@ -250,7 +250,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			cRxedChar = '\0';
 			PcPort = port;
 			portStatus[port] = CLI;
-      startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
 			/* Activate the CLI task */
 			vTaskNotifyGiveFromISR(xCommandConsoleTaskHandle, &( xHigherPriorityTaskWoken ) );
@@ -294,21 +293,13 @@ void EXTI2_3_IRQHandler(void)
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
 
   HAL_GPIO_EXTI_IRQHandler(_TOF_INT_PIN);
-
-  if (START_MEASUREMENT_RANGING == startMeasurementRaning)
+  
+  if(VL53L0X_ERROR_NONE == status)
   {
-    if(VL53L0X_ERROR_NONE == status)
-    {
-      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
-    }
-    
-    if(VL53L0X_ERROR_NONE == status)
-    {
-      status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
-    }
-
-    xEventGroupSetBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
+    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
   }
+
+  xEventGroupSetBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
 
   /* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
   switch should be performed before the interrupt exists.  That ensures the
