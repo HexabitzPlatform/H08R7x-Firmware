@@ -631,7 +631,7 @@ static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
     period = atoi( (char *)pcParameterString1);
   }
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
-  sprintf( ( char * ) pcWriteBuffer, "\r\nPress ESC key to stop streaming data\r\n\r\n");
+  sprintf( ( char * ) pcWriteBuffer, "\r\nPress ENTER key to stop streaming data\r\n\r\n");
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 
   h08r6Port = TERMINAL_PORT;
