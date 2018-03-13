@@ -101,9 +101,13 @@ void IND_ToF_Init(void)
 
   /*Configure GPIO pin : PB2 - INT */
   GPIO_InitStruct.Pin = _TOF_INT_PIN;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(_TOF_INT_PORT, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 
   /*Configure GPIO pin : PB12 - XSHUT */
   GPIO_InitStruct.Pin = _TOF_XSHUT_PIN;

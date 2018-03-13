@@ -46,16 +46,13 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f0xx_hal.h"
+#include "vl53l0x_api.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
 
 extern void MX_I2C_Init(void);
 extern void MX_I2C2_Init(void);
-
-extern int32_t VL53L0X_write_byte(uint8_t address,  uint8_t index, uint8_t   data);
-
-extern int32_t VL53L0X_read_byte(uint8_t address,  uint8_t index, uint8_t  *pdata);
 
 #ifdef __cplusplus
 }
