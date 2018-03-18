@@ -40,21 +40,26 @@ uint8_t startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
 /* Private variables ---------------------------------------------------------*/
 int32_t offsetCalibration = 0;
-uint8_t h08r6Port;
-uint8_t h08r6Src;
-uint8_t h08r6Dst;
+uint8_t h08r6StatesVl53l0x = VL53L0x_STATE_FREE;
+float h08r6MinRange = 0.0;
+float h08r6MaxRange = 8000.0;
+float h08r6BufStreamMem = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-void Vl53l0xInit(void);
-Module_Status WaitEventFinishRanging(void);
-float GetCurrentMeasurementValue(void);
-void SendDataMeasurement(float dataDistance);
+static void Vl53l0xInit(void);
+static VL53L0X_Error SettingModeMeasurement(uint8_t mode, uint32_t period, uint32_t timeout);
+static Module_Status WaitResultMeasurement(void);
+static float GetResultMeasurement(void);
+static float ConvertCurrentUnit(float distance);
+static void SendResultMeasurement(uint8_t request, float distance, uint8_t module, uint8_t port, float *buffer);
+static void CheckPressingEnterKey(void);
 
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 
 /* CLI command structure : sample */
 const CLI_Command_Definition_t Vl53l0xSampleCommandDefinition =
@@ -65,12 +70,12 @@ const CLI_Command_Definition_t Vl53l0xSampleCommandDefinition =
   0 /* No parameters are expected. */
 };
 
-/* CLI command structure : read period */
-const CLI_Command_Definition_t Vl53l0xReadCommandDefinition =
+/* CLI command structure : stream */
+const CLI_Command_Definition_t Vl53l0xStreamCommandDefinition =
 {
-  ( const int8_t * ) "read", /* The command string to type. */
-  ( const int8_t * ) "read:\r\nSet period streaming in msec between measurements\r\n\r\n",
-  Vl53l0xReadCommand, /* The function to run. */
+  ( const int8_t * ) "stream", /* The command string to type. */
+  ( const int8_t * ) "stream:\r\nStream instruction will support 2 syntaxes:\r\n\tstream period timeout port module\r\n\tstream period timeout buffer\r\n\r\n",
+  Vl53l0xStreamCommand, /* The function to run. */
   -1 /* one parameter is expected. */
 };
 
@@ -90,6 +95,15 @@ const CLI_Command_Definition_t Vl53l0xUnitsCommandDefinition =
   ( const int8_t * ) "units:\r\nSetup the range output unit: mm, cm, inch\r\n\r\n",
   Vl53l0xUnitsCommand, /* The function to run. */
   1 /* one parameter is expected. */
+};
+
+/* CLI command structure : max */
+const CLI_Command_Definition_t Vl53l0xMaxCommandDefinition =
+{
+  ( const int8_t * ) "max", /* The command string to type. */
+  ( const int8_t * ) "max:\r\nGet sample measurement of maximum distance\r\n\r\n",
+  Vl53l0xMaxCommand, /* The function to run. */
+  0 /* one parameter is expected. */
 };
 /* -----------------------------------------------------------------------
   |                        Private Functions                              |
@@ -135,35 +149,37 @@ void Module_Init(void)
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
 {
   Module_Status result = H08R6_OK;
-  uint32_t period = 0;
-
-  h08r6Port = port;
-  h08r6Src = src;
-  h08r6Dst = dst;
+	uint32_t period;
+	uint32_t timeout;
 
   switch (code)
   {
     case CODE_H08R6_GET_INFO:
       break;
-    case CODE_H08R6_SINGLE_RANGING:
-      SendDataMeasurement(SampleToF());
+    case CODE_H08R6_SAMPLE:
+      Sample_ToF(port, dst);
       break;
-    case CODE_H08R6_CONTINUOUS_RANGING:
-      ReadToF(0);
+    case CODE_H08R6_STREAM_PORT:
+      memcpy(&period, &messageParams[0], 4);
+      memcpy(&timeout, &messageParams[4], 4);
+      Stream_ToF_Port(period, timeout, port, dst);
       break;
-    case CODE_H08R6_TIMED_RANGING:
-      memcpy(&period, &cMessage[port-1][4], sizeof(uint32_t));
-      ReadToF(period);
+    case CODE_H08R6_STREAM_MEM:
+      memcpy(&period, &messageParams[0], 4);
+      memcpy(&timeout, &messageParams[4], 4);
+      Stream_ToF_Memory(period, timeout, &h08r6BufStreamMem);
+      break;
+    case CODE_H08R6_RESULT_MEASUREMENT:
       break;
     case CODE_H08R6_STOP_RANGING:
-      SampleToF();
+      Stop_ToF();
       break;
     case CODE_H08R6_SET_UNIT:
       SetRangeUnit(cMessage[port-1][4]);
       break;
     case CODE_H08R6_GET_UNIT:
       messageParams[0] = GetRangeUnit();
-      SendMessageFromPort(port, src, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
+      SendMessageFromPort(port, myID, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
       break;
     default:
       result = H08R6_ERR_UnknownMessage;
@@ -180,9 +196,10 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 void RegisterModuleCLICommands(void)
 {
   FreeRTOS_CLIRegisterCommand( &Vl53l0xSampleCommandDefinition);
-  FreeRTOS_CLIRegisterCommand( &Vl53l0xReadCommandDefinition);
+  FreeRTOS_CLIRegisterCommand( &Vl53l0xStreamCommandDefinition);
   FreeRTOS_CLIRegisterCommand( &Vl53l0xStopCommandDefinition);
   FreeRTOS_CLIRegisterCommand( &Vl53l0xUnitsCommandDefinition);
+  FreeRTOS_CLIRegisterCommand( &Vl53l0xMaxCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
@@ -209,7 +226,7 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 
 /*-----------------------------------------------------------*/
 
-void Vl53l0xInit(void)
+static void Vl53l0xInit(void)
 {
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
   uint32_t refSpadCount;
@@ -331,9 +348,72 @@ void Vl53l0xInit(void)
 
 /*-----------------------------------------------------------*/
 
-/* --- Wait event finish measurement ranging
+/* --- Send result measurement ranging to other UART port
 */
-Module_Status WaitEventFinishRanging(void)
+static void HandleTimeout(TimerHandle_t xTimer)
+{
+	uint32_t tid = 0;
+
+	/* close DMA stream */
+	tid = ( uint32_t ) pvTimerGetTimerID( xTimer );
+	if (TIMERID_TIMEOUT_MEASUREMENT == tid)
+	{
+    startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+	}
+}
+
+/* --- Selection mode running for VL53L0CX
+*/
+static VL53L0X_Error SettingModeMeasurement(uint8_t mode, uint32_t period, uint32_t timeout)
+{
+  VL53L0X_Error status = VL53L0X_ERROR_NONE;
+	TimerHandle_t xTimer = NULL;
+
+  if (VL53L0x_MODE_SINGLE == mode)
+  {
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+  }
+  else if (VL53L0x_MODE_CONTINUOUS == mode)
+  {
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
+  }
+  else if (VL53L0x_MODE_CONTINUOUS_TIMED == mode)
+  {
+    if(VL53L0X_ERROR_NONE == status)
+    {
+      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
+    }
+    if(VL53L0X_ERROR_NONE == status)
+    {
+      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
+    }
+  }
+  else
+  {
+    /* nothing to do here */
+  }
+
+  if ((timeout > 0) && (timeout < 0xFFFFFFFF))
+  {
+    /* start software timer which will create event timeout */
+    /* Create a timeout timer */
+    xTimer = xTimerCreate( "Timeout Measurement", pdMS_TO_TICKS(timeout), pdFALSE, ( void * ) TIMERID_TIMEOUT_MEASUREMENT, HandleTimeout );
+    /* Start the timeout timer */
+    xTimerStart( xTimer, portMAX_DELAY );
+  }
+
+  /* start measurement */
+  if (status == VL53L0X_ERROR_NONE)
+  {
+    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+  }
+
+  return status;
+}
+
+/* --- Wait event for finishing measurement ranging
+*/
+static Module_Status WaitResultMeasurement(void)
 {
   Module_Status result = H08R6_ERR_Timeout;
   EventBits_t tEvBits;
@@ -346,78 +426,143 @@ Module_Status WaitEventFinishRanging(void)
   return result;
 }
 
-/* --- Get current measurement ranging value
+/* --- Get result measurement
 */
-float GetCurrentMeasurementValue(void)
+static float GetResultMeasurement(void)
 {
-  float distance = 0.0;
   VL53L0X_RangingMeasurementData_t measurementResult;
 
   VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
 
-  if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
+  return (float)measurementResult.RangeMilliMeter;
+}
+
+/* --- Get result measurement, this function with convert from "mm" to other units
+ * Input : distance (mm)
+*/
+static float ConvertCurrentUnit(float distance)
+{
+  float temp = distance;
+
+  if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
   {
-    distance = (float)measurementResult.RangeMilliMeter;
-  }
-  else if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
-  {
-    distance = (float)measurementResult.RangeMilliMeter / 10;
+    temp = distance / 10;
   }
   else if (UNIT_MEASUREMENT_INCH == h08r6UnitMeasurement)
   {
-    distance = (float)measurementResult.RangeMilliMeter / 25.4; /* 1mm = (1/25.4)″ = 0.03937007874″ */
+    temp = distance / 25.4; /* 1mm = (1/25.4)″ = 0.03937007874″ */
   }
   else
   {
     /* nothing to do here */
   }
-  return distance;
+
+  return temp;
 }
 
-/* --- Send result measurement ranging to other UART port
+/* --- Send result measurement
 */
-void SendDataMeasurement(float dataDistance)
+static void SendResultMeasurement(uint8_t request, float distance, uint8_t module, uint8_t port, float *buffer)
 {
   uint16_t numberOfParams;
   int8_t *pcOutputString;
-  static const int8_t *pcMessageOK = ( int8_t * ) "Distance (%s): %.2f\r\n";
-  float tempData = dataDistance;
+  static const int8_t *pcDistanceMsg = ( int8_t * ) "Distance (%s): %.2f\r\n";
+  static const int8_t *pcBufferMsg = ( int8_t * ) "Buffer address: (0x%x)\tValue (%s): %.2f\r\n";
+  static const int8_t *pcOutMaxRange = ( int8_t * ) "MAX\r\n";
+  float tempData;
+  char *strUnit;
 
-  if (TERMINAL_PORT == h08r6Port)
+  /* Get CLI output buffer */
+  pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+  tempData = ConvertCurrentUnit(distance);
+
+  strUnit = malloc(6*sizeof(char));
+  memset(strUnit, 0, (6*sizeof(char)));
+  if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
   {
-    pcOutputString = FreeRTOS_CLIGetOutputBuffer();
-    if (UNIT_MEASUREMENT_MM == h08r6UnitMeasurement)
-    {
-      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "mm", tempData);
-    }
-    else if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
-    {
-      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "cm", tempData);
-    }
-    else if (UNIT_MEASUREMENT_INCH == h08r6UnitMeasurement)
-    {
-      sprintf( ( char * ) pcOutputString, ( char * ) pcMessageOK, "inch", tempData);
-    }
-    else
-    {
-      /* nothing to do here */
-    }
-    writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
-    memset((char *) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
-    readPxMutex(PcPort, (char *)pcOutputString, sizeof(char), cmd500ms, 100);
-    if ('\r' == pcOutputString[0])
-    {
-      startMeasurementRaning = STOP_MEASUREMENT_RANGING;
-    }
+    sprintf( ( char * ) strUnit, "mm");
+  }
+  else if (UNIT_MEASUREMENT_CM == h08r6UnitMeasurement)
+  {
+    sprintf( ( char * ) strUnit, "cm");
+  }
+  else if (UNIT_MEASUREMENT_INCH == h08r6UnitMeasurement)
+  {
+    sprintf( ( char * ) strUnit, "inch");
   }
   else
   {
-    memset(messageParams, 0, sizeof(messageParams));
-    numberOfParams = sizeof(float);
-    memcpy(messageParams, &tempData, sizeof(float));
-    SendMessageFromPort(h08r6Port, h08r6Src, h08r6Dst, CODE_H08R6_RESULT_MEASUREMENT, numberOfParams);
+    /* nothing to do here */
+  }
+  
+  if (tempData > h08r6MaxRange)
+  {
+    switch(request)
+    {
+      case REQ_SAMPLE_CLI:
+      case REQ_STREAM_PORT_CLI:
+      case REQ_STREAM_MEMORY_CLI:
+        request = REQ_OUT_RANGE_CLI;
+        break;
+      default:
+        request = REQ_OUT_RANGE_ARR;
+        break;
+    }
+  }
+
+  switch(request)
+  {
+    case REQ_SAMPLE_CLI:
+    case REQ_STREAM_PORT_CLI:
+      sprintf( ( char * ) pcOutputString, ( char * ) pcDistanceMsg, strUnit, tempData);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+      break;
+    case REQ_SAMPLE_ARR:
+    case REQ_STREAM_PORT_ARR:
+      memset(messageParams, 0, sizeof(messageParams));
+      numberOfParams = sizeof(float);
+      memcpy(messageParams, &tempData, sizeof(float));
+      SendMessageFromPort(port, myID, module, CODE_H08R6_RESULT_MEASUREMENT, numberOfParams);
+      break;
+    case REQ_STREAM_MEMORY_CLI:
+      memset(buffer, 0, sizeof(float));
+      memcpy(buffer, &tempData, sizeof(float));
+      sprintf( ( char * ) pcOutputString, ( char * ) pcBufferMsg, buffer, strUnit, tempData);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+      break;
+    case REQ_STREAM_MEMORY_ARR:
+      memset(buffer, 0, sizeof(float));
+      memcpy(buffer, &tempData, sizeof(float));
+      break;
+    case REQ_OUT_RANGE_CLI:
+      sprintf( ( char * ) pcOutputString, ( char * ) pcOutMaxRange);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+      break;
+    case REQ_OUT_RANGE_ARR:
+      messageParams[0] = (uint8_t)(-1);
+      SendMessageFromPort(port, myID, module, CODE_H08R6_MAX_RANGE, 1);
+      break;
+    default:
+      break;
+  }
+  free(strUnit);
+}
+
+/* --- Send result measurement
+*/
+static void CheckPressingEnterKey(void)
+{
+  int8_t *pcOutputString;
+
+  pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+  readPxMutex(PcPort, (char *)pcOutputString, sizeof(char), cmd500ms, 100);
+  if ('\r' == pcOutputString[0])
+  {
+    startMeasurementRaning = STOP_MEASUREMENT_RANGING;
   }
 }
+
+
 /* -----------------------------------------------------------------------
   |                               APIs                                    |
    -----------------------------------------------------------------------
@@ -425,86 +570,81 @@ void SendDataMeasurement(float dataDistance)
 
 /* --- Takes one sample measurement (triggers ST API Single Ranging)
 */
-float SampleToF(void)
+float Sample_ToF(uint8_t port, uint8_t module)
 {
-  VL53L0X_Error status = VL53L0X_ERROR_NONE;
   float distance = 0.0;
 
-  if(status == VL53L0X_ERROR_NONE)
+  SettingModeMeasurement(VL53L0x_MODE_SINGLE, 0, 0);
+  if (H08R6_OK == WaitResultMeasurement())
   {
-    /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
-    /* Setup in single ranging mode */
-    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+    distance = GetResultMeasurement();
   }
-
-  if (status == VL53L0X_ERROR_NONE)
-  {
-    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
-  }
-
-  if (H08R6_OK == WaitEventFinishRanging())
-  {
-    distance = GetCurrentMeasurementValue();
-  }
+  SendResultMeasurement(REQ_SAMPLE_ARR, distance, module, port, NULL);
 
   return distance;
 }
 
-/* --- steam measurement
- * Before call this function, User need to update h08r6Port/ h08r6Src/ h08r6Dst
- * which will be used to print/send data to Terminal App/Orther module
- * input parameter: period (MilliSeconds)
+/* --- Takes one sample measurement (triggers ST API Single Ranging)
 */
-float ReadToF(uint32_t period)
+float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module)
 {
-  VL53L0X_Error status = VL53L0X_ERROR_NONE;
   float distance = 0.0;
 
-  if (0 == period) /* Continuous Ranging */
+  if (0 == period)
   {
-    if(status == VL53L0X_ERROR_NONE)
-    {
-      /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
-      /* Setup in single ranging mode */
-      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
-    }
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, timeout);
   }
-  else /* Timed Ranging */
+  else
   {
-    if(status == VL53L0X_ERROR_NONE)
-    {
-      /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
-      /* Setup in single ranging mode */
-      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
-    }
-    if(status == VL53L0X_ERROR_NONE)
-    {
-      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
-    }
-  }
-
-  if (status == VL53L0X_ERROR_NONE)
-  {
-    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
   }
 
   startMeasurementRaning = START_MEASUREMENT_RANGING;
   while(START_MEASUREMENT_RANGING == startMeasurementRaning)
   {
-    if (H08R6_OK == WaitEventFinishRanging())
+    if (H08R6_OK == WaitResultMeasurement())
     {
-      distance = GetCurrentMeasurementValue();
-      SendDataMeasurement(distance);
+      distance = GetResultMeasurement();
     }
+    SendResultMeasurement(REQ_STREAM_PORT_ARR, distance, module, port, NULL);
+    CheckPressingEnterKey();
   }
   startMeasurementRaning = STOP_MEASUREMENT_RANGING;
 
   return distance;
 }
 
+/* --- Takes one sample measurement (triggers ST API Single Ranging)
+*/
+void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
+{
+  float distance = 0.0;
+
+  if (0 == period)
+  {
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, timeout);
+  }
+  else
+  {
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
+  }
+
+  startMeasurementRaning = START_MEASUREMENT_RANGING;
+  while(START_MEASUREMENT_RANGING == startMeasurementRaning)
+  {
+    if (H08R6_OK == WaitResultMeasurement())
+    {
+      distance = GetResultMeasurement();
+    }
+    SendResultMeasurement(REQ_STREAM_MEMORY_ARR, distance, 0, 0, buffer);
+    CheckPressingEnterKey();
+  }
+  startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+}
+
 /* --- Stop measurement
 */
-Module_Status StopToF(void)
+Module_Status Stop_ToF(void)
 {
   uint32_t StopCompleted = 0;
   uint32_t loop = 0;
@@ -547,21 +687,16 @@ Module_Status SetRangeUnit(uint8_t input)
 {
   Module_Status result = H08R6_OK;
 
-  if (UNIT_MEASUREMENT_MM == input)
+  switch(input)
   {
-    h08r6UnitMeasurement = UNIT_MEASUREMENT_MM;
-  }
-  else if (UNIT_MEASUREMENT_CM == input)
-  {
-    h08r6UnitMeasurement = UNIT_MEASUREMENT_CM;
-  }
-  else if (UNIT_MEASUREMENT_INCH == input)
-  {
-    h08r6UnitMeasurement = UNIT_MEASUREMENT_INCH;
-  }
-  else
-  {
-    result = H08R6_ERROR;
+    case UNIT_MEASUREMENT_MM:
+    case UNIT_MEASUREMENT_CM:
+    case UNIT_MEASUREMENT_INCH:
+      h08r6UnitMeasurement = input;
+      break;
+    default:
+      result = H08R6_ERROR;
+      break;
   }
 
   return result;
@@ -590,12 +725,12 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-  sprintf( ( char * ) pcWriteBuffer, "Command takes one sample measurement (Single Ranging)\r\n");
-  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
-
-  h08r6Port = TERMINAL_PORT;
-  distance = SampleToF();
-  SendDataMeasurement(distance);
+  SettingModeMeasurement(VL53L0x_MODE_SINGLE, 0, 0);
+  if (H08R6_OK == WaitResultMeasurement())
+  {
+    distance = GetResultMeasurement();
+  }
+  SendResultMeasurement(REQ_SAMPLE_CLI, distance, 0, PcPort, NULL);
 
   /* clean terminal output */
   memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
@@ -605,11 +740,22 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
   return pdFALSE;
 }
 
-static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
-	static int8_t *pcParameterString1;
-	portBASE_TYPE xParameterStringLength1 = 0;
+  int8_t *pcParameterString1; /* period */
+  int8_t *pcParameterString2; /* timeout */
+  int8_t *pcParameterString3; /* port or buffer */
+  int8_t *pcParameterString4; /* module */
+  portBASE_TYPE xParameterStringLength1 = 0;
+  portBASE_TYPE xParameterStringLength2 = 0;
+  portBASE_TYPE xParameterStringLength3 = 0;
+  portBASE_TYPE xParameterStringLength4 = 0;
   uint32_t period = 0;
+  uint32_t timeout = 0;
+  uint8_t port = 0;
+  uint8_t module = 0;
+  float distance = 0.0;
+  Module_Status result = H08R6_OK;
 
   /* Remove compile time warnings about unused parameters, and check the
   write buffer is not NULL.  NOTE - for simplicity, this example assumes the
@@ -617,25 +763,85 @@ static portBASE_TYPE Vl53l0xReadCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-	/* Obtain the 1st parameter string: The set parameter */
-	pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
+	/* Obtain the 1st parameter string: period */
+  pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
+  /* Obtain the 2nd parameter string: timeout */
+  pcParameterString2 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 2, &xParameterStringLength2);
+  /* Obtain the 2nd parameter string: port or distance */
+  pcParameterString3 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 3, &xParameterStringLength3);
+  /* Obtain the 3rd parameter string: module or NULL */
+  pcParameterString4 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 4, &xParameterStringLength4);
 
-  if (NULL == pcParameterString1) /* Continuous Ranging with period = 0 */
+  if (NULL != pcParameterString1)
   {
-    sprintf( ( char * ) pcWriteBuffer, "Ranging operating mode: Continuous Ranging\r\n");
-    period = 0;
-  }
-  else /* Timed Ranging */
-  {
-    sprintf( ( char * ) pcWriteBuffer, "Ranging operating mode: Timed Ranging\r\n");
     period = atoi( (char *)pcParameterString1);
   }
-  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
-  sprintf( ( char * ) pcWriteBuffer, "\r\nPress ENTER key to stop streaming data\r\n\r\n");
-  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+  else
+  {
+    result = H08R6_ERR_WrongParams;
+  }
+  if (NULL != pcParameterString2)
+  {
+    timeout = atoi( (char *)pcParameterString2);
+  }
+  else
+  {
+    result = H08R6_ERR_WrongParams;
+  }
 
-  h08r6Port = TERMINAL_PORT;
-  ReadToF(period);
+  if (0 == period)
+  {
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, timeout);
+  }
+  else
+  {
+    SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
+  }
+
+  if (NULL != pcParameterString4) /* Continuous Ranging with period = 0 */
+  {
+    /* streaming data to port */
+    port = atoi( (char *)pcParameterString3);
+    module = atoi( (char *)pcParameterString4);
+
+    startMeasurementRaning = START_MEASUREMENT_RANGING;
+    while(START_MEASUREMENT_RANGING == startMeasurementRaning)
+    {
+      if (H08R6_OK == WaitResultMeasurement())
+      {
+        distance = GetResultMeasurement();
+      }
+      SendResultMeasurement(REQ_STREAM_PORT_CLI, distance, module, port, NULL);
+      CheckPressingEnterKey();
+    }
+    startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+  }
+  else if (NULL != pcParameterString3) /* Timed Ranging */
+  {
+    /* streaming data to memory */
+    startMeasurementRaning = START_MEASUREMENT_RANGING;
+    while(START_MEASUREMENT_RANGING == startMeasurementRaning)
+    {
+      if (H08R6_OK == WaitResultMeasurement())
+      {
+        distance = GetResultMeasurement();
+      }
+      SendResultMeasurement(REQ_STREAM_MEMORY_CLI, distance, 0, 0, &h08r6BufStreamMem);
+      CheckPressingEnterKey();
+    }
+    startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+  }
+  else
+  {
+    /* error input parameter */
+    result = H08R6_ERR_WrongParams;
+  }
+
+  if (H08R6_ERR_WrongParams == result)
+  {
+    sprintf( ( char * ) pcWriteBuffer, "Error input parameter\r\n");
+    writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+  }
 
   /* clean terminal output */
   memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
@@ -656,7 +862,7 @@ static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBuf
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-  result = StopToF();
+  result = Stop_ToF();
 
   if (H08R6_OK == result)
   {
@@ -720,6 +926,44 @@ static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBu
   /* There is no more data to return after this single string, so return pdFALSE. */
   return pdFALSE;
 }
+
+static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+  uint8_t temp = 0;
+  float distance = 0;
+  static const int8_t *pcMaxDistanceMsg = ( int8_t * ) "Maximum distance (mm): %.2f\r\n";
+
+  /* Remove compile time warnings about unused parameters, and check the
+  write buffer is not NULL.  NOTE - for simplicity, this example assumes the
+  write buffer length is adequate, so does not check for buffer overflows. */
+  ( void ) xWriteBufferLen;
+  configASSERT( pcWriteBuffer );
+
+  SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, 10000);
+  startMeasurementRaning = START_MEASUREMENT_RANGING;
+  while((START_MEASUREMENT_RANGING == startMeasurementRaning) && (temp < 10))
+  {
+    if (H08R6_OK == WaitResultMeasurement())
+    {
+      distance += GetResultMeasurement();
+    }
+    CheckPressingEnterKey();
+    temp++;
+  }
+  startMeasurementRaning = STOP_MEASUREMENT_RANGING;
+
+  h08r6MaxRange = distance / (temp - 1);
+  
+  sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMaxDistanceMsg, h08r6MaxRange);
+  writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+  /* clean terminal output */
+  memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+  sprintf((char *)pcWriteBuffer, "\r\n");
+
+  /* There is no more data to return after this single string, so return pdFALSE. */
+  return pdFALSE;
+}
+
 
 
 
