@@ -105,8 +105,8 @@
 /* VL53L0X definition */
 #define VL53L0X_ADDR                  0x52
 
-#define vl53l0x_set_xshut_pin()       HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_SET) 
-#define vl53l0x_reset_xshut_pin()     HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_RESET) 
+#define vl53l0x_set_xshut_pin()       HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_SET)
+#define vl53l0x_reset_xshut_pin()     HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_RESET)
 
 /* Macros define for measurement ranging */
 #define EVENT_READY_MEASUREMENT_DATA  ( 1 << 0 ) /* New ready data measurement ranging */
@@ -120,7 +120,27 @@
 
 #define VL53L0X_DEFAULT_MAX_LOOP      2000
 
-#define TERMINAL_PORT                 0xFF
+#define REQ_SAMPLE_CLI                0x00
+#define REQ_SAMPLE_ARR                0x01
+#define REQ_STREAM_PORT_CLI           0x02
+#define REQ_STREAM_PORT_ARR           0x03
+#define REQ_STREAM_MEMORY_CLI         0x04
+#define REQ_STREAM_MEMORY_ARR         0x05
+#define REQ_OUT_RANGE_CLI             0x06
+#define REQ_OUT_RANGE_ARR             0x07
+
+#define TIMERID_TIMEOUT_MEASUREMENT   0xFF
+
+/* declare VL53L0x state */
+#define VL53L0x_STATE_FREE            0x00
+#define VL53L0x_STATE_RUNNING         0x01
+#define VL53L0x_STATE_OUT_RANGE_MAX   0x02
+#define VL53L0x_STATE_OUT_RANGE_MIN   0x03
+
+/* Macros define VL53L0CX mode running */
+#define VL53L0x_MODE_SINGLE           0x00
+#define VL53L0x_MODE_CONTINUOUS       0x01
+#define VL53L0x_MODE_CONTINUOUS_TIMED 0x02
 
 /* Module_Status Type Definition */
 typedef enum
@@ -167,24 +187,27 @@ extern void MX_USART6_UART_Init(void);
 */
 
 
-#define CODE_H08R6_GET_INFO               800
-#define CODE_H08R6_SINGLE_RANGING         801
-#define CODE_H08R6_CONTINUOUS_RANGING     802
-#define CODE_H08R6_TIMED_RANGING          803
-#define CODE_H08R6_RESULT_MEASUREMENT     804
-#define CODE_H08R6_STOP_RANGING           805
-#define CODE_H08R6_SET_UNIT               806
-#define CODE_H08R6_GET_UNIT               807
-#define CODE_H08R6_RESPOND_GET_UNIT       808
+#define CODE_H08R6_GET_INFO                 800
+#define CODE_H08R6_SAMPLE                   801
+#define CODE_H08R6_STREAM_PORT              802
+#define CODE_H08R6_STREAM_MEM               803
+#define CODE_H08R6_RESULT_MEASUREMENT       804
+#define CODE_H08R6_STOP_RANGING             805
+#define CODE_H08R6_SET_UNIT                 806
+#define CODE_H08R6_GET_UNIT                 807
+#define CODE_H08R6_RESPOND_GET_UNIT         808
+#define CODE_H08R6_MAX_RANGE                809
+#define CODE_H08R6_MIN_RANGE                810
 
 /* -----------------------------------------------------------------------
   |                               APIs                                    |
    -----------------------------------------------------------------------
 */
 
-float SampleToF(void);
-float ReadToF(uint32_t period);
-Module_Status StopToF(void);
+float Sample_ToF(uint8_t port, uint8_t module);
+float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module);
+void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
+Module_Status Stop_ToF(void);
 Module_Status SetRangeUnit(uint8_t input);
 uint8_t GetRangeUnit(void);
 
