@@ -170,7 +170,7 @@ extern UART_HandleTypeDef huart6;
 extern uint8_t h08r6UnitMeasurement;
 extern VL53L0X_Dev_t vl53l0x_HandleDevice;
 extern EventGroupHandle_t handleNewReadyData;
-extern uint8_t startMeasurementRaning;
+extern uint8_t startMeasurementRanging;
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);
