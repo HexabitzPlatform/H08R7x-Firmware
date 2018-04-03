@@ -290,16 +290,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void EXTI2_3_IRQHandler(void)
 {
   portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  VL53L0X_Error status = VL53L0X_ERROR_NONE;
 
   HAL_GPIO_EXTI_IRQHandler(_TOF_INT_PIN);
-  
-  if(VL53L0X_ERROR_NONE == status)
-  {
-    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
-  }
 
-  xEventGroupSetBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
+  xEventGroupSetBitsFromISR(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA, &xHigherPriorityTaskWoken);
 
   /* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
   switch should be performed before the interrupt exists.  That ensures the
