@@ -45,6 +45,8 @@ float h08r6MinRange = 0.0;
 float h08r6MaxRange = 8000.0;
 float h08r6BufStreamMem = 0;
 
+static float distance = 0.0;
+
 /* Private function prototypes -----------------------------------------------*/
 static void Vl53l0xInit(void);
 static VL53L0X_Error SettingModeMeasurement(uint8_t mode, uint32_t period, uint32_t timeout);
@@ -143,8 +145,8 @@ void Module_Init(void)
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
 {
   Module_Status result = H08R6_OK;
-	uint32_t period;
-	uint32_t timeout;
+  uint32_t period;
+  uint32_t timeout;
 
   switch (code)
   {
@@ -346,14 +348,14 @@ static void Vl53l0xInit(void)
 */
 static void HandleTimeout(TimerHandle_t xTimer)
 {
-	uint32_t tid = 0;
+  uint32_t tid = 0;
 
-	/* close DMA stream */
-	tid = ( uint32_t ) pvTimerGetTimerID( xTimer );
-	if (TIMERID_TIMEOUT_MEASUREMENT == tid)
-	{
+  /* close DMA stream */
+  tid = ( uint32_t ) pvTimerGetTimerID( xTimer );
+  if (TIMERID_TIMEOUT_MEASUREMENT == tid)
+  {
     startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-	}
+  }
 }
 
 /* --- Selection mode running for VL53L0CX
@@ -361,7 +363,7 @@ static void HandleTimeout(TimerHandle_t xTimer)
 static VL53L0X_Error SettingModeMeasurement(uint8_t mode, uint32_t period, uint32_t timeout)
 {
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
-	TimerHandle_t xTimer = NULL;
+  TimerHandle_t xTimer = NULL;
 
   if (VL53L0x_MODE_SINGLE == mode)
   {
@@ -412,7 +414,7 @@ static Module_Status WaitForMeasurement(void)
   Module_Status result = H08R6_ERR_Timeout;
   EventBits_t tEvBits;
 
-  tEvBits = xEventGroupWaitBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA, pdTRUE, pdFALSE, cmd50ms);
+  tEvBits = xEventGroupWaitBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA, pdTRUE, pdFALSE, (portMAX_DELAY / portTICK_RATE_MS));
   if ((tEvBits & EVENT_READY_MEASUREMENT_DATA) == EVENT_READY_MEASUREMENT_DATA)
   {
     result = H08R6_OK;
@@ -573,14 +575,15 @@ static void CheckPressingEnterKey(void)
 */
 float Sample_ToF(uint8_t port, uint8_t module)
 {
-  float distance = 0.0;
-
   SettingModeMeasurement(VL53L0x_MODE_SINGLE, 0, 0);
   if (H08R6_OK == WaitForMeasurement())
   {
     distance = GetMeasurementResult();
   }
-  SendMeasurementResult(REQ_SAMPLE_ARR, distance, module, port, NULL);
+  if (0 != port)
+  {
+    SendMeasurementResult(REQ_SAMPLE_ARR, distance, module, port, NULL);
+  }
 
   return distance;
 }
@@ -589,8 +592,6 @@ float Sample_ToF(uint8_t port, uint8_t module)
 */
 float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module)
 {
-  float distance = 0.0;
-
   if (0 == period)
   {
     SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, timeout);
@@ -606,7 +607,10 @@ float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t m
     if (H08R6_OK == WaitForMeasurement())
     {
       distance = GetMeasurementResult();
-      SendMeasurementResult(REQ_STREAM_PORT_ARR, distance, module, port, NULL);
+      if (0 != port)
+      {
+        SendMeasurementResult(REQ_STREAM_PORT_ARR, distance, module, port, NULL);
+      }
     }
     CheckPressingEnterKey();
   }
@@ -619,8 +623,6 @@ float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t m
 */
 void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
 {
-  float distance = 0.0;
-
   if (0 == period)
   {
     SettingModeMeasurement(VL53L0x_MODE_CONTINUOUS, 0, timeout);
@@ -726,8 +728,6 @@ uint8_t GetRangeUnit(void)
 
 static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
-  float distance = 0.0;
-
   /* Remove compile time warnings about unused parameters, and check the
   write buffer is not NULL.  NOTE - for simplicity, this example assumes the
   write buffer length is adequate, so does not check for buffer overflows. */
@@ -764,7 +764,6 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
   uint32_t timeout = 0;
   uint8_t port = 0;
   uint8_t module = 0;
-  float distance = 0.0;
   Module_Status result = H08R6_OK;
 
   /* Remove compile time warnings about unused parameters, and check the
@@ -773,7 +772,7 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-	/* Obtain the 1st parameter string: period */
+  /* Obtain the 1st parameter string: period */
   pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
   /* Obtain the 2nd parameter string: timeout */
   pcParameterString2 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 2, &xParameterStringLength2);
@@ -792,10 +791,14 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
   }
   if (NULL != pcParameterString2)
   {
-		if (!strncmp((const char *)pcParameterString2, "inf", 3))
-			timeout = portMAX_DELAY;
-		else
-			timeout = atoi( (char *)pcParameterString2);
+    if (!strncmp((const char *)pcParameterString2, "inf", 3))
+    {
+      timeout = portMAX_DELAY;
+    }
+    else
+    {
+      timeout = atoi( (char *)pcParameterString2);
+    }
   }
   else
   {
@@ -816,6 +819,18 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
     /* streaming data to port */
     port = atoi( (char *)pcParameterString3);
     module = atoi( (char *)pcParameterString4);
+
+    if (0 == port)
+    {
+      sprintf( ( char * ) pcWriteBuffer, "port value need to be greater then \'0\'\r\n");
+      writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+      /* clean terminal output */
+      memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+      sprintf((char *)pcWriteBuffer, "\r\n");
+
+      /* There is no more data to return after this single string, so return pdFALSE. */
+      return pdFALSE;
+    }
 
     startMeasurementRanging = START_MEASUREMENT_RANGING;
     while(START_MEASUREMENT_RANGING == startMeasurementRanging)
