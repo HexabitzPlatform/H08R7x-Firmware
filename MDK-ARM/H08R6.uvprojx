@@ -545,14 +545,14 @@
               <FilePath>..\H08R6\H08R6_uart.c</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f091xc.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\H08R6\startup_stm32f091xc.s</FilePath>
-            </File>
-            <File>
               <FileName>H08R6_i2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\H08R6\H08R6_i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup_stm32f091xc.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\H08R6\startup_stm32f091xc.s</FilePath>
             </File>
           </Files>
         </Group>

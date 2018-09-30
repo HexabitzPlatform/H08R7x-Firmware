@@ -120,12 +120,12 @@
 
 #define VL53L0X_DEFAULT_MAX_LOOP      2000
 
-#define REQ_SAMPLE_CLI                0x00
-#define REQ_SAMPLE_ARR                0x01
-#define REQ_STREAM_PORT_CLI           0x02
-#define REQ_STREAM_PORT_ARR           0x03
-#define REQ_STREAM_MEMORY_CLI         0x04
-#define REQ_STREAM_MEMORY_ARR         0x05
+#define REQ_IDLE                			0x00
+#define REQ_SAMPLE_CLI                0x01
+#define REQ_SAMPLE_ARR                0x02
+#define REQ_STREAM_PORT_CLI           0x03
+#define REQ_STREAM_PORT_ARR           0x04
+#define REQ_STREAM_MEMORY         		0x05
 #define REQ_OUT_RANGE_CLI             0x06
 #define REQ_OUT_RANGE_ARR             0x07
 
@@ -171,6 +171,7 @@ extern uint8_t h08r6UnitMeasurement;
 extern VL53L0X_Dev_t vl53l0x_HandleDevice;
 extern EventGroupHandle_t handleNewReadyData;
 extern uint8_t startMeasurementRanging;
+extern float h08r6MaxRange;
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);
@@ -205,7 +206,7 @@ extern void MX_USART6_UART_Init(void);
 */
 
 float Sample_ToF(uint8_t port, uint8_t module);
-float Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module);
+void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module);
 void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
 Module_Status Stop_ToF(void);
 Module_Status SetRangeUnit(uint8_t input);
