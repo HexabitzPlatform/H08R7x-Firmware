@@ -78,7 +78,7 @@ Check out the *FAQ* tab in module page or our general [FAQ](https://www.hexabitz
 ## Whom do I talk to? ##
 
 * [Email](info@hexabitz.com) us for any inquiries
-* Or connect with us on [Hackaday.io](https://hackaday.io/Hexabitz), [Twitter]() or [Facebook]()!
+* Or connect with us on [Hackaday.io](https://hackaday.io/Hexabitz), [Twitter](https://twitter.com/HexabitzInc) or [Facebook](https://www.facebook.com/HexabitzInc/)!
 
 ## How do I contribute? ##
 
