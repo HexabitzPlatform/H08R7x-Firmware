@@ -151,7 +151,7 @@ void Module_Init(void)
   Vl53l0xInit();
 	
 	/* Create a ToF task */
-	xTaskCreate(ToFTask, (const char *) "ToFTask", configMINIMAL_STACK_SIZE, NULL, osPriorityNormal, &ToFHandle);	
+	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal, &ToFHandle);	
 
 }
 
@@ -550,7 +550,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
     /* nothing to do here */
   }
 
-  if (tempData > h08r6MaxRange)
+  if (tempData >= h08r6MaxRange)
   {
     switch(request)
     {
@@ -558,6 +558,8 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
       case REQ_STREAM_PORT_CLI:
         request = REQ_OUT_RANGE_CLI;
         break;
+			case REQ_STREAM_MEMORY:
+				break;
       default:
         request = REQ_OUT_RANGE_ARR;
         break;
@@ -1043,8 +1045,5 @@ static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBuff
   /* There is no more data to return after this single string, so return pdFALSE. */
   return pdFALSE;
 }
-
-
-
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
