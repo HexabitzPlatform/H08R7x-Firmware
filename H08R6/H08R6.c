@@ -38,6 +38,11 @@ uint8_t h08r6UnitMeasurement = UNIT_MEASUREMENT_MM;
 EventGroupHandle_t handleNewReadyData = NULL;
 uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 
+/* Module exported parameters ------------------------------------------------*/
+float h08r6_range = 0.0f;
+module_param_t modParam = {.paramPtr=&h08r6_range, .paramFormat=FMT_FLOAT, .paramName="range"};
+
+
 /* Private variables ---------------------------------------------------------*/
 int32_t offsetCalibration = 0;
 uint8_t h08r6StatesVl53l0x = VL53L0x_STATE_FREE;
@@ -91,7 +96,8 @@ const CLI_Command_Definition_t Vl53l0xStreamCommandDefinition =
 {
   ( const int8_t * ) "stream", /* The command string to type. */
 		( const int8_t * ) "(H08R6) stream:\r\nStream measurements to the CLI with this syntax:\n\r\tstream period(in ms) timeout(in ms)\n\rOr to a specific port \
-in a specific module with this syntax:\r\n\tstream period timeout port(p1..px) module\r\n\r\n",
+in a specific module with this syntax:\r\n\tstream period timeout port(p1..px) module\n\rOr to internal buffer with this syntax:\r\n\tstream period timeout buffer. \
+Buffer here is a literal value and can be accessed in the CLI using module parameter: range\r\n\r\n",
   Vl53l0xStreamCommand, /* The function to run. */
   -1 /* Multiple parameters are expected. */
 };
@@ -180,7 +186,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
     case CODE_H08R6_STREAM_MEM:
       memcpy(&period, &messageParams[0], 4);
       memcpy(&timeout, &messageParams[4], 4);
-      Stream_ToF_Memory(period, timeout, &h08r6BufStreamMem);
+      Stream_ToF_Memory(period, timeout, &h08r6_range);
       break;
     case CODE_H08R6_RESULT_MEASUREMENT:
       break;
@@ -850,6 +856,10 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
 
 static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
+	static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to the internal buffer. Access in the CLI using module parameter: range\n\r";
+	static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
+	static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\r";
+	static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
   int8_t *pcParameterString1; /* period */
   int8_t *pcParameterString2; /* timeout */
   int8_t *pcParameterString3; /* port or buffer */
@@ -903,31 +913,38 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
     result = H08R6_ERR_WrongParams;
   }
 
-  if (NULL != pcParameterString3 && NULL != pcParameterString4) 
+  if (NULL != pcParameterString3) 
   {
+		/* streaming data to internal buffer (module parameter) */
+		if (!strncmp((const char *)pcParameterString3, "buffer", 6)) {
+			strcpy(( char * ) pcWriteBuffer, ( char * ) pcMessageBuffer);
+			Stream_ToF_Memory(period, timeout, &h08r6_range);
     /* streaming data to port */
-		if (pcParameterString3[0] == 'P') {
+		} else if (pcParameterString3[0] == 'P' && NULL != pcParameterString4) {
 			port = ( uint8_t ) atol( ( char * ) pcParameterString3+1 );
-		}
-    module = atoi( (char *)pcParameterString4);
-
-		Stream_ToF_Port(period, timeout, port, module);
+			module = atoi( (char *)pcParameterString4);
+			sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMessageModule, port, module);
+			Stream_ToF_Port(period, timeout, port, module);
+		} else {
+			result = H08R6_ERR_WrongParams;
+		}	
   }
   else 
   {
     /* Stream to the CLI */
+		strcpy(( char * ) pcWriteBuffer, ( char * ) pcMessageCLI);
     Stream_ToF_Port(period, timeout, 0, 0);
   }
 
   if (H08R6_ERR_WrongParams == result)
   {
-    sprintf( ( char * ) pcWriteBuffer, "Wrong parameter\r\n");
-    writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+    strcpy( ( char * ) pcWriteBuffer, ( char * ) pcMessageError);
+    //writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
   }
 
   /* clean terminal output */
-  memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
-  sprintf((char *)pcWriteBuffer, "\r\n");
+  //memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+  //sprintf((char *)pcWriteBuffer, "\r\n");
 
   /* There is no more data to return after this single string, so return pdFALSE. */
   return pdFALSE;
