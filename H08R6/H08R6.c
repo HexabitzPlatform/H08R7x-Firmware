@@ -49,21 +49,20 @@ uint8_t h08r6StatesVl53l0x = VL53L0x_STATE_FREE;
 float h08r6MinRange = 0.0;
 float h08r6MaxRange = 8000.0;
 float h08r6BufStreamMem = 0;
-static float distance = 0.0;
 TaskHandle_t ToFHandle = NULL;
-uint32_t tofPeriod, tofTimeout; uint8_t tofPort, tofModule, tofMode;
+uint32_t tofPeriod, tofTimeout; 
+uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
 
 /* Private function prototypes -----------------------------------------------*/
 static void Vl53l0xInit(void);
 static VL53L0X_Error SettingMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout);
-static Module_Status WaitForMeasurement(void);
 static float GetMeasurementResult(void);
 static float ConvertCurrentUnit(float distance);
 static void SendMeasurementResult(uint8_t request, float distance, uint8_t module, uint8_t port, float *buffer);
 static void CheckPressingEnterKey(void);
 void ToFTask(void * argument);
-void Stream_ToF(uint32_t period, uint32_t timeout, float* buffer, uint8_t port, uint8_t module);
+void Stream_ToF(uint32_t period, uint32_t timeout);
 
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -176,7 +175,8 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
     case CODE_H08R6_GET_INFO:
       break;
     case CODE_H08R6_SAMPLE:
-      Sample_ToF(port, dst);
+      Sample_ToF();
+			SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
       break;
     case CODE_H08R6_STREAM_PORT:
       memcpy(&period, &messageParams[0], 4);
@@ -252,19 +252,32 @@ void ToFTask(void * argument)
 {
 	while(1)
 	{
-		switch (tofMode)
-    {
-    	case REQ_STREAM_MEMORY :
-				Stream_ToF(tofPeriod, tofTimeout, tofBuffer, 0, 0);
-    		break;
-    	case REQ_STREAM_PORT_ARR :
-				Stream_ToF(tofPeriod, tofTimeout, NULL, tofPort, tofModule);
-    		break;
-    	default:
-    		break;
-    }
-		
-		tofMode = REQ_IDLE;
+		if (tofState == REQ_MEASUREMENT_READY || tofState == REQ_TIMEOUT)
+		{
+			if (tofState == REQ_MEASUREMENT_READY)
+				h08r6_range = GetMeasurementResult();
+			
+			switch (tofMode)
+			{				
+				case REQ_STREAM_MEMORY :
+					SendMeasurementResult(REQ_STREAM_MEMORY, h08r6_range, 0, 0, tofBuffer);		
+					break;
+				
+				case REQ_STREAM_PORT_CLI :
+					SendMeasurementResult(REQ_STREAM_PORT_CLI, h08r6_range, 0, PcPort, NULL);		
+					break;
+
+				case REQ_STREAM_PORT_ARR :
+					SendMeasurementResult(REQ_STREAM_PORT_ARR, h08r6_range, tofModule, tofPort, NULL);		
+					break;
+				
+				default:
+					break;
+			}
+			
+			tofState = REQ_IDLE;
+		}
+
 		taskYIELD();
 	}
 }
@@ -404,12 +417,13 @@ static void HandleTimeout(TimerHandle_t xTimer)
   if (TIMERID_TIMEOUT_MEASUREMENT == tid)
   {
     startMeasurementRanging = STOP_MEASUREMENT_RANGING;
+		tofState = REQ_TIMEOUT;
   }
 }
 
 /*-----------------------------------------------------------*/
 
-/* --- Selection mode running for VL53L0CX
+/* --- Select run mode for VL53L0CX
 */
 static VL53L0X_Error SettingMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout)
 {
@@ -456,24 +470,6 @@ static VL53L0X_Error SettingMeasurementMode(uint8_t mode, uint32_t period, uint3
   }
 
   return status;
-}
-
-/*-----------------------------------------------------------*/
-
-/* --- Wait event for finishing measurement ranging
-*/
-static Module_Status WaitForMeasurement(void)
-{
-  Module_Status result = H08R6_ERR_Timeout;
-  EventBits_t tEvBits;
-
-  tEvBits = xEventGroupWaitBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA, pdTRUE, pdFALSE, (portMAX_DELAY / portTICK_RATE_MS));
-  if ((tEvBits & EVENT_READY_MEASUREMENT_DATA) == EVENT_READY_MEASUREMENT_DATA)
-  {
-    result = H08R6_OK;
-    xEventGroupClearBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
-  }
-  return result;
 }
 
 /*-----------------------------------------------------------*/
@@ -529,7 +525,9 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
   uint16_t numberOfParams;
   int8_t *pcOutputString;
   static const int8_t *pcDistanceMsg = ( int8_t * ) "Distance (%s): %.2f\r\n";
+	static const int8_t *pcDistanceVerboseMsg = ( int8_t * ) "%.2f\r\n";
   static const int8_t *pcOutMaxRange = ( int8_t * ) "MAX\r\n";
+	static const int8_t *pcOutTimeout = ( int8_t * ) "TIMEOUT\r\n";
   float tempData;
   char *strUnit;
 
@@ -556,6 +554,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
     /* nothing to do here */
   }
 
+	// If the value is out of range
   if (tempData >= h08r6MaxRange)
   {
     switch(request)
@@ -566,12 +565,41 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
         break;
 			case REQ_STREAM_MEMORY:
 				break;
-      default:
+      case REQ_SAMPLE_ARR:
+      case REQ_STREAM_PORT_ARR:
         request = REQ_OUT_RANGE_ARR;
+        break;
+      default:        
         break;
     }
   }
 
+	// If measurement timeout occured 
+	if (tofState == REQ_TIMEOUT)
+	{
+    switch(request)
+    {
+      case REQ_SAMPLE_CLI:
+      case REQ_STREAM_PORT_CLI:
+        request = REQ_TIMEOUT_CLI;
+        break;
+			case REQ_SAMPLE_VERBOSE_CLI:
+			case REQ_STREAM_VERBOSE_PORT_CLI:
+				request = REQ_TIMEOUT_VERBOSE_CLI;
+				break;
+			case REQ_STREAM_MEMORY:
+				request = REQ_TIMEOUT_MEMORY;
+				break;
+      case REQ_SAMPLE_ARR:
+      case REQ_STREAM_PORT_ARR:
+        request = REQ_TIMEOUT_ARR;
+        break;
+      default:        
+        break;
+    }				
+	}
+	
+	// Send the value to appropriate outlet
   switch(request)
   {
     case REQ_SAMPLE_CLI:
@@ -580,6 +608,14 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
       writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
 			CheckPressingEnterKey();
       break;
+
+    case REQ_SAMPLE_VERBOSE_CLI:
+    case REQ_STREAM_VERBOSE_PORT_CLI:
+      sprintf( ( char * ) pcOutputString, ( char * ) pcDistanceVerboseMsg, tempData);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+			CheckPressingEnterKey();
+      break;
+		
     case REQ_SAMPLE_ARR:
     case REQ_STREAM_PORT_ARR:
       memset(messageParams, 0, sizeof(messageParams));
@@ -587,19 +623,42 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
       memcpy(messageParams, &tempData, sizeof(float));
       SendMessageFromPort(port, myID, module, CODE_H08R6_RESULT_MEASUREMENT, numberOfParams);
       break;
+		
     case REQ_STREAM_MEMORY:
       memset(buffer, 0, sizeof(float));
       memcpy(buffer, &tempData, sizeof(float));
       break;
+		
     case REQ_OUT_RANGE_CLI:
       strcpy( ( char * ) pcOutputString, ( char * ) pcOutMaxRange);
       writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
 			CheckPressingEnterKey();
       break;
+		
     case REQ_OUT_RANGE_ARR:
-      messageParams[0] = (uint8_t)(-1);
-      SendMessageFromPort(port, myID, module, CODE_H08R6_MAX_RANGE, 1);
+      SendMessageFromPort(port, myID, module, CODE_H08R6_MAX_RANGE, 0);
       break;
+
+    case REQ_TIMEOUT_CLI:
+      strcpy( ( char * ) pcOutputString, ( char * ) pcOutTimeout);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+			CheckPressingEnterKey();
+      break;
+
+    case REQ_TIMEOUT_VERBOSE_CLI:
+      sprintf( ( char * ) pcOutputString, ( char * ) pcDistanceVerboseMsg, 0);
+      writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+			CheckPressingEnterKey();
+      break;
+		
+		case REQ_TIMEOUT_MEMORY:
+      memset(buffer, 0, sizeof(float));
+      break;
+
+    case REQ_TIMEOUT_ARR:
+      SendMessageFromPort(port, myID, module, CODE_H08R6_TIMEOUT, 0);
+      break;
+		
     default:
       break;
   }
@@ -624,59 +683,28 @@ static void CheckPressingEnterKey(void)
 
 /*-----------------------------------------------------------*/
 
-/* --- Stream measurements continuously to a memory location or to a given port in a module
-*/
-void Stream_ToF(uint32_t period, uint32_t timeout, float* buffer, uint8_t port, uint8_t module)
-{
-  if (0 == period)
-  {
-    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
-  }
-  else
-  {
-    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
-  }
-
-  startMeasurementRanging = START_MEASUREMENT_RANGING;
-  while(START_MEASUREMENT_RANGING == startMeasurementRanging)
-  {
-    if (H08R6_OK == WaitForMeasurement())
-    {
-      distance = GetMeasurementResult();
-			if (NULL == buffer)
-      {
-        SendMeasurementResult(REQ_STREAM_PORT_ARR, distance, module, port, NULL);
-      }
-			else
-			{
-				SendMeasurementResult(REQ_STREAM_MEMORY, distance, module, port, buffer);
-			}
-    }
-  }
-  startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-}
-
-
 /* -----------------------------------------------------------------------
   |                               APIs                                    |
    -----------------------------------------------------------------------
 */
 
-/* --- Takes one sample measurement (triggers ST API Single Ranging)
+/* --- Take one measurement sample - polling until timeout (triggers ST API Single Ranging)
 */
-float Sample_ToF(uint8_t port, uint8_t module)
+float Sample_ToF(void)
 {
   SettingMeasurementMode(VL53L0x_MODE_SINGLE, 0, 0);
-  if (H08R6_OK == WaitForMeasurement())
-  {
-    distance = GetMeasurementResult();
-  }
-  if (0 != port)
-  {
-    SendMeasurementResult(REQ_SAMPLE_ARR, distance, module, port, NULL);
-  }
-
-  return distance;
+	
+  while (tofState != REQ_MEASUREMENT_READY || tofState != REQ_TIMEOUT) {
+		taskYIELD();
+	}
+	
+	if (tofState == REQ_TIMEOUT) {
+		return 0;
+	} else {
+		h08r6_range = GetMeasurementResult();
+		tofState = REQ_IDLE;
+		return h08r6_range;
+	}
 }
 
 /*-----------------------------------------------------------*/
@@ -694,6 +722,17 @@ void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t mo
 	tofTimeout = timeout;
 	tofPort = port;
 	tofModule = module;
+	
+  if (0 == period)
+  {
+    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
+  }
+  else
+  {
+    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
+  }
+
+  startMeasurementRanging = START_MEASUREMENT_RANGING;
 }
 
 /*-----------------------------------------------------------*/
@@ -706,6 +745,17 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
 	tofPeriod = period;
 	tofTimeout = timeout;
 	tofBuffer = buffer;
+	
+  if (0 == period)
+  {
+    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
+  }
+  else
+  {
+    SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS_TIMED, period, timeout);
+  }
+
+  startMeasurementRanging = START_MEASUREMENT_RANGING;
 }
 
 /*-----------------------------------------------------------*/
@@ -753,7 +803,6 @@ Module_Status Stop_ToF(void)
       }
     }
   }
-  xEventGroupClearBits(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA);
 
   return result;
 }
@@ -808,19 +857,7 @@ portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const 
 
 	/* Respond to the command */
 	writePxMutex(PcPort, ( char * ) pcMessage, strlen(( char * ) pcMessage), 10, 10);
-	SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS_TIMED, 500, 10000);
-	startMeasurementRanging = START_MEASUREMENT_RANGING;
-	while(START_MEASUREMENT_RANGING == startMeasurementRanging)
-	{
-		if (H08R6_OK == WaitForMeasurement())
-		{
-			distance = GetMeasurementResult();
-			SendMeasurementResult(REQ_STREAM_PORT_CLI, distance, 0, 0, NULL);
-		}
-		CheckPressingEnterKey();
-	}
-	startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-	
+	Stream_ToF_Port(500, 10000, PcPort, 0);
 	strcpy( ( char * ) pcWriteBuffer, "\r\n");
 	
 	/* There is no more data to return after this single string, so return
@@ -838,13 +875,9 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
   ( void ) pcCommandString;
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
-
-  SettingMeasurementMode(VL53L0x_MODE_SINGLE, 0, 0);
-  if (H08R6_OK == WaitForMeasurement())
-  {
-    distance = GetMeasurementResult();
-  }
-  SendMeasurementResult(REQ_SAMPLE_CLI, distance, 0, PcPort, NULL);
+	
+	Sample_ToF();
+  SendMeasurementResult(REQ_SAMPLE_CLI, h08r6_range, 0, PcPort, NULL);
 
   /* clean terminal output */
   memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
@@ -1029,7 +1062,6 @@ static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBu
 static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
   uint8_t temp = 0;
-  float distance = 0;
   static const int8_t *pcMaxDistanceMsg = ( int8_t * ) "Maximum distance (mm): %.2f\r\n";
 
   /* Remove compile time warnings about unused parameters, and check the
@@ -1038,20 +1070,12 @@ static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBuff
   ( void ) xWriteBufferLen;
   configASSERT( pcWriteBuffer );
 
-  SettingMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, 10000);
-  startMeasurementRanging = START_MEASUREMENT_RANGING;
-  while((START_MEASUREMENT_RANGING == startMeasurementRanging) && (temp < 10))
+  while(temp < 10)
   {
-    if (H08R6_OK == WaitForMeasurement())
-    {
-      distance += GetMeasurementResult();
-    }
-    CheckPressingEnterKey();
+    h08r6_range += Sample_ToF();;
     temp++;
   }
-  startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-
-  h08r6MaxRange = distance / (temp - 1);
+  h08r6MaxRange = h08r6_range / (temp - 1);
 
   sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMaxDistanceMsg, h08r6MaxRange);
   writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
