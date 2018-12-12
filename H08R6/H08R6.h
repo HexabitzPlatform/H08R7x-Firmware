@@ -121,21 +121,22 @@
 #define VL53L0X_DEFAULT_MAX_LOOP      2000
 
 #define REQ_IDLE                			0
-#define REQ_SAMPLE_CLI                1
-#define REQ_SAMPLE_VERBOSE_CLI				2
-#define REQ_SAMPLE_ARR                3
-#define REQ_STREAM_PORT_CLI           4
-#define REQ_STREAM_VERBOSE_PORT_CLI   5
-#define REQ_STREAM_PORT_ARR           6
-#define REQ_STREAM_MEMORY         		7
-#define REQ_OUT_RANGE_CLI             8
-#define REQ_OUT_RANGE_ARR             9
-#define REQ_TIMEOUT             			10
-#define REQ_MEASUREMENT_READY         11
-#define REQ_TIMEOUT_CLI								12
-#define REQ_TIMEOUT_VERBOSE_CLI				13
-#define REQ_TIMEOUT_MEMORY						14
-#define REQ_TIMEOUT_ARR								15
+#define REQ_SAMPLE		                1
+#define REQ_SAMPLE_CLI                2
+#define REQ_SAMPLE_VERBOSE_CLI				3
+#define REQ_SAMPLE_ARR                4
+#define REQ_STREAM_PORT_CLI           5
+#define REQ_STREAM_VERBOSE_PORT_CLI   6
+#define REQ_STREAM_PORT_ARR           7
+#define REQ_STREAM_MEMORY         		8
+#define REQ_OUT_RANGE_CLI             9
+#define REQ_OUT_RANGE_ARR             10
+#define REQ_TIMEOUT             			11
+#define REQ_MEASUREMENT_READY         12
+#define REQ_TIMEOUT_CLI								13
+#define REQ_TIMEOUT_VERBOSE_CLI				14
+#define REQ_TIMEOUT_MEMORY						15
+#define REQ_TIMEOUT_ARR								16
 
 #define TIMERID_TIMEOUT_MEASUREMENT   0xFF
 
