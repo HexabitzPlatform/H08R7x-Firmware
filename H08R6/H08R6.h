@@ -102,6 +102,8 @@
 #define _TOF_XSHUT_PIN                GPIO_PIN_12
 #define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
 
+#define NUM_MODULE_PARAMS		1
+
 /* VL53L0X definition */
 #define VL53L0X_ADDR                  0x52
 
@@ -182,6 +184,7 @@ extern EventGroupHandle_t handleNewReadyData;
 extern uint8_t startMeasurementRanging;
 extern float h08r6MaxRange;
 extern uint8_t tofState;
+
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);

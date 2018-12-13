@@ -40,7 +40,7 @@ uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 
 /* Module exported parameters ------------------------------------------------*/
 float h08r6_range = 0.0f;
-module_param_t modParam = {.paramPtr=&h08r6_range, .paramFormat=FMT_FLOAT, .paramName="range"};
+module_param_t modParam[NUM_MODULE_PARAMS] = {{.paramPtr=&h08r6_range, .paramFormat=FMT_FLOAT, .paramName="range"}};
 
 
 /* Private variables ---------------------------------------------------------*/
