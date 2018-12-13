@@ -217,7 +217,7 @@ extern void MX_USART6_UART_Init(void);
 */
 
 float Sample_ToF(void);
-void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module);
+void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
 void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
 Module_Status Stop_ToF(void);
 Module_Status SetRangeUnit(uint8_t input);
