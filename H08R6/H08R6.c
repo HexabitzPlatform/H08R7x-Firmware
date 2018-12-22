@@ -885,10 +885,15 @@ portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const 
 	configASSERT( pcWriteBuffer );
 
 	/* Respond to the command */
-	writePxMutex(PcPort, ( char * ) pcMessage, strlen(( char * ) pcMessage), 10, 10);
-	Stream_ToF_Port(500, 10000, PcPort, 0, false);
-	strcpy( ( char * ) pcWriteBuffer, "\r\n");
+	strcpy(( char * ) pcWriteBuffer, ( char * ) pcMessage);
+	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
+	Stream_ToF_Port(500, 10000, 0, 0, false);
 	
+	/* Wait till the end of stream */
+	while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){};
+	/* clean terminal output */
+	memset((char *) pcWriteBuffer, 0, strlen((char *)pcWriteBuffer));
+			
 	/* There is no more data to return after this single string, so return
 	pdFALSE. */
 	return pdFALSE;
