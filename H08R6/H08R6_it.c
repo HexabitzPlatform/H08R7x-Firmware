@@ -32,7 +32,7 @@
   */
 
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.5 - Copyright (C) 2017-2018 Hexabitz
+		MODIFIED by Hexabitz for BitzOS (BOS) V0.1.6 - Copyright (C) 2017-2019 Hexabitz
     All rights reserved
 */
 
@@ -293,7 +293,8 @@ void EXTI2_3_IRQHandler(void)
 
   HAL_GPIO_EXTI_IRQHandler(_TOF_INT_PIN);
 
-  xEventGroupSetBitsFromISR(handleNewReadyData, EVENT_READY_MEASUREMENT_DATA, &xHigherPriorityTaskWoken);
+	// Set a data ready flag
+  tofState = REQ_MEASUREMENT_READY;
 
   /* If lHigherPriorityTaskWoken is now equal to pdTRUE, then a context
   switch should be performed before the interrupt exists.  That ensures the
