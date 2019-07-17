@@ -195,24 +195,6 @@ extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 
 
-/* -----------------------------------------------------------------------
-  |                           Message Codes                               |
-   -----------------------------------------------------------------------
-*/
-
-
-#define CODE_H08R6_GET_INFO                 800
-#define CODE_H08R6_SAMPLE                   801
-#define CODE_H08R6_STREAM_PORT              802
-#define CODE_H08R6_STREAM_MEM               803
-#define CODE_H08R6_RESULT_MEASUREMENT       804
-#define CODE_H08R6_STOP_RANGING             805
-#define CODE_H08R6_SET_UNIT                 806
-#define CODE_H08R6_GET_UNIT                 807
-#define CODE_H08R6_RESPOND_GET_UNIT         808
-#define CODE_H08R6_MAX_RANGE                809
-#define CODE_H08R6_MIN_RANGE                810
-#define CODE_H08R6_TIMEOUT                	811
 
 /* -----------------------------------------------------------------------
   |                               APIs                                    |
