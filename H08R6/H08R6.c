@@ -3,15 +3,16 @@
     All rights reserved
 
     File Name     : H08R6.c
-    Description   : Source code for module H08R6.
+    Description   : Source code for module P08R6 / H08R6.
                     IR Time-if-Flight (ToF) Sensor (ST VL53L0CX)
 
     Required MCU resources :
 
-      >> USARTs 1,2,3,4,5,6 for module ports.
+      >> USARTs 1,2,3,4,5,6 for module ports (H08R6).
+			>> USARTs 1,2,3,5,6 for module ports (P08R6).
       >> I2C2 for the ToF sensor.
       >> GPIOB 2 for ToF interrupt (INT).
-      >> GPIOB 12 for ToF shutdown (XSHUT).
+      >> GPIOB 12 for ToF shutdown (XSHUT) in (H08R6) and GPIOB 0 in (P08R6).
 
 */
 
@@ -23,7 +24,9 @@
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-UART_HandleTypeDef huart4;
+#ifdef H08R6
+	UART_HandleTypeDef huart4;
+#endif
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
 
@@ -152,7 +155,9 @@ void Module_Init(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
+#ifdef H08R6
   MX_USART4_UART_Init();
+#endif
   MX_USART5_UART_Init();
   MX_USART6_UART_Init();
 

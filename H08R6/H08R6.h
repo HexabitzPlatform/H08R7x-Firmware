@@ -3,7 +3,7 @@
     All rights reserved
 
     File Name     : H08R6.h
-    Description   : Header file for module H08R6.
+    Description   : Header file for module P08R6 / H08R6.
                     IR Time-if-Flight (ToF) Sensor (ST VL53L0CX)
 */
 
@@ -21,11 +21,20 @@
 
 
 /* Exported definitions -------------------------------------------------------*/
-
-#define modulePN    _H08R6
+#ifdef P08R6
+	#define modulePN    _P08R6
+#endif
+#ifdef H08R6
+	#define modulePN    _H08R6
+#endif
 
 /* Port-related definitions */
-#define NumOfPorts    6
+#ifdef P08R6
+	#define NumOfPorts    5
+#endif
+#ifdef H08R6
+	#define NumOfPorts    6
+#endif
 #define P_PROG        P2            /* ST factory bootloader UART */
 
 /* Define available ports */
@@ -34,23 +43,36 @@
 #define _P3
 #define _P4
 #define _P5
-#define _P6
+#ifdef H08R6
+	#define _P6
+#endif
 
 /* Define available USARTs */
 #define _Usart1 1
 #define _Usart2 1
 #define _Usart3 1
-#define _Usart4 1
+#ifdef H08R6
+	#define _Usart4 1
+#endif
 #define _Usart5 1
 #define _Usart6 1
 
 /* Port-UART mapping */
-#define P1uart &huart4
-#define P2uart &huart2
-#define P3uart &huart6
-#define P4uart &huart3
-#define P5uart &huart1
-#define P6uart &huart5
+#ifdef P08R6
+	#define P1uart &huart5
+	#define P2uart &huart2
+	#define P3uart &huart6
+	#define P4uart &huart3
+	#define P5uart &huart1
+#endif
+#ifdef H08R6
+	#define P1uart &huart4
+	#define P2uart &huart2
+	#define P3uart &huart6
+	#define P4uart &huart3
+	#define P5uart &huart1
+	#define P6uart &huart5
+#endif
 
 /* Port Definitions */
 #define USART1_TX_PIN   GPIO_PIN_9
@@ -99,9 +121,16 @@
 #define _TOF_INT_PORT                 GPIOB
 #define _TOF_INT_PIN                  GPIO_PIN_2
 #define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
-#define _TOF_XSHUT_PORT               GPIOB
-#define _TOF_XSHUT_PIN                GPIO_PIN_12
-#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
+#ifdef P08R6
+	#define _TOF_XSHUT_PORT               GPIOB
+	#define _TOF_XSHUT_PIN                GPIO_PIN_0
+	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
+#endif
+#ifdef H08R6
+	#define _TOF_XSHUT_PORT               GPIOB
+	#define _TOF_XSHUT_PIN                GPIO_PIN_12
+	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
+#endif
 
 #define NUM_MODULE_PARAMS		1
 
@@ -171,11 +200,14 @@ typedef enum
 #define _IND_LED_PIN    GPIO_PIN_11
 
 
+
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
-extern UART_HandleTypeDef huart4;
+#ifdef H08R6
+	extern UART_HandleTypeDef huart4;
+#endif
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 
@@ -191,7 +223,9 @@ extern uint8_t tofState;
 extern void MX_USART1_UART_Init(void);
 extern void MX_USART2_UART_Init(void);
 extern void MX_USART3_UART_Init(void);
-extern void MX_USART4_UART_Init(void);
+#ifdef H08R6
+	extern void MX_USART4_UART_Init(void);
+#endif
 extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 
