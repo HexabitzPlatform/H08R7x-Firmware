@@ -171,7 +171,7 @@ void Module_Init(void)
   Vl53l0xInit();
 	
 	/* Create a ToF task */
-	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal, &ToFHandle);	
+	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal-osPriorityIdle, &ToFHandle);	
 
 }
 
