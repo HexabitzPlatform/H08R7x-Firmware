@@ -80,7 +80,7 @@ static portBASE_TYPE rangeModParamCommand( int8_t *pcWriteBuffer, size_t xWriteB
 const CLI_Command_Definition_t demoCommandDefinition =
 {
 	( const int8_t * ) "demo", /* The command string to type. */
-	( const int8_t * ) "(H08R6) demo:\r\n Run a demo program to test module functionality\r\n\r\n",
+	( const int8_t * ) "demo:\r\n Run a demo program to test module functionality\r\n\r\n",
 	demoCommand, /* The function to run. */
 	0 /* No parameters are expected. */
 };
@@ -89,7 +89,7 @@ const CLI_Command_Definition_t demoCommandDefinition =
 const CLI_Command_Definition_t Vl53l0xSampleCommandDefinition =
 {
   ( const int8_t * ) "sample", /* The command string to type. */
-  ( const int8_t * ) "(H08R6) sample:\r\nTake one sample measurement\r\n\r\n",
+  ( const int8_t * ) "sample:\r\nTake one sample measurement\r\n\r\n",
   Vl53l0xSampleCommand, /* The function to run. */
   0 /* No parameters are expected. */
 };
@@ -98,7 +98,7 @@ const CLI_Command_Definition_t Vl53l0xSampleCommandDefinition =
 const CLI_Command_Definition_t Vl53l0xStreamCommandDefinition =
 {
   ( const int8_t * ) "stream", /* The command string to type. */
-		( const int8_t * ) "(H08R6) stream:\r\nStream measurements to the CLI with this syntax:\n\r\tstream period(in ms) timeout(in ms)\n\r\tstream period timeout -v\t(for verbose output)\
+		( const int8_t * ) "stream:\r\nStream measurements to the CLI with this syntax:\n\r\tstream period(in ms) timeout(in ms)\n\r\tstream period timeout -v\t(for verbose output)\
 \n\rOr to a specific port in a specific module with this syntax:\r\n\tstream period timeout port(p1..px) module\n\rOr to internal buffer with this syntax:\r\n\tstream period timeout \
 buffer.\n\rBuffer here is a literal value and can be accessed in the CLI using module parameter: range\r\n\r\n",
   Vl53l0xStreamCommand, /* The function to run. */
@@ -109,7 +109,7 @@ buffer.\n\rBuffer here is a literal value and can be accessed in the CLI using m
 const CLI_Command_Definition_t Vl53l0xStopCommandDefinition =
 {
   ( const int8_t * ) "stop", /* The command string to type. */
-  ( const int8_t * ) "(H08R6) stop:\r\nStop continuous or timed ranging\r\n\r\n",
+  ( const int8_t * ) "stop:\r\nStop continuous or timed ranging\r\n\r\n",
   Vl53l0xStopCommand, /* The function to run. */
   0 /* No parameters are expected. */
 };
@@ -118,7 +118,7 @@ const CLI_Command_Definition_t Vl53l0xStopCommandDefinition =
 const CLI_Command_Definition_t Vl53l0xUnitsCommandDefinition =
 {
   ( const int8_t * ) "units", /* The command string to type. */
-  ( const int8_t * ) "(H08R6) units:\r\nSetup the range output unit: mm, cm, inch\r\n\r\n",
+  ( const int8_t * ) "units:\r\nSetup the range output unit: mm, cm, inch\r\n\r\n",
   Vl53l0xUnitsCommand, /* The function to run. */
   1 /* one parameter is expected. */
 };
@@ -127,7 +127,7 @@ const CLI_Command_Definition_t Vl53l0xUnitsCommandDefinition =
 const CLI_Command_Definition_t Vl53l0xMaxCommandDefinition =
 {
   ( const int8_t * ) "max", /* The command string to type. */
-  ( const int8_t * ) "(H08R6) max:\r\nCalibrate maximum distance\r\n\r\n",
+  ( const int8_t * ) "max:\r\nCalibrate maximum distance\r\n\r\n",
   Vl53l0xMaxCommand, /* The function to run. */
   0 /* one parameter is expected. */
 };
@@ -136,7 +136,7 @@ const CLI_Command_Definition_t Vl53l0xMaxCommandDefinition =
 const CLI_Command_Definition_t rangeModParamCommandDefinition =
 {
   ( const int8_t * ) "range", /* The command string to type. */
-		( const int8_t * ) "(H08R6) range:\r\nDisplay the value of module parameter: range\r\n\r\n",
+		( const int8_t * ) "range:\r\nDisplay the value of module parameter: range\r\n\r\n",
   rangeModParamCommand, /* The function to run. */
   0 /* one parameter is expected. */
 };
