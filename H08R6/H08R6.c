@@ -179,7 +179,7 @@ void Module_Init(void)
 
 /* --- H08R6 message processing task.
 */
-Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst)
+Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
 {
   Module_Status result = H08R6_OK;
   uint32_t period;
@@ -194,13 +194,13 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
       break;
     case CODE_H08R6_STREAM_PORT:
-      memcpy(&period, &messageParams[0], 4);
-      memcpy(&timeout, &messageParams[4], 4);
+			period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
+			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
       Stream_ToF_Port(period, timeout, port, dst, false);
       break;
     case CODE_H08R6_STREAM_MEM:
-      memcpy(&period, &messageParams[0], 4);
-      memcpy(&timeout, &messageParams[4], 4);
+      period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
+			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
       Stream_ToF_Memory(period, timeout, &h08r6_range);
       break;
     case CODE_H08R6_RESULT_MEASUREMENT:
@@ -209,7 +209,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
       Stop_ToF();
       break;
     case CODE_H08R6_SET_UNIT:
-      SetRangeUnit(cMessage[port-1][4]);
+      SetRangeUnit(cMessage[port-1][shift]);
       break;
     case CODE_H08R6_GET_UNIT:
       messageParams[0] = GetRangeUnit();
