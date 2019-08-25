@@ -56,6 +56,7 @@ TaskHandle_t ToFHandle = NULL;
 uint32_t tofPeriod, tofTimeout, t0; 
 uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
+TimerHandle_t xTimerTof = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
 static void Vl53l0xInit(void);
@@ -436,7 +437,7 @@ static void HandleTimeout(TimerHandle_t xTimer)
   uint32_t tid = 0;
 
   /* close DMA stream */
-  tid = ( uint32_t ) pvTimerGetTimerID( xTimer );
+  tid = ( uint32_t ) pvTimerGetTimerID( xTimerTof );
   if (TIMERID_TIMEOUT_MEASUREMENT == tid)
   {
     startMeasurementRanging = STOP_MEASUREMENT_RANGING;
@@ -451,7 +452,6 @@ static void HandleTimeout(TimerHandle_t xTimer)
 static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout)
 {
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
-  TimerHandle_t xTimer = NULL;
 
   if (VL53L0x_MODE_SINGLE == mode)
   {
@@ -481,9 +481,9 @@ static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t 
   {
     /* start software timer which will create event timeout */
     /* Create a timeout timer */
-    xTimer = xTimerCreate( "Timeout Measurement", pdMS_TO_TICKS(timeout), pdFALSE, ( void * ) TIMERID_TIMEOUT_MEASUREMENT, HandleTimeout );
+    xTimerTof = xTimerCreate( "Timeout Measurement", pdMS_TO_TICKS(timeout), pdFALSE, ( void * ) TIMERID_TIMEOUT_MEASUREMENT, HandleTimeout );
     /* Start the timeout timer */
-    xTimerStart( xTimer, portMAX_DELAY );
+    xTimerStart( xTimerTof, portMAX_DELAY );
   }
 
   /* start measurement */
@@ -699,16 +699,18 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 /* --- Check for CLI stop key
 */
 static void CheckForEnterKey(void)
-{
-  int8_t *pcOutputString;
-
-  pcOutputString = FreeRTOS_CLIGetOutputBuffer();
-  readPxMutex(PcPort, (char *)pcOutputString, sizeof(char), cmd500ms, 100);
-  if ('\r' == pcOutputString[0])
-  {
-    startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-		tofMode = REQ_IDLE;		// Stop the streaming task
-  }
+{	
+	// Look for ENTER key to stop the stream
+	for (uint8_t chr=0 ; chr<MSG_RX_BUF_SIZE ; chr++)
+	{
+		if (UARTRxBuf[PcPort-1][chr] == '\r') {
+			UARTRxBuf[PcPort-1][chr] = 0;
+			startMeasurementRanging = STOP_MEASUREMENT_RANGING;
+			tofMode = REQ_IDLE;		// Stop the streaming task
+			xTimerStop( xTimerTof, 0 ); // Stop any running timeout timer
+			break;
+		}
+	}
 }
 
 /*-----------------------------------------------------------*/
@@ -895,7 +897,7 @@ portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const 
 	Stream_ToF_Port(500, 10000, 0, 0, false);
 	
 	/* Wait till the end of stream */
-	while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){};
+	while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){	Delay_ms(1); };
 	/* clean terminal output */
 	memset((char *) pcWriteBuffer, 0, strlen((char *)pcWriteBuffer));
 			
@@ -1015,7 +1017,7 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
 			Stream_ToF_Port(period, timeout, 0, 0, false);
 		}		
 		/* Wait till the end of stream */
-		while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){};
+		while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){	Delay_ms(1); };
 		/* clean terminal output */
 		memset((char *) pcWriteBuffer, 0, strlen((char *)pcWriteBuffer));
 	}		
