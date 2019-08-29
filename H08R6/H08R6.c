@@ -725,7 +725,7 @@ static void CheckForEnterKey(void)
 float Sample_ToF(void)
 {
 	tofMode = REQ_SAMPLE;
-  SetMeasurementMode(VL53L0x_MODE_SINGLE, 0, 10);
+  SetMeasurementMode(VL53L0x_MODE_SINGLE, 0, 0);
 	startMeasurementRanging = START_MEASUREMENT_RANGING;
 	
 	if (tofState == REQ_TIMEOUT) {
