@@ -650,7 +650,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 						temp[1] = *((__IO uint8_t *)(&tempData)+2);
 						temp[2] = *((__IO uint8_t *)(&tempData)+1);
 						temp[3] = *((__IO uint8_t *)(&tempData)+0);
-						writePxMutex(port, (char *)&tempData, 4*sizeof(uint8_t), 10, 10);
+						writePxMutex(port, (char *)&temp, 4*sizeof(uint8_t), 10, 10);
 				}
 			else{
 						messageParams[0]=port;
