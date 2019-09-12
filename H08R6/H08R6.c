@@ -552,6 +552,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
   static const int8_t *pcOutMaxRange = ( int8_t * ) "MAX\r\n";
 	static const int8_t *pcOutTimeout = ( int8_t * ) "TIMEOUT\r\n";
   float tempData;
+	static uint8_t temp[4];
   char *strUnit;
 
   /* Get CLI output buffer */
@@ -644,10 +645,21 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 		
     case REQ_SAMPLE_ARR:
     case REQ_STREAM_PORT_ARR:
-      memset(messageParams, 0, sizeof(messageParams));
-      numberOfParams = sizeof(float);
-      memcpy(messageParams, &tempData, sizeof(float));
-      SendMessageFromPort(port, myID, module, CODE_H08R6_RESULT_MEASUREMENT, numberOfParams);
+			if (module==myID){
+						temp[0] = *((__IO uint8_t *)(&tempData)+3);
+						temp[1] = *((__IO uint8_t *)(&tempData)+2);
+						temp[2] = *((__IO uint8_t *)(&tempData)+1);
+						temp[3] = *((__IO uint8_t *)(&tempData)+0);
+						writePxMutex(port, (char *)&tempData, 4*sizeof(uint8_t), 10, 10);
+				}
+			else{
+						messageParams[0]=port;
+					  messageParams[1] = *((__IO uint8_t *)(&tempData)+3);
+						messageParams[2] = *((__IO uint8_t *)(&tempData)+2);
+						messageParams[3] = *((__IO uint8_t *)(&tempData)+1);
+						messageParams[4] = *((__IO uint8_t *)(&tempData)+0);
+						SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float)+1);
+					}
       break;
 		
     case REQ_STREAM_MEMORY:
