@@ -1011,7 +1011,7 @@ static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteB
 		return pdFALSE;
 	} 
 	/* streaming data to port */
-	else if (NULL != pcParameterString3 && NULL != pcParameterString4 && pcParameterString3[0] == 'P') 
+	else if (NULL != pcParameterString3 && NULL != pcParameterString4 && pcParameterString3[0] == 'p') 
 	{
 		port = ( uint8_t ) atol( ( char * ) pcParameterString3+1 );
 		module = atoi( (char *)pcParameterString4);
