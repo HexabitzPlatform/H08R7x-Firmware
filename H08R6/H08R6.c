@@ -212,10 +212,10 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
     case CODE_H08R6_SET_UNIT:
       SetRangeUnit(cMessage[port-1][shift]);
       break;
-    case CODE_H08R6_GET_UNIT:
+    /*case CODE_H08R6_GET_UNIT:
       messageParams[0] = GetRangeUnit();
       SendMessageFromPort(port, myID, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
-      break;
+      break;*/
     default:
       result = H08R6_ERR_UnknownMessage;
       break;
