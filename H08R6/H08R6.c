@@ -545,7 +545,6 @@ static float ConvertCurrentUnit(float distance)
 */
 static void SendMeasurementResult(uint8_t request, float distance, uint8_t module, uint8_t port, float *buffer)
 {
-  uint16_t numberOfParams;
   int8_t *pcOutputString;
   static const int8_t *pcDistanceMsg = ( int8_t * ) "Distance (%s): %.2f\r\n";
 	static const int8_t *pcDistanceVerboseMsg = ( int8_t * ) "%.2f\r\n";
