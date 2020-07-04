@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.1 - Copyright (C) 2017-2020 Hexabitz
+    BitzOS (BOS) V0.2.2 - Copyright (C) 2017-2020 Hexabitz
     All rights reserved
 
     File Name     : H08R6.c
@@ -1131,6 +1131,9 @@ static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBu
 
 static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
+	extern uint8_t UARTRxBufIndex[NumOfPorts];
+	int LastEnter=0;
+	LastEnter=  UARTRxBufIndex[PcPort-1];
   uint8_t temp = 0;
 	static const int8_t *pcStartMsg = ( int8_t * ) "Calibrating maximum distance. Make sure the IR sensor is unblocked (~2m) and press any key when ready\r\n";
   static const int8_t *pcMaxDistanceMsg = ( int8_t * ) "Maximum distance (mm): %.2f\r\n";
@@ -1145,8 +1148,7 @@ static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBuff
 	writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
 	memset((char *) pcWriteBuffer, 0, strlen((char *)pcWriteBuffer));
 	// Wait for user to be ready
-	readPxMutex(PcPort, (char *)pcWriteBuffer, sizeof(char), cmd500ms, HAL_MAX_DELAY);
-	
+	while(UARTRxBuf[PcPort-1][LastEnter+1]==0){Delay_ms(1);}
 	while(temp < 10)
 	{
 		h08r6_range += Sample_ToF();;
