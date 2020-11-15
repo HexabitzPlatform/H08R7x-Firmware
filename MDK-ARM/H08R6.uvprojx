@@ -185,6 +185,7 @@
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
+            <RvdsCdeCp>0</RvdsCdeCp>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -351,7 +352,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
-            <uClangAs>0</uClangAs>
+            <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -709,7 +710,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>H08R6-Module 1</OutputName>
+          <OutputName>H08R6-Module 2</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -845,6 +846,7 @@
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
             <RvdsMve>0</RvdsMve>
+            <RvdsCdeCp>0</RvdsCdeCp>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -996,7 +998,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F091xB,H08R6,_module=1,USE_I2C_2V8</Define>
+              <Define>USE_HAL_DRIVER,STM32F091xB,H08R6,_module=2,USE_I2C_2V8</Define>
               <Undefine></Undefine>
               <IncludePath>..\User;..\H08R6;..\BOS;..\Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS;..\Thirdparty\Middleware\FreeRTOS\Source\include;..\Thirdparty\Middleware\FreeRTOS\Source\portable\RVDS\ARM_CM0;..\Thirdparty\STM32F0xx_HAL_Driver\Inc\Legacy;..\Thirdparty\STM32F0xx_HAL_Driver\Inc;..\Thirdparty\CMSIS\Device\ST\STM32F0xx\Include;..\Thirdparty\CMSIS\Include;..\Thirdparty\VL53L0X_1.0.2\Api\core\inc;..\Thirdparty\VL53L0X_1.0.2\Api\platform\inc</IncludePath>
             </VariousControls>
@@ -1011,7 +1013,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
-            <uClangAs>0</uClangAs>
+            <ClangAsOpt>4</ClangAsOpt>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -1333,5 +1335,20 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>&lt;Project Info&gt;</LayName>
+        <LayDesc></LayDesc>
+        <LayUrl></LayUrl>
+        <LayKeys></LayKeys>
+        <LayCat></LayCat>
+        <LayLic></LayLic>
+        <LayTarg>0</LayTarg>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

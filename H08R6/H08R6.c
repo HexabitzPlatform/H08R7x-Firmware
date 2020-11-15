@@ -194,15 +194,15 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
       break;
     case CODE_H08R6_STREAM_PORT:
-			period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
-			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
-      dst=cMessage[port-1][9+shift];
-      port=cMessage[port-1][8+shift];  
+      period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
+			timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
+      dst=2;
+      port=5;  
       Stream_ToF_Port(period, timeout,port,dst, false);
       break;
     case CODE_H08R6_STREAM_MEM:
-      period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
-			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
+     period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
+			timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
       Stream_ToF_Memory(period, timeout, &h08r6_range);
       break;
     case CODE_H08R6_RESULT_MEASUREMENT:
@@ -558,7 +558,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
   /* Get CLI output buffer */
   pcOutputString = FreeRTOS_CLIGetOutputBuffer();
   tempData = ConvertCurrentUnit(distance);
-
+	
 	if (request != REQ_SAMPLE_VERBOSE_CLI && request != REQ_STREAM_VERBOSE_PORT_CLI)
 	{
 		strUnit = malloc(6*sizeof(char));
