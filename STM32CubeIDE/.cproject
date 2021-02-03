@@ -41,7 +41,7 @@
 									<listOptionValue builtIn="false" value="DEBUG"/>
 									<listOptionValue builtIn="false" value="STM32F091xB"/>
 									<listOptionValue builtIn="false" value="STM32F091xC"/>
-									<listOptionValue builtIn="false" value="_module=1"/>
+									<listOptionValue builtIn="false" value="_module=2"/>
 									<listOptionValue builtIn="false" value="H08R6"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.139572841" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">

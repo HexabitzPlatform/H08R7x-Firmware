@@ -7,16 +7,16 @@
 
   <Targets>
     <Target>
-      <TargetName>P08R6-Module 1</TargetName>
+      <TargetName>P08R6</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
+      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F091CBTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F0xx_DFP.2.0.0</PackID>
+          <PackID>Keil.STM32F0xx_DFP.2.1.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00008000) IROM(0x08000000,0x00020000) CPUTYPE("Cortex-M0") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -533,6 +533,26 @@
               <FileType>1</FileType>
               <FilePath>..\BOS\BOS_freertos.c</FilePath>
             </File>
+            <File>
+              <FileName>BOS_CLIcommands.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_CLIcommands.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_inputs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_inputs.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_messaging.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_messaging.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_msgparser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_msgparser.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -572,6 +592,16 @@
               <FileName>startup_stm32f091xc.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\H08R6\arm\startup_stm32f091xc.s</FilePath>
+            </File>
+            <File>
+              <FileName>H08R6_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\H08R6\H08R6_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>H08R6_timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\H08R6\H08R6_timers.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -668,16 +698,16 @@
       </Groups>
     </Target>
     <Target>
-      <TargetName>H08R6-Module 1</TargetName>
+      <TargetName>H08R6</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060750::V5.06 update 6 (build 750)::ARMCC</pCCUsed>
+      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F091CBTx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F0xx_DFP.2.0.0</PackID>
+          <PackID>Keil.STM32F0xx_DFP.2.1.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00008000) IROM(0x08000000,0x00020000) CPUTYPE("Cortex-M0") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -710,7 +740,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>H08R6-Module 2</OutputName>
+          <OutputName>H08R6</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -998,7 +1028,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F091xB,H08R6,_module=2,USE_I2C_2V8</Define>
+              <Define>USE_HAL_DRIVER,STM32F091xB,H08R6,_module=1,USE_I2C_2V8</Define>
               <Undefine></Undefine>
               <IncludePath>..\User;..\H08R6;..\BOS;..\Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS;..\Thirdparty\Middleware\FreeRTOS\Source\include;..\Thirdparty\Middleware\FreeRTOS\Source\portable\RVDS\ARM_CM0;..\Thirdparty\STM32F0xx_HAL_Driver\Inc\Legacy;..\Thirdparty\STM32F0xx_HAL_Driver\Inc;..\Thirdparty\CMSIS\Device\ST\STM32F0xx\Include;..\Thirdparty\CMSIS\Include;..\Thirdparty\VL53L0X_1.0.2\Api\core\inc;..\Thirdparty\VL53L0X_1.0.2\Api\platform\inc</IncludePath>
             </VariousControls>
@@ -1194,6 +1224,26 @@
               <FileType>1</FileType>
               <FilePath>..\BOS\BOS_freertos.c</FilePath>
             </File>
+            <File>
+              <FileName>BOS_CLIcommands.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_CLIcommands.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_inputs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_inputs.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_messaging.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_messaging.c</FilePath>
+            </File>
+            <File>
+              <FileName>BOS_msgparser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BOS\BOS_msgparser.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1233,6 +1283,16 @@
               <FileName>startup_stm32f091xc.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\H08R6\arm\startup_stm32f091xc.s</FilePath>
+            </File>
+            <File>
+              <FileName>H08R6_rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\H08R6\H08R6_rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>H08R6_timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\H08R6\H08R6_timers.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1339,12 +1399,7 @@
   <LayerInfo>
     <Layers>
       <Layer>
-        <LayName>&lt;Project Info&gt;</LayName>
-        <LayDesc></LayDesc>
-        <LayUrl></LayUrl>
-        <LayKeys></LayKeys>
-        <LayCat></LayCat>
-        <LayLic></LayLic>
+        <LayName>H08R6</LayName>
         <LayTarg>0</LayTarg>
         <LayPrjMark>1</LayPrjMark>
       </Layer>
