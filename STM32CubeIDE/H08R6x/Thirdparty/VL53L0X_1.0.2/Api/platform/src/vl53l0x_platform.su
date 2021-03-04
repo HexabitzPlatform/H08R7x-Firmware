@@ -1,0 +1,12 @@
+vl53l0x_platform.c:97:15:VL53L0X_LockSequenceAccess	0	static
+vl53l0x_platform.c:103:15:VL53L0X_UnlockSequenceAccess	0	static
+vl53l0x_platform.c:110:15:VL53L0X_WriteMulti	16	static
+vl53l0x_platform.c:131:15:VL53L0X_ReadMulti	16	static
+vl53l0x_platform.c:152:15:VL53L0X_WrByte	8	static
+vl53l0x_platform.c:167:15:VL53L0X_WrWord	8	static
+vl53l0x_platform.c:182:15:VL53L0X_WrDWord	8	static
+vl53l0x_platform.c:197:15:VL53L0X_UpdateByte	32	static
+vl53l0x_platform.c:221:15:VL53L0X_RdByte	8	static
+vl53l0x_platform.c:236:15:VL53L0X_RdWord	8	static
+vl53l0x_platform.c:251:16:VL53L0X_RdDWord	8	static
+vl53l0x_platform.c:267:15:VL53L0X_PollingDelay	8	static,ignoring_inline_asm

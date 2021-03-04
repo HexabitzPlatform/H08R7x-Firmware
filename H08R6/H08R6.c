@@ -61,7 +61,7 @@ uint32_t tofPeriod, tofTimeout, t0;
 uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
 TimerHandle_t xTimerTof = NULL;
-
+uint8_t stream_index=0;
 /* Private function prototypes -----------------------------------------------*/
 static void Vl53l0xInit(void);
 static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout);
@@ -362,18 +362,17 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
       break;
     case CODE_H08R6_SAMPLE:
       Sample_ToF();
-			SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
+	  SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
       break;
     case CODE_H08R6_STREAM_PORT:
       period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
-			timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
-      dst=2;
-      port=5;  
-      Stream_ToF_Port(1000, 20000,port,dst, false);
+	  timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
+
+      Stream_ToF_Port(period, timeout,port,dst, false);
       break;
     case CODE_H08R6_STREAM_MEM:
      period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
-			timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
+	 timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
       Stream_ToF_Memory(period, timeout, &h08r6_range);
       break;
     case CODE_H08R6_RESULT_MEASUREMENT:
@@ -824,18 +823,18 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 						writePxMutex(port, (char *)&temp, 4*sizeof(uint8_t), 10, 10);
 				}
 			else{
-						messageParams[0]=port;
-					  messageParams[1] = *((__IO uint8_t *)(&tempData)+3);
-						messageParams[2] = *((__IO uint8_t *)(&tempData)+2);
-						messageParams[3] = *((__IO uint8_t *)(&tempData)+1);
-						messageParams[4] = *((__IO uint8_t *)(&tempData)+0);
-						SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float)+1);
+					   messageParams[0]=port;
+					   messageParams[1] = *((__IO uint8_t *)(&tempData)+3);
+				   	   messageParams[2] = *((__IO uint8_t *)(&tempData)+2);
+					   messageParams[3] = *((__IO uint8_t *)(&tempData)+1);
+					   messageParams[4] = *((__IO uint8_t *)(&tempData)+0);
+					   SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float)+1);
 					}
       break;
 		
     case REQ_STREAM_MEMORY:
       memset(buffer, 0, sizeof(float));
-      memcpy(buffer, &tempData, sizeof(float));
+      memcpy((void *)&buffer[stream_index], &tempData, sizeof(float));		
       break;
 		
     case REQ_OUT_RANGE_CLI:
@@ -965,6 +964,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
 	tofTimeout = timeout;
 	tofBuffer = buffer;
 	
+	
   if (0 == period)
   {
     SetMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
@@ -977,6 +977,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+
 }
 
 /*-----------------------------------------------------------*/
@@ -1116,10 +1117,11 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
 
 static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
-	static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to internal buffer. Access in the CLI using module parameter: range\n\r";
-	static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
-	static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\n\r";
-	static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
+  static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to internal buffer. Access in the CLI using module parameter: range\n\r";
+  static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
+  static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\n\r";
+  static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
+
   int8_t *pcParameterString1; /* period */
   int8_t *pcParameterString2; /* timeout */
   int8_t *pcParameterString3; /* port or buffer */
