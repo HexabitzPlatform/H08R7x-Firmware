@@ -32,13 +32,12 @@
   */
 	
 /*
-		MODIFIED by Hexabitz for BitzOS (BOS) V0.2.2 - Copyright (C) 2017-2020 Hexabitz
+		MODIFIED by Hexabitz for BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 */
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
-
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -63,8 +62,8 @@ int main(void)
 
   /* Initialize all user peripherals */
 
-	/* Initialize BitzOS */
-	BOS_Init();
+  /* Initialize BitzOS */
+  BOS_Init();
 
   /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
@@ -78,9 +77,7 @@ int main(void)
   while (1)
   {
 
-
   }
-
 
 }
 
@@ -89,12 +86,8 @@ int main(void)
 /* User Task */
 void UserTask(void * argument)
 {
-
-	
-  /* Infinite loop */
   for(;;)
   {
-
 	}
 }
 

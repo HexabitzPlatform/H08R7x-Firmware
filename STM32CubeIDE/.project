@@ -72,6 +72,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_CLI.c</locationURI>
 		</link>
 		<link>
+			<name>BOS/BOS_CLIcommands.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_CLIcommands.c</locationURI>
+		</link>
+		<link>
 			<name>BOS/BOS_MsgCodes.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_MsgCodes.h</locationURI>
@@ -100,6 +105,21 @@
 			<name>BOS/BOS_freertos.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_freertos.c</locationURI>
+		</link>
+		<link>
+			<name>BOS/BOS_inputs.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_inputs.c</locationURI>
+		</link>
+		<link>
+			<name>BOS/BOS_messaging.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_messaging.c</locationURI>
+		</link>
+		<link>
+			<name>BOS/BOS_msgparser.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/BOS/BOS_msgparser.c</locationURI>
 		</link>
 		<link>
 			<name>BOS/BOS_utils.h</name>
@@ -172,6 +192,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_it.c</locationURI>
 		</link>
 		<link>
+			<name>H08R6/H08R6_rtc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_rtc.c</locationURI>
+		</link>
+		<link>
+			<name>H08R6/H08R6_timers.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_timers.c</locationURI>
+		</link>
+		<link>
 			<name>H08R6/H08R6_uart.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_uart.c</locationURI>
@@ -182,9 +212,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_uart.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/gcc</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>H08R6/startup_stm32f091xc.s</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R6/startup_stm32f091xc.s</locationURI>
 		</link>
 		<link>
 			<name>H08R6/stm32f0xx_hal_conf.h</name>
@@ -232,14 +262,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/User/project.h</locationURI>
 		</link>
 		<link>
-			<name>User/topology_ex.h</name>
+			<name>User/topology_1.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/User/topology_ex.h</locationURI>
-		</link>
-		<link>
-			<name>H08R6/gcc/startup_stm32f091xc.s</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/gcc/startup_stm32f091xc.s</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/User/topology_1.h</locationURI>
 		</link>
 		<link>
 			<name>Thirdparty/CMSIS/Device</name>
@@ -1217,4 +1242,15 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Thirdparty/Middleware/FreeRTOS/Source/portable/GCC/ARM_CM0/portmacro.h</locationURI>
 		</link>
 	</linkedResources>
+	<filteredResources>
+		<filter>
+			<id>1614856409833</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-H08R6x</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>

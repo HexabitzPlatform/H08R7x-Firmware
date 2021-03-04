@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.2 - Copyright (C) 2017-2020 Hexabitz
+    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 
     File Name     : H08R6.c
@@ -32,6 +32,10 @@ UART_HandleTypeDef huart6;
 
 VL53L0X_Dev_t vl53l0x_HandleDevice;
 
+/* Exported variables */
+extern FLASH_ProcessTypeDef pFlash;
+extern uint8_t numOfRecordedSnippets;
+
 /* Unit of measurement ranging
  * 0 = mm
  * 1 = cm
@@ -57,7 +61,7 @@ uint32_t tofPeriod, tofTimeout, t0;
 uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
 TimerHandle_t xTimerTof = NULL;
-
+uint8_t stream_index=0;
 /* Private function prototypes -----------------------------------------------*/
 static void Vl53l0xInit(void);
 static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout);
@@ -147,6 +151,66 @@ const CLI_Command_Definition_t rangeModParamCommandDefinition =
    -----------------------------------------------------------------------
 */
 
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 48000000
+  *            HCLK(Hz)                       = 48000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 1
+  *            HSE Frequency(Hz)              = 8000000
+  *            PREDIV                         = 1
+  *            PLLMUL                         = 6
+  *            Flash Latency(WS)              = 1
+  * @param  None
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3;
+  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	
+	__HAL_RCC_PWR_CLK_ENABLE();
+  HAL_PWR_EnableBkUpAccess();
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	
+
+	__SYSCFG_CLK_ENABLE();
+
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+	
+}
 /* --- H08R6 module initialization.
 */
 void Module_Init(void)
@@ -178,6 +242,113 @@ void Module_Init(void)
 
 /*-----------------------------------------------------------*/
 
+/* --- Save array topology and Command Snippets in Flash RO --- 
+*/
+uint8_t SaveToRO(void)
+{
+	BOS_Status result = BOS_OK; 
+	HAL_StatusTypeDef FlashStatus = HAL_OK;
+	uint16_t add = 2, temp = 0;
+	uint8_t snipBuffer[sizeof(snippet_t)+1] = {0};
+	
+	HAL_FLASH_Unlock();
+	
+	/* Erase RO area */
+	FLASH_PageErase(RO_START_ADDRESS);
+	FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+	if(FlashStatus != HAL_OK) {
+		return pFlash.ErrorCode;
+	} else {			
+		/* Operation is completed, disable the PER Bit */
+		CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
+	}	
+	
+	/* Save number of modules and myID */
+	if (myID)
+	{
+		temp = (uint16_t) (N<<8) + myID;
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS, temp);
+		FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+		if (FlashStatus != HAL_OK) {
+			return pFlash.ErrorCode;
+		} else {
+			/* If the program operation is completed, disable the PG Bit */
+			CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
+		}			
+	
+	/* Save topology */
+		for(uint8_t i=1 ; i<=N ; i++)
+		{
+			for(uint8_t j=0 ; j<=MaxNumOfPorts ; j++)
+			{
+				if (array[i-1][0]) {
+					HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS+add, array[i-1][j]);
+					add += 2;
+					FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+					if (FlashStatus != HAL_OK) {
+						return pFlash.ErrorCode;
+					} else {
+						/* If the program operation is completed, disable the PG Bit */
+						CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
+					}		
+				}				
+			}
+		}
+	}
+	
+	// Save Command Snippets
+	int currentAdd = RO_MID_ADDRESS;
+	for(uint8_t s=0 ; s<numOfRecordedSnippets ; s++) 
+	{
+		if (snippets[s].cond.conditionType) 
+		{
+			snipBuffer[0] = 0xFE;		// A marker to separate Snippets
+			memcpy( (uint8_t *)&snipBuffer[1], (uint8_t *)&snippets[s], sizeof(snippet_t));
+			// Copy the snippet struct buffer (20 x numOfRecordedSnippets). Note this is assuming sizeof(snippet_t) is even.
+			for(uint8_t j=0 ; j<(sizeof(snippet_t)/2) ; j++)
+			{		
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)&snipBuffer[j*2]);
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+				if (FlashStatus != HAL_OK) {
+					return pFlash.ErrorCode;
+				} else {
+					/* If the program operation is completed, disable the PG Bit */
+					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
+					currentAdd += 2;
+				}				
+			}			
+			// Copy the snippet commands buffer. Always an even number. Note the string termination char might be skipped
+			for(uint8_t j=0 ; j<((strlen(snippets[s].cmd)+1)/2) ; j++)
+			{
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)(snippets[s].cmd+j*2));
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+				if (FlashStatus != HAL_OK) {
+					return pFlash.ErrorCode;
+				} else {
+					/* If the program operation is completed, disable the PG Bit */
+					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
+					currentAdd += 2;
+				}				
+			}				
+		}	
+	}
+	
+	HAL_FLASH_Lock();
+	
+	return result;
+}
+
+/* --- Clear array topology in SRAM and Flash RO --- 
+*/
+uint8_t ClearROtopology(void)
+{
+	// Clear the array 
+	memset(array, 0, sizeof(array));
+	N = 1; myID = 0;
+	
+	return SaveToRO();
+}
+
 /* --- H08R6 message processing task.
 */
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
@@ -191,18 +362,17 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
       break;
     case CODE_H08R6_SAMPLE:
       Sample_ToF();
-			SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
+	  SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
       break;
     case CODE_H08R6_STREAM_PORT:
-			period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
-			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
-      dst=cMessage[port-1][9+shift];
-      port=cMessage[port-1][8+shift];  
+      period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
+	  timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
+
       Stream_ToF_Port(period, timeout,port,dst, false);
       break;
     case CODE_H08R6_STREAM_MEM:
-      period = ( (uint32_t) cMessage[port-1][shift] << 24 ) + ( (uint32_t) cMessage[port-1][1+shift] << 16 ) + ( (uint32_t) cMessage[port-1][2+shift] << 8 ) + cMessage[port-1][3+shift];
-			timeout = ( (uint32_t) cMessage[port-1][4+shift] << 24 ) + ( (uint32_t) cMessage[port-1][5+shift] << 16 ) + ( (uint32_t) cMessage[port-1][6+shift] << 8 ) + cMessage[port-1][7+shift];
+     period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
+	 timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
       Stream_ToF_Memory(period, timeout, &h08r6_range);
       break;
     case CODE_H08R6_RESULT_MEASUREMENT:
@@ -558,7 +728,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
   /* Get CLI output buffer */
   pcOutputString = FreeRTOS_CLIGetOutputBuffer();
   tempData = ConvertCurrentUnit(distance);
-
+	
 	if (request != REQ_SAMPLE_VERBOSE_CLI && request != REQ_STREAM_VERBOSE_PORT_CLI)
 	{
 		strUnit = malloc(6*sizeof(char));
@@ -653,18 +823,18 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 						writePxMutex(port, (char *)&temp, 4*sizeof(uint8_t), 10, 10);
 				}
 			else{
-						messageParams[0]=port;
-					  messageParams[1] = *((__IO uint8_t *)(&tempData)+3);
-						messageParams[2] = *((__IO uint8_t *)(&tempData)+2);
-						messageParams[3] = *((__IO uint8_t *)(&tempData)+1);
-						messageParams[4] = *((__IO uint8_t *)(&tempData)+0);
-						SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float)+1);
+					   messageParams[0]=port;
+					   messageParams[1] = *((__IO uint8_t *)(&tempData)+3);
+				   	   messageParams[2] = *((__IO uint8_t *)(&tempData)+2);
+					   messageParams[3] = *((__IO uint8_t *)(&tempData)+1);
+					   messageParams[4] = *((__IO uint8_t *)(&tempData)+0);
+					   SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float)+1);
 					}
       break;
 		
     case REQ_STREAM_MEMORY:
       memset(buffer, 0, sizeof(float));
-      memcpy(buffer, &tempData, sizeof(float));
+      memcpy((void *)&buffer[stream_index], &tempData, sizeof(float));		
       break;
 		
     case REQ_OUT_RANGE_CLI:
@@ -794,6 +964,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
 	tofTimeout = timeout;
 	tofBuffer = buffer;
 	
+	
   if (0 == period)
   {
     SetMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
@@ -806,6 +977,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+
 }
 
 /*-----------------------------------------------------------*/
@@ -945,10 +1117,11 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
 
 static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
 {
-	static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to internal buffer. Access in the CLI using module parameter: range\n\r";
-	static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
-	static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\n\r";
-	static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
+  static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to internal buffer. Access in the CLI using module parameter: range\n\r";
+  static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
+  static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\n\r";
+  static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
+
   int8_t *pcParameterString1; /* period */
   int8_t *pcParameterString2; /* timeout */
   int8_t *pcParameterString3; /* port or buffer */

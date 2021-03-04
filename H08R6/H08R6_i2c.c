@@ -33,14 +33,14 @@
   */
 
 /*
-    MODIFIED by Hexabitz for BitzOS (BOS) V0.2.2 - Copyright (C) 2017-2020 Hexabitz
+    MODIFIED by Hexabitz for BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 */
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
-
+#define Max_delay 100
 I2C_HandleTypeDef hi2c2;
 
 /*----------------------------------------------------------------------------*/
