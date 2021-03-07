@@ -1,7 +1,7 @@
 BOS.c:193:9:minArr	20	static
 BOS.c:215:9:QnotEmpty	8	static
 BOS.c:266:9:LoadROsnippets	40	static
-BOS.c:317:9:LoadROtopology	20	static
+BOS.c:317:9:LoadROtopology	32	static
 BOS.c:355:12:SaveEEportsDir	24	static
 BOS.c:375:12:ClearEEportsDir	24	static
 BOS.c:397:12:LoadEEportsDir	24	static
