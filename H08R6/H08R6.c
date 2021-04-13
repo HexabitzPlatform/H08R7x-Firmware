@@ -168,48 +168,47 @@ const CLI_Command_Definition_t rangeModParamCommandDefinition =
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInit;
+	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
 	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	RCC_OscInitStruct.HSICalibrationValue =16;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
+	RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
+	HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1);
+	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct,FLASH_LATENCY_1);
 
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART3;
-  PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
+	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
+	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+	PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
 	
 	__HAL_RCC_PWR_CLK_ENABLE();
-  HAL_PWR_EnableBkUpAccess();
+	HAL_PWR_EnableBkUpAccess();
 	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
+	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
 	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 	
+	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+
+	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 
 	__SYSCFG_CLK_ENABLE();
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 	
+	/* SysTick_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
+
 }
 /* --- H08R6 module initialization.
 */
@@ -358,38 +357,37 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
   uint32_t timeout;
   switch (code)
   {
-    case CODE_H08R6_GET_INFO:
-      break;
-    case CODE_H08R6_SAMPLE:
-      Sample_ToF();
-	  SendMeasurementResult(REQ_SAMPLE_ARR, h08r6_range, dst, port, NULL);
-      break;
-    case CODE_H08R6_STREAM_PORT:
-      period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
-	  timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
-
-      Stream_ToF_Port(period, timeout,port,dst, false);
-      break;
-    case CODE_H08R6_STREAM_MEM:
-     period = ( (uint32_t) cMessage[port-1][3+shift] << 24 ) + ( (uint32_t) cMessage[port-1][2+shift] << 16 ) + ( (uint32_t) cMessage[port-1][1+shift] << 8 ) + cMessage[port-1][shift];
-	 timeout = ( (uint32_t) cMessage[port-1][7+shift] << 24 ) + ( (uint32_t) cMessage[port-1][6+shift] << 16 ) + ( (uint32_t) cMessage[port-1][5+shift] << 8 ) + cMessage[port-1][4+shift];
-      Stream_ToF_Memory(period, timeout, &h08r6_range);
-      break;
-    case CODE_H08R6_RESULT_MEASUREMENT:
-      break;
-    case CODE_H08R6_STOP_RANGING:
-      Stop_ToF();
-      break;
-    case CODE_H08R6_SET_UNIT:
-      SetRangeUnit(cMessage[port-1][shift]);
-      break;
-    /*case CODE_H08R6_GET_UNIT:
-      messageParams[0] = GetRangeUnit();
-      SendMessageFromPort(port, myID, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
-      break;*/
-    default:
-      result = H08R6_ERR_UnknownMessage;
-      break;
+		case CODE_H08R6_GET_INFO:
+			break;
+		case CODE_H08R6_SAMPLE:
+		Sample_ToF();
+		SendMeasurementResult(REQ_SAMPLE_ARR,h08r6_range,cMessage[port - 1][1+shift],cMessage[port - 1][shift],NULL);
+			break;
+		case CODE_H08R6_STREAM_PORT:
+		period = ((uint32_t) cMessage[port - 1][5 + shift] << 24) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + cMessage[port - 1][2 + shift];
+		timeout = ((uint32_t) cMessage[port - 1][9 + shift] << 24) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + cMessage[port - 1][6 + shift];
+		Stream_ToF_Port(period,timeout,cMessage[port - 1][shift],cMessage[port - 1][1+shift],false);
+			break;
+		case CODE_H08R6_STREAM_MEM:
+		period = ((uint32_t) cMessage[port - 1][3 + shift] << 24) + ((uint32_t) cMessage[port - 1][2 + shift] << 16) + ((uint32_t) cMessage[port - 1][1 + shift] << 8) + cMessage[port - 1][shift];
+		timeout = ((uint32_t) cMessage[port - 1][7 + shift] << 24) + ((uint32_t) cMessage[port - 1][6 + shift] << 16) + ((uint32_t) cMessage[port - 1][5 + shift] << 8) + cMessage[port - 1][4 + shift];
+		Stream_ToF_Memory(period,timeout,&h08r6_range);
+			break;
+		case CODE_H08R6_RESULT_MEASUREMENT:
+			break;
+		case CODE_H08R6_STOP_RANGING:
+		Stop_ToF();
+			break;
+		case CODE_H08R6_SET_UNIT:
+		SetRangeUnit(cMessage[port - 1][shift]);
+			break;
+//		case CODE_H08R6_GET_UNIT:
+//		 messageParams[0] = GetRangeUnit();
+//		 SendMessageFromPort(port, myID, dst, CODE_H08R6_RESPOND_GET_UNIT, 1);
+//		 break;
+		default:
+		result =H08R6_ERR_UnknownMessage;
+			break;
   }
 
   return result;
@@ -401,13 +399,13 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 */
 void RegisterModuleCLICommands(void)
 {
-  FreeRTOS_CLIRegisterCommand( &demoCommandDefinition);
-	FreeRTOS_CLIRegisterCommand( &Vl53l0xSampleCommandDefinition);
-  FreeRTOS_CLIRegisterCommand( &Vl53l0xStreamCommandDefinition);
-  FreeRTOS_CLIRegisterCommand( &Vl53l0xStopCommandDefinition);
-  FreeRTOS_CLIRegisterCommand( &Vl53l0xUnitsCommandDefinition);
-  FreeRTOS_CLIRegisterCommand( &Vl53l0xMaxCommandDefinition);
-	FreeRTOS_CLIRegisterCommand( &rangeModParamCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xSampleCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xStreamCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xStopCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xUnitsCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xMaxCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&rangeModParamCommandDefinition);
 }
 
 /*-----------------------------------------------------------*/
