@@ -1,5 +1,5 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
+    BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
     All rights reserved
 
     File Name     : H08R6.c
@@ -9,7 +9,7 @@
     Required MCU resources :
 
       >> USARTs 1,2,3,4,5,6 for module ports (H08R6).
-			>> USARTs 1,2,3,5,6 for module ports (P08R6).
+	  >> USARTs 1,2,3,5,6 for module ports (P08R6).
       >> I2C2 for the ToF sensor.
       >> GPIOB 2 for ToF interrupt (INT).
       >> GPIOB 12 for ToF shutdown (XSHUT) in (H08R6) and GPIOB 0 in (P08R6).
@@ -212,7 +212,7 @@ void SystemClock_Config(void)
 }
 /* --- H08R6 module initialization.
 */
-void Module_Init(void)
+void Module_Peripheral_Init(void)
 {
 
   /* Array ports */
@@ -408,6 +408,9 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&rangeModParamCommandDefinition);
 }
 
+void ExecuteMonitor(void){
+
+}
 /*-----------------------------------------------------------*/
 
 /* --- Get the port for a given UART.
