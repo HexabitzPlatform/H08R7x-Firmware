@@ -1,5 +1,0 @@
-H08R6_gpio.c:65:6:IND_LED_Init	32	static
-H08R6_gpio.c:77:6:IND_ToF_Init	48	static
-H08R6_gpio.c:51:6:GPIO_Init	32	static
-H08R6_gpio.c:178:12:GetPortGPIOs	16	static
-H08R6_gpio.c:124:9:IsFactoryReset	88	static
