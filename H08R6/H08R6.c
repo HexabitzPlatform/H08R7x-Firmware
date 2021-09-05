@@ -359,7 +359,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
   {
 		case CODE_H08R6_GET_INFO:
 			break;
-		case CODE_H08R6_SAMPLE:
+		case CODE_H08R6_SAMPLE_PORT:
 		Sample_ToF();
 		SendMeasurementResult(REQ_SAMPLE_ARR,h08r6_range,cMessage[port - 1][1+shift],cMessage[port - 1][shift],NULL);
 			break;
