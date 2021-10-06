@@ -47,6 +47,7 @@ uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 
 /* Module exported parameters ------------------------------------------------*/
 float h08r6_range = 0.0f;
+float sample __attribute__((section(".mySection")));
 module_param_t modParam[NUM_MODULE_PARAMS] = {{.paramPtr=&h08r6_range, .paramFormat=FMT_FLOAT, .paramName="range"}};
 
 
@@ -239,6 +240,11 @@ void Module_Peripheral_Init(void)
 
 }
 
+
+void initialValue(void)
+{
+	sample=0;
+}
 /*-----------------------------------------------------------*/
 
 /* --- Save array topology and Command Snippets in Flash RO --- 
@@ -408,9 +414,7 @@ void RegisterModuleCLICommands(void)
 	FreeRTOS_CLIRegisterCommand(&rangeModParamCommandDefinition);
 }
 
-void ExecuteMonitor(void){
 
-}
 /*-----------------------------------------------------------*/
 
 /* --- Get the port for a given UART.
@@ -1105,6 +1109,7 @@ static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteB
   configASSERT( pcWriteBuffer );
 	
 	Sample_ToF();
+	sample=h08r6_range;
   SendMeasurementResult(REQ_SAMPLE_CLI, h08r6_range, 0, PcPort, NULL);
 
   /* clean terminal output */

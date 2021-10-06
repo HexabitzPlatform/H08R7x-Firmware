@@ -9,7 +9,7 @@
 #include "BOS.h"
 
 /* Private variables ---------------------------------------------------------*/
-float t=0;
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Main function ------------------------------------------------------------*/
@@ -30,8 +30,6 @@ void UserTask(void *argument){
 	// put your code here, to run repeatedly.
 	while(1){
 
-t=Sample_ToF();
-Delay_ms(100);
 	}
 }
 
