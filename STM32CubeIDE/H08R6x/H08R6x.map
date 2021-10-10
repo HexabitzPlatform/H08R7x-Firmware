@@ -4649,7 +4649,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x8c Thirdparty\Middleware\FreeRTOS\Source\croutine.o
  .debug_macro   0x0000000000000000       0x43 Thirdparty\Middleware\FreeRTOS\Source\croutine.o
  .debug_line    0x0000000000000000      0x4be Thirdparty\Middleware\FreeRTOS\Source\croutine.o
- .debug_str     0x0000000000000000     0x739c Thirdparty\Middleware\FreeRTOS\Source\croutine.o
+ .debug_str     0x0000000000000000     0x7387 Thirdparty\Middleware\FreeRTOS\Source\croutine.o
  .comment       0x0000000000000000       0x7c Thirdparty\Middleware\FreeRTOS\Source\croutine.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\Middleware\FreeRTOS\Source\croutine.o
@@ -5851,7 +5851,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_can.o
@@ -6006,7 +6006,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cec.o
@@ -6161,7 +6161,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
  .debug_line    0x0000000000000000      0x890 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
- .debug_str     0x0000000000000000    0x7159d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
+ .debug_str     0x0000000000000000    0x71588 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_comp.o
@@ -6777,7 +6777,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac.o
@@ -6932,7 +6932,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
  .debug_line    0x0000000000000000      0x892 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
- .debug_str     0x0000000000000000    0x7159f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
+ .debug_str     0x0000000000000000    0x7158a Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dac_ex.o
@@ -8123,7 +8123,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
  .debug_line    0x0000000000000000      0xcdd Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
- .debug_str     0x0000000000000000    0x71be0 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
+ .debug_str     0x0000000000000000    0x71bcb Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
  .debug_frame   0x0000000000000000      0x29c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2s.o
  .ARM.attributes
@@ -8279,7 +8279,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
  .debug_line    0x0000000000000000      0x890 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
- .debug_str     0x0000000000000000    0x7159d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
+ .debug_str     0x0000000000000000    0x71588 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_irda.o
@@ -8434,7 +8434,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
  .debug_line    0x0000000000000000      0x890 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
- .debug_str     0x0000000000000000    0x7159d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
+ .debug_str     0x0000000000000000    0x71588 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_iwdg.o
@@ -8740,7 +8740,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd.o
@@ -8895,7 +8895,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
  .debug_line    0x0000000000000000      0x892 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
- .debug_str     0x0000000000000000    0x7159f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
+ .debug_str     0x0000000000000000    0x7158a Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pcd_ex.o
@@ -9237,7 +9237,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
  .debug_line    0x0000000000000000      0x93d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
- .debug_str     0x0000000000000000    0x7176e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
+ .debug_str     0x0000000000000000    0x71759 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
  .debug_frame   0x0000000000000000       0xb4 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr_ex.o
  .ARM.attributes
@@ -10083,7 +10083,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
  .debug_line    0x0000000000000000      0x895 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
- .debug_str     0x0000000000000000    0x715a2 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
+ .debug_str     0x0000000000000000    0x7158d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard.o
@@ -10238,7 +10238,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
  .debug_line    0x0000000000000000      0x898 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
- .debug_str     0x0000000000000000    0x715a5 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
+ .debug_str     0x0000000000000000    0x71590 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smartcard_ex.o
@@ -10393,7 +10393,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
  .debug_line    0x0000000000000000      0x891 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
- .debug_str     0x0000000000000000    0x7159e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
+ .debug_str     0x0000000000000000    0x71589 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_smbus.o
@@ -10548,7 +10548,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi.o
@@ -10703,7 +10703,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
  .debug_line    0x0000000000000000      0x892 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
- .debug_str     0x0000000000000000    0x7159f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
+ .debug_str     0x0000000000000000    0x7158a Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_spi_ex.o
@@ -11410,7 +11410,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
  .debug_line    0x0000000000000000      0x88f Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
- .debug_str     0x0000000000000000    0x7159c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
+ .debug_str     0x0000000000000000    0x71587 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tsc.o
@@ -11903,7 +11903,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
  .debug_line    0x0000000000000000      0x891 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
- .debug_str     0x0000000000000000    0x7159e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
+ .debug_str     0x0000000000000000    0x71589 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_usart.o
@@ -12058,7 +12058,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x209 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
  .debug_macro   0x0000000000000000      0x42e Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
  .debug_line    0x0000000000000000      0x890 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
- .debug_str     0x0000000000000000    0x7159d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
+ .debug_str     0x0000000000000000    0x71588 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
  .comment       0x0000000000000000       0x7c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_wwdg.o
@@ -12583,7 +12583,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
  .debug_macro   0x0000000000000000       0x29 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
  .debug_line    0x0000000000000000      0x63b Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
- .debug_str     0x0000000000000000     0xb711 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
+ .debug_str     0x0000000000000000     0xb6fc Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
  .comment       0x0000000000000000       0x7c Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
  .ARM.attributes
                 0x0000000000000000       0x31 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_ranging.o
@@ -12702,7 +12702,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
  .debug_macro   0x0000000000000000       0x29 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
  .debug_line    0x0000000000000000      0x7dc Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
- .debug_str     0x0000000000000000     0xc0fb Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
+ .debug_str     0x0000000000000000     0xc0e6 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
  .comment       0x0000000000000000       0x7c Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
  .debug_frame   0x0000000000000000       0xe0 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_strings.o
  .ARM.attributes
@@ -16646,117 +16646,117 @@ OUTPUT(H08R6x.elf elf32-littlearm)
  .debug_line    0x000000000002c104      0x726 Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.o
  .debug_line    0x000000000002c82a      0xd5b User\main.o
 
-.debug_str      0x0000000000000000    0x8ce46
- .debug_str     0x0000000000000000    0x7ff37 BOS\BOS.o
-                                      0x8068f (size before relaxing)
- .debug_str     0x000000000007ff37      0x310 BOS\BOS_CLI.o
-                                      0x7fcfe (size before relaxing)
- .debug_str     0x0000000000080247      0xc16 BOS\BOS_CLIcommands.o
-                                      0x80a8f (size before relaxing)
- .debug_str     0x0000000000080e5d       0xd9 BOS\BOS_dma.o
-                                      0x7f996 (size before relaxing)
- .debug_str     0x0000000000080f36      0x272 BOS\BOS_eeprom.o
-                                      0x7fb4d (size before relaxing)
- .debug_str     0x00000000000811a8      0x5b6 BOS\BOS_freertos.o
-                                      0x7ffce (size before relaxing)
- .debug_str     0x000000000008175e      0x5da BOS\BOS_inputs.o
-                                      0x8019b (size before relaxing)
- .debug_str     0x0000000000081d38      0x23f BOS\BOS_messaging.o
-                                      0x7fdd1 (size before relaxing)
- .debug_str     0x0000000000081f77      0x1e7 BOS\BOS_msgparser.o
-                                      0x7fffa (size before relaxing)
- .debug_str     0x000000000008215e      0xa7e H08R6\H08R6.o
-                                      0x80b7d (size before relaxing)
- .debug_str     0x0000000000082bdc      0x14e H08R6\H08R6_dma.o
-                                      0x7fcf6 (size before relaxing)
- .debug_str     0x0000000000082d2a       0x6d H08R6\H08R6_gpio.o
+.debug_str      0x0000000000000000    0x8ce31
+ .debug_str     0x0000000000000000    0x7ff22 BOS\BOS.o
+                                      0x8067a (size before relaxing)
+ .debug_str     0x000000000007ff22      0x310 BOS\BOS_CLI.o
+                                      0x7fce9 (size before relaxing)
+ .debug_str     0x0000000000080232      0xc16 BOS\BOS_CLIcommands.o
+                                      0x80a7a (size before relaxing)
+ .debug_str     0x0000000000080e48       0xd9 BOS\BOS_dma.o
+                                      0x7f981 (size before relaxing)
+ .debug_str     0x0000000000080f21      0x272 BOS\BOS_eeprom.o
+                                      0x7fb38 (size before relaxing)
+ .debug_str     0x0000000000081193      0x5b6 BOS\BOS_freertos.o
+                                      0x7ffb9 (size before relaxing)
+ .debug_str     0x0000000000081749      0x5da BOS\BOS_inputs.o
+                                      0x80186 (size before relaxing)
+ .debug_str     0x0000000000081d23      0x23f BOS\BOS_messaging.o
+                                      0x7fdbc (size before relaxing)
+ .debug_str     0x0000000000081f62      0x1e7 BOS\BOS_msgparser.o
+                                      0x7ffe5 (size before relaxing)
+ .debug_str     0x0000000000082149      0xa7e H08R6\H08R6.o
+                                      0x80b68 (size before relaxing)
+ .debug_str     0x0000000000082bc7      0x14e H08R6\H08R6_dma.o
+                                      0x7fce1 (size before relaxing)
+ .debug_str     0x0000000000082d15       0x6d H08R6\H08R6_gpio.o
+                                      0x7fc48 (size before relaxing)
+ .debug_str     0x0000000000082d82      0x112 H08R6\H08R6_i2c.o
+                                      0x7fa45 (size before relaxing)
+ .debug_str     0x0000000000082e94      0x1be H08R6\H08R6_it.o
+                                      0x7fb3e (size before relaxing)
+ .debug_str     0x0000000000083052      0x2d2 H08R6\H08R6_rtc.o
+                                      0x7fc2d (size before relaxing)
+ .debug_str     0x0000000000083324      0x26f H08R6\H08R6_timers.o
+                                      0x7fb73 (size before relaxing)
+ .debug_str     0x0000000000083593      0x19f H08R6\H08R6_uart.o
+                                      0x7fe3d (size before relaxing)
+ .debug_str     0x0000000000083732       0x30 H08R6\startup_stm32f091xc.o
+                                         0x5f (size before relaxing)
+ .debug_str     0x0000000000083762       0x8f Thirdparty\CMSIS\Device\ST\STM32F0xx\Source\Templates\system_stm32f0xx.o
+                                      0x7164b (size before relaxing)
+ .debug_str     0x00000000000837f1      0x797 Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.o
+                                       0xc4db (size before relaxing)
+ .debug_str     0x0000000000083f88      0x11f Thirdparty\Middleware\FreeRTOS\Source\FreeRTOS_CLI.o
                                       0x7fc5d (size before relaxing)
- .debug_str     0x0000000000082d97      0x112 H08R6\H08R6_i2c.o
-                                      0x7fa5a (size before relaxing)
- .debug_str     0x0000000000082ea9      0x1be H08R6\H08R6_it.o
-                                      0x7fb53 (size before relaxing)
- .debug_str     0x0000000000083067      0x2d2 H08R6\H08R6_rtc.o
-                                      0x7fc42 (size before relaxing)
- .debug_str     0x0000000000083339      0x26f H08R6\H08R6_timers.o
-                                      0x7fb88 (size before relaxing)
- .debug_str     0x00000000000835a8      0x19f H08R6\H08R6_uart.o
-                                      0x7fe52 (size before relaxing)
- .debug_str     0x0000000000083747       0x30 H08R6\startup_stm32f091xc.o
-                                         0x74 (size before relaxing)
- .debug_str     0x0000000000083777       0x8f Thirdparty\CMSIS\Device\ST\STM32F0xx\Source\Templates\system_stm32f0xx.o
-                                      0x71660 (size before relaxing)
- .debug_str     0x0000000000083806      0x797 Thirdparty\Middleware\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.o
-                                       0xc4f0 (size before relaxing)
- .debug_str     0x0000000000083f9d      0x11f Thirdparty\Middleware\FreeRTOS\Source\FreeRTOS_CLI.o
-                                      0x7fc72 (size before relaxing)
- .debug_str     0x00000000000840bc      0x4c2 Thirdparty\Middleware\FreeRTOS\Source\event_groups.o
-                                       0xa7f5 (size before relaxing)
- .debug_str     0x000000000008457e       0xa2 Thirdparty\Middleware\FreeRTOS\Source\list.o
-                                       0x95b2 (size before relaxing)
- .debug_str     0x0000000000084620      0x357 Thirdparty\Middleware\FreeRTOS\Source\portable\GCC\ARM_CM0\port.o
-                                       0x71ba (size before relaxing)
- .debug_str     0x0000000000084977      0x243 Thirdparty\Middleware\FreeRTOS\Source\portable\MemMang\heap_4.o
-                                       0x9cb7 (size before relaxing)
- .debug_str     0x0000000000084bba      0x6d8 Thirdparty\Middleware\FreeRTOS\Source\queue.o
-                                       0xaebc (size before relaxing)
- .debug_str     0x0000000000085292     0x10f2 Thirdparty\Middleware\FreeRTOS\Source\tasks.o
-                                       0xcc69 (size before relaxing)
- .debug_str     0x0000000000086384      0x414 Thirdparty\Middleware\FreeRTOS\Source\timers.o
-                                       0xb340 (size before relaxing)
- .debug_str     0x0000000000086798      0x257 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal.o
-                                      0x71b4e (size before relaxing)
- .debug_str     0x00000000000869ef      0x345 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_adc.o
-                                      0x71d38 (size before relaxing)
- .debug_str     0x0000000000086d34       0x71 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_adc_ex.o
-                                      0x71975 (size before relaxing)
- .debug_str     0x0000000000086da5      0x144 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cortex.o
-                                      0x71a22 (size before relaxing)
- .debug_str     0x0000000000086ee9       0x95 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_crc.o
-                                      0x7185a (size before relaxing)
- .debug_str     0x0000000000086f7e       0x88 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_crc_ex.o
-                                      0x71830 (size before relaxing)
- .debug_str     0x0000000000087006      0x125 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dma.o
-                                      0x7190e (size before relaxing)
- .debug_str     0x000000000008712b      0x153 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_flash.o
+ .debug_str     0x00000000000840a7      0x4c2 Thirdparty\Middleware\FreeRTOS\Source\event_groups.o
+                                       0xa7e0 (size before relaxing)
+ .debug_str     0x0000000000084569       0xa2 Thirdparty\Middleware\FreeRTOS\Source\list.o
+                                       0x959d (size before relaxing)
+ .debug_str     0x000000000008460b      0x357 Thirdparty\Middleware\FreeRTOS\Source\portable\GCC\ARM_CM0\port.o
+                                       0x71a5 (size before relaxing)
+ .debug_str     0x0000000000084962      0x243 Thirdparty\Middleware\FreeRTOS\Source\portable\MemMang\heap_4.o
+                                       0x9ca2 (size before relaxing)
+ .debug_str     0x0000000000084ba5      0x6d8 Thirdparty\Middleware\FreeRTOS\Source\queue.o
+                                       0xaea7 (size before relaxing)
+ .debug_str     0x000000000008527d     0x10f2 Thirdparty\Middleware\FreeRTOS\Source\tasks.o
+                                       0xcc54 (size before relaxing)
+ .debug_str     0x000000000008636f      0x414 Thirdparty\Middleware\FreeRTOS\Source\timers.o
+                                       0xb32b (size before relaxing)
+ .debug_str     0x0000000000086783      0x257 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal.o
+                                      0x71b39 (size before relaxing)
+ .debug_str     0x00000000000869da      0x345 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_adc.o
+                                      0x71d23 (size before relaxing)
+ .debug_str     0x0000000000086d1f       0x71 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_adc_ex.o
+                                      0x71960 (size before relaxing)
+ .debug_str     0x0000000000086d90      0x144 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_cortex.o
+                                      0x71a0d (size before relaxing)
+ .debug_str     0x0000000000086ed4       0x95 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_crc.o
+                                      0x71845 (size before relaxing)
+ .debug_str     0x0000000000086f69       0x88 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_crc_ex.o
+                                      0x7181b (size before relaxing)
+ .debug_str     0x0000000000086ff1      0x125 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_dma.o
                                       0x718f9 (size before relaxing)
- .debug_str     0x000000000008727e      0x273 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_flash_ex.o
-                                      0x71a1d (size before relaxing)
- .debug_str     0x00000000000874f1      0x1f4 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_gpio.o
-                                      0x71915 (size before relaxing)
- .debug_str     0x00000000000876e5      0x611 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2c.o
-                                      0x72095 (size before relaxing)
- .debug_str     0x0000000000087cf6       0xbe Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2c_ex.o
-                                      0x71b3d (size before relaxing)
- .debug_str     0x0000000000087db4       0x69 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_msp_template.o
-                                      0x715e1 (size before relaxing)
- .debug_str     0x0000000000087e1d      0x18c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr.o
-                                      0x717a3 (size before relaxing)
- .debug_str     0x0000000000087fa9      0x1c2 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc.o
-                                      0x71a4a (size before relaxing)
- .debug_str     0x000000000008816b      0x20c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc_ex.o
-                                      0x71963 (size before relaxing)
- .debug_str     0x0000000000088377      0x1fc Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rtc.o
-                                      0x71a7d (size before relaxing)
- .debug_str     0x0000000000088573      0x500 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rtc_ex.o
-                                      0x71da7 (size before relaxing)
- .debug_str     0x0000000000088a73      0xcd7 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tim.o
-                                      0x726f6 (size before relaxing)
- .debug_str     0x000000000008974a      0x482 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tim_ex.o
-                                      0x71fac (size before relaxing)
- .debug_str     0x0000000000089bcc      0x3fa Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart.o
-                                      0x71ffa (size before relaxing)
- .debug_str     0x0000000000089fc6      0x17d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart_ex.o
-                                      0x71c79 (size before relaxing)
- .debug_str     0x000000000008a143     0x17c0 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api.o
-                                       0xd935 (size before relaxing)
- .debug_str     0x000000000008b903      0x671 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_calibration.o
-                                       0xc9a6 (size before relaxing)
- .debug_str     0x000000000008bf74      0xbe1 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_core.o
-                                       0xcf85 (size before relaxing)
- .debug_str     0x000000000008cb55      0x2d1 Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.o
-                                       0xc04f (size before relaxing)
- .debug_str     0x000000000008ce26       0x20 User\main.o
-                                      0x7f860 (size before relaxing)
+ .debug_str     0x0000000000087116      0x153 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_flash.o
+                                      0x718e4 (size before relaxing)
+ .debug_str     0x0000000000087269      0x273 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_flash_ex.o
+                                      0x71a08 (size before relaxing)
+ .debug_str     0x00000000000874dc      0x1f4 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_gpio.o
+                                      0x71900 (size before relaxing)
+ .debug_str     0x00000000000876d0      0x611 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2c.o
+                                      0x72080 (size before relaxing)
+ .debug_str     0x0000000000087ce1       0xbe Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_i2c_ex.o
+                                      0x71b28 (size before relaxing)
+ .debug_str     0x0000000000087d9f       0x69 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_msp_template.o
+                                      0x715cc (size before relaxing)
+ .debug_str     0x0000000000087e08      0x18c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_pwr.o
+                                      0x7178e (size before relaxing)
+ .debug_str     0x0000000000087f94      0x1c2 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc.o
+                                      0x71a35 (size before relaxing)
+ .debug_str     0x0000000000088156      0x20c Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rcc_ex.o
+                                      0x7194e (size before relaxing)
+ .debug_str     0x0000000000088362      0x1fc Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rtc.o
+                                      0x71a68 (size before relaxing)
+ .debug_str     0x000000000008855e      0x500 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_rtc_ex.o
+                                      0x71d92 (size before relaxing)
+ .debug_str     0x0000000000088a5e      0xcd7 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tim.o
+                                      0x726e1 (size before relaxing)
+ .debug_str     0x0000000000089735      0x482 Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_tim_ex.o
+                                      0x71f97 (size before relaxing)
+ .debug_str     0x0000000000089bb7      0x3fa Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart.o
+                                      0x71fe5 (size before relaxing)
+ .debug_str     0x0000000000089fb1      0x17d Thirdparty\STM32F0xx_HAL_Driver\Src\stm32f0xx_hal_uart_ex.o
+                                      0x71c64 (size before relaxing)
+ .debug_str     0x000000000008a12e     0x17c0 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api.o
+                                       0xd920 (size before relaxing)
+ .debug_str     0x000000000008b8ee      0x671 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_calibration.o
+                                       0xc991 (size before relaxing)
+ .debug_str     0x000000000008bf5f      0xbe1 Thirdparty\VL53L0X_1.0.2\Api\core\src\vl53l0x_api_core.o
+                                       0xcf70 (size before relaxing)
+ .debug_str     0x000000000008cb40      0x2d1 Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.o
+                                       0xc03a (size before relaxing)
+ .debug_str     0x000000000008ce11       0x20 User\main.o
+                                      0x7f84b (size before relaxing)
 
 .comment        0x0000000000000000       0x7b
  .comment       0x0000000000000000       0x7b BOS\BOS.o
