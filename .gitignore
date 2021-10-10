@@ -1,3 +1,4 @@
-MDK-ARM/Objects/
-MDK-ARM/Listings/
-*.Admin
+*.d
+*.o
+*.mk
+*.su

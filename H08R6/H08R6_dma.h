@@ -1,10 +1,11 @@
 /*
-    BitzOS (BOS) V0.2.4 - Copyright (C) 2017-2021 Hexabitz
-    All rights reserved
-		
-    File Name     : H08R6_dma.h
-    Description   : Peripheral DMA setup header file.
-*/
+ BitzOS (BOS) V0.2.5 - Copyright (C) 2017-2021 Hexabitz
+ All rights reserved
+
+ File Name     : H08R6_dma.h
+ Description   : Header file contains Peripheral DMA setup.
+
+ */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef H08R6_dma_H
