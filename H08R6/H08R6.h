@@ -18,7 +18,8 @@
 #include "H08R6_gpio.h"
 #include "H08R6_i2c.h"
 #include "H08R6_dma.h"
-
+#include "H08R6_inputs.h"
+#include "H08R6_eeprom.h"
 
 /* Exported definitions -------------------------------------------------------*/
 #ifdef P08R6
@@ -242,7 +243,8 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
 Module_Status Stop_ToF(void);
 Module_Status SetRangeUnit(uint8_t input);
 uint8_t GetRangeUnit(void);
-
+void SetupPortForRemoteBootloaderUpdate(uint8_t port);
+void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 /* -----------------------------------------------------------------------
   |                             Commands                                  |
    -----------------------------------------------------------------------
