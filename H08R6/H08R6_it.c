@@ -214,8 +214,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 
 /*-----------------------------------------------------------*/
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	uint8_t port_number = GetPort(huart);
 	uint8_t port_index = port_number - 1;
 	if(Rx_Data[port_index] == 0x0D && portStatus[port_number] == FREE)
@@ -281,8 +280,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		}
 	}
 
-		HAL_UART_Receive_DMA(huart,(uint8_t* )&Rx_Data[GetPort(huart) - 1] , 1);	
-	}
+		HAL_UART_Receive_DMA(huart,(uint8_t* )&Rx_Data[GetPort(huart) - 1] , 1);
 }
 
 /*-----------------------------------------------------------*/
