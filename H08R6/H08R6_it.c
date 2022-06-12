@@ -11,6 +11,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
+uint8_t* error_restart_message = "Restarting...\r\n";
 
 /* External variables --------------------------------------------------------*/
 extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
@@ -43,6 +44,10 @@ void SysTick_Handler(void)
 void HardFault_Handler(void)
 {
 	/* Loop here */
+	uint8_t* error_message = "HardFault Error\r\n";
+	writePxMutex(PcPort, (char*) error_message, 17, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
 	for(;;) {};  
 }
 
@@ -282,7 +287,11 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName 
 	/* Run time stack overflow checking is performed if
 	configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
 	function is called if a stack overflow is detected. */
-	taskDISABLE_INTERRUPTS();
+	uint8_t* error_message = "Stack Overflow\r\n";
+	writePxMutex(PcPort, (char*) error_message, 16, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
+//	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
@@ -299,7 +308,11 @@ void vApplicationMallocFailedHook( void )
 	FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
 	to query the size of free heap space that remains (although it does not
 	provide information on how the remaining heap might be fragmented). */
-	taskDISABLE_INTERRUPTS();
+	uint8_t* error_message = "Heap size exceeded\r\n";
+	writePxMutex(PcPort, (char*) error_message, 20, 0xff, 0xff);
+	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	NVIC_SystemReset();
+//	taskDISABLE_INTERRUPTS();
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
