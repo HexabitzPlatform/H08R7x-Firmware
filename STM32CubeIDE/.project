@@ -269,7 +269,7 @@
 		<link>
 			<name>User/topology.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/H09R0x/User/topology.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/User/topology.h</locationURI>
 		</link>
 		<link>
 			<name>Thirdparty/CMSIS/STM32F0xx</name>
