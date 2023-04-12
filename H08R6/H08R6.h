@@ -20,6 +20,7 @@
 #include "H08R6_dma.h"
 #include "H08R6_inputs.h"
 #include "H08R6_eeprom.h"
+#include "vl53l0x_api.h"
 
 /* Exported definitions -------------------------------------------------------*/
 #ifdef P08R6
