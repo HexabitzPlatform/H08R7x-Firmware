@@ -168,48 +168,50 @@ const CLI_Command_Definition_t rangeModParamCommandDefinition =
   * @param  None
   * @retval None
   */
-void SystemClock_Config(void)
-{
-	RCC_OscInitTypeDef RCC_OscInitStruct;
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
-	RCC_PeriphCLKInitTypeDef PeriphClkInit;
+void SystemClock_Config(void){
+	  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue =16;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-	RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-	HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	  /** Configure the main internal regulator output voltage
+	  */
+	  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+	  /** Initializes the RCC Oscillators according to the specified parameters
+	  * in the RCC_OscInitTypeDef structure.
+	  */
+	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+	  RCC_OscInitStruct.PLL.PLLN = 12;
+	  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+	  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+      HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	HAL_RCC_ClockConfig(&RCC_ClkInitStruct,FLASH_LATENCY_1);
+	  /** Initializes the CPU, AHB and APB buses clocks
+	  */
+	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+	                              |RCC_CLOCKTYPE_PCLK1;
+	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
-	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-	PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-	
-	__HAL_RCC_PWR_CLK_ENABLE();
-	HAL_PWR_EnableBkUpAccess();
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
-	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-	
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+	  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	  /** Initializes the peripherals clocks
+	  */
+	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2;
+	  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+	  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C2;
+	  PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
 
-	__SYSCFG_CLK_ENABLE();
-	
-	/* SysTick_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
+	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	  HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
 
 }
 
@@ -313,110 +315,110 @@ void initialValue(void)
 }
 /*-----------------------------------------------------------*/
 
-/* --- Save array topology and Command Snippets in Flash RO --- 
+/* --- Save array topology and Command Snippets in Flash RO ---
 */
 uint8_t SaveToRO(void)
 {
-	BOS_Status result = BOS_OK; 
+	BOS_Status result = BOS_OK;
 	HAL_StatusTypeDef FlashStatus = HAL_OK;
 	uint16_t add = 2, temp = 0;
 	uint8_t snipBuffer[sizeof(snippet_t)+1] = {0};
-	
+
 	HAL_FLASH_Unlock();
-	
+
 	/* Erase RO area */
-	FLASH_PageErase(RO_START_ADDRESS);
-	FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+	FLASH_PageErase(FLASH_BANK_1,RO_START_ADDRESS);
+	FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 	if(FlashStatus != HAL_OK) {
 		return pFlash.ErrorCode;
-	} else {			
+	} else {
 		/* Operation is completed, disable the PER Bit */
 		CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
-	}	
-	
+	}
+
 	/* Save number of modules and myID */
 	if (myID)
 	{
 		temp = (uint16_t) (N<<8) + myID;
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS, temp);
-		FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, RO_START_ADDRESS, temp);
+		FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 		if (FlashStatus != HAL_OK) {
 			return pFlash.ErrorCode;
 		} else {
 			/* If the program operation is completed, disable the PG Bit */
 			CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
-		}			
-	
+		}
+
 	/* Save topology */
 		for(uint8_t i=1 ; i<=N ; i++)
 		{
 			for(uint8_t j=0 ; j<=MaxNumOfPorts ; j++)
 			{
 				if (array[i-1][0]) {
-					HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS+add, array[i-1][j]);
+					HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, RO_START_ADDRESS+add, array[i-1][j]);
 					add += 2;
-					FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+					FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 					if (FlashStatus != HAL_OK) {
 						return pFlash.ErrorCode;
 					} else {
 						/* If the program operation is completed, disable the PG Bit */
 						CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
-					}		
-				}				
+					}
+				}
 			}
 		}
 	}
-	
+
 	// Save Command Snippets
 	int currentAdd = RO_MID_ADDRESS;
-	for(uint8_t s=0 ; s<numOfRecordedSnippets ; s++) 
+	for(uint8_t s=0 ; s<numOfRecordedSnippets ; s++)
 	{
-		if (snippets[s].cond.conditionType) 
+		if (snippets[s].cond.conditionType)
 		{
 			snipBuffer[0] = 0xFE;		// A marker to separate Snippets
 			memcpy( (uint8_t *)&snipBuffer[1], (uint8_t *)&snippets[s], sizeof(snippet_t));
 			// Copy the snippet struct buffer (20 x numOfRecordedSnippets). Note this is assuming sizeof(snippet_t) is even.
 			for(uint8_t j=0 ; j<(sizeof(snippet_t)/2) ; j++)
-			{		
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)&snipBuffer[j*2]);
-				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+			{
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, currentAdd, *(uint16_t *)&snipBuffer[j*2]);
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 				if (FlashStatus != HAL_OK) {
 					return pFlash.ErrorCode;
 				} else {
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
 					currentAdd += 2;
-				}				
-			}			
+				}
+			}
 			// Copy the snippet commands buffer. Always an even number. Note the string termination char might be skipped
 			for(uint8_t j=0 ; j<((strlen(snippets[s].cmd)+1)/2) ; j++)
 			{
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)(snippets[s].cmd+j*2));
-				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, currentAdd, *(uint16_t *)(snippets[s].cmd+j*2));
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 				if (FlashStatus != HAL_OK) {
 					return pFlash.ErrorCode;
 				} else {
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
 					currentAdd += 2;
-				}				
-			}				
-		}	
+				}
+			}
+		}
 	}
-	
+
 	HAL_FLASH_Lock();
-	
+
 	return result;
 }
 
-/* --- Clear array topology in SRAM and Flash RO --- 
+/* --- Clear array topology in SRAM and Flash RO ---
 */
 uint8_t ClearROtopology(void)
 {
-	// Clear the array 
+	// Clear the array
 	memset(array, 0, sizeof(array));
 	N = 1; myID = 0;
-	
+
 	return SaveToRO();
 }
 
@@ -567,64 +569,64 @@ static void Vl53l0xInit(void)
 
   if (VL53L0X_ERROR_NONE == status)
   {
-    status = VL53L0X_DataInit(&vl53l0x_HandleDevice);
+//    status = VL53L0X_DataInit(&vl53l0x_HandleDevice);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-    status = VL53L0X_StaticInit(&vl53l0x_HandleDevice);
+//    status = VL53L0X_StaticInit(&vl53l0x_HandleDevice);
   }
 
   if(status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-    status = VL53L0X_PerformRefSpadManagement(&vl53l0x_HandleDevice,
-                                              &refSpadCount,
-                                              &isApertureSpads);
+//    status = VL53L0X_PerformRefSpadManagement(&vl53l0x_HandleDevice,
+//                                              &refSpadCount,
+//                                              &isApertureSpads);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-    status = VL53L0X_PerformRefCalibration(&vl53l0x_HandleDevice,
-                                           &VhvSettings,
-                                           &PhaseCal);
+//    status = VL53L0X_PerformRefCalibration(&vl53l0x_HandleDevice,
+//                                           &VhvSettings,
+//                                           &PhaseCal);
   }
 
   // Enable/Disable Sigma and Signal check
   if (status == VL53L0X_ERROR_NONE)
   {
-    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
-                                         VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-                                         1);
+//    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
+//                                         VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+//                                         1);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
-                                         VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
-                                         1);
+//    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
+//                                         VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+//                                         1);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
-                                        VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
-                                        (FixPoint1616_t)(0.25*65536));
+//    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
+//                                        VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+//                                        (FixPoint1616_t)(0.25*65536));
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
-                                        VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-                                        (FixPoint1616_t)(18*65536));
+//    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
+//                                        VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+//                                        (FixPoint1616_t)(18*65536));
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Timing budget for High accuracy */
-    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 200000);
+//    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 200000);
   }
 
 /*   if (status == VL53L0X_ERROR_NONE)
@@ -641,32 +643,32 @@ static void Vl53l0xInit(void)
   {
     /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
     /* Setup in single ranging mode */
-    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+//    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
   /* Setting interrupt on INT pin of VL53L0X */
   if (VL53L0X_ERROR_NONE == status)
   {
-    status = VL53L0X_SetGpioConfig(&vl53l0x_HandleDevice,
-                                   0,
-                                   0,
-                                   VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
-                                   VL53L0X_INTERRUPTPOLARITY_LOW);
+//    status = VL53L0X_SetGpioConfig(&vl53l0x_HandleDevice,
+//                                   0,
+//                                   0,
+//                                   VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
+//                                   VL53L0X_INTERRUPTPOLARITY_LOW);
   }
 
   if (VL53L0X_ERROR_NONE == status)
   {
-    status = VL53L0X_SetInterruptThresholds(&vl53l0x_HandleDevice, 0, 60, 200);
+//    status = VL53L0X_SetInterruptThresholds(&vl53l0x_HandleDevice, 0, 60, 200);
   }
 
   if(VL53L0X_ERROR_NONE == status)
   {
-    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+//    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
   }
 }
 
@@ -697,21 +699,21 @@ static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t 
 
   if (VL53L0x_MODE_SINGLE == mode)
   {
-    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
   }
   else if (VL53L0x_MODE_CONTINUOUS == mode)
   {
-    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
+//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
   }
   else if (VL53L0x_MODE_CONTINUOUS_TIMED == mode)
   {
     if(VL53L0X_ERROR_NONE == status)
     {
-      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
+//      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
     }
     if(VL53L0X_ERROR_NONE == status)
     {
-      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
+//      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
     }
   }
   else
@@ -731,7 +733,7 @@ static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t 
   /* start measurement */
   if (status == VL53L0X_ERROR_NONE)
   {
-    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+//    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
   return status;
@@ -746,10 +748,10 @@ static float GetMeasurementResult(void)
   VL53L0X_RangingMeasurementData_t measurementResult;
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
 
-  status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+//  status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
 	
 	if (VL53L0X_ERROR_NONE == status) {
-		status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+//		status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
 		return (float)measurementResult.RangeMilliMeter;
 	} else {
 		return 0;
@@ -1063,15 +1065,15 @@ Module_Status Stop_ToF(void)
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
   VL53L0X_RangingMeasurementData_t measurementResult;
 
-  VL53L0X_StopMeasurement(&vl53l0x_HandleDevice);
+//  VL53L0X_StopMeasurement(&vl53l0x_HandleDevice);
   do{
-    status = VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &StopCompleted);
+//    status = VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &StopCompleted);
     if ((0 == StopCompleted) || (VL53L0X_ERROR_NONE != status))
     {
       break;
     }
     loop++;
-    VL53L0X_PollingDelay(&vl53l0x_HandleDevice);
+//    VL53L0X_PollingDelay(&vl53l0x_HandleDevice);
   } while (loop < VL53L0X_DEFAULT_MAX_LOOP);
 
   if (loop >= VL53L0X_DEFAULT_MAX_LOOP)
@@ -1088,11 +1090,11 @@ Module_Status Stop_ToF(void)
     {
       startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 			tofMode = REQ_IDLE;		// Stop the streaming task
-      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+//      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
 
       if(VL53L0X_ERROR_NONE == status)
       {
-        status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+//        status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
       }
     }
   }

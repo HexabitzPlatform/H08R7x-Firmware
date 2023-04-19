@@ -106,13 +106,13 @@
 #define USART5_RX_PIN   GPIO_PIN_4
 #define USART5_TX_PORT  GPIOB
 #define USART5_RX_PORT  GPIOB
-#define USART5_AF       GPIO_AF4_USART5
+#define USART5_AF       GPIO_AF8_USART5
 
 #define USART6_TX_PIN   GPIO_PIN_4
 #define USART6_RX_PIN   GPIO_PIN_5
 #define USART6_TX_PORT  GPIOA
 #define USART6_RX_PORT  GPIOA
-#define USART6_AF       GPIO_AF5_USART6
+#define USART6_AF       GPIO_AF8_USART6
 
 /* Module-specific Definitions */
 #define _TOF_I2C2_SDA_PORT            GPIOB
@@ -199,8 +199,8 @@ typedef enum
 } Module_Status;
 
 /* Indicator LED */
-#define _IND_LED_PORT   GPIOA
-#define _IND_LED_PIN    GPIO_PIN_11
+#define _IND_LED_PORT   GPIOB
+#define _IND_LED_PIN    GPIO_PIN_7
 
 
 
