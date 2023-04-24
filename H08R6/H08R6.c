@@ -304,7 +304,7 @@ void Module_Peripheral_Init(void)
   Vl53l0xInit();
 	
 	/* Create a ToF task */
-	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal-osPriorityIdle, &ToFHandle);	
+	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal-osPriorityIdle, &ToFHandle);
 
 }
 
@@ -493,13 +493,13 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
     return P1;
   else if (huart->Instance == USART2)
     return P2;
-  else if (huart->Instance == USART6)
-    return P3;
   else if (huart->Instance == USART3)
-    return P4;
+    return P3;
   else if (huart->Instance == USART1)
-    return P5;
+    return P4;
   else if (huart->Instance == USART5)
+    return P5;
+  else if (huart->Instance == USART6)
     return P6;
 
   return 0;
@@ -569,64 +569,64 @@ static void Vl53l0xInit(void)
 
   if (VL53L0X_ERROR_NONE == status)
   {
-//    status = VL53L0X_DataInit(&vl53l0x_HandleDevice);
+    status = VL53L0X_DataInit(&vl53l0x_HandleDevice);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-//    status = VL53L0X_StaticInit(&vl53l0x_HandleDevice);
+    status = VL53L0X_StaticInit(&vl53l0x_HandleDevice);
   }
 
   if(status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-//    status = VL53L0X_PerformRefSpadManagement(&vl53l0x_HandleDevice,
-//                                              &refSpadCount,
-//                                              &isApertureSpads);
+    status = VL53L0X_PerformRefSpadManagement(&vl53l0x_HandleDevice,
+                                              &refSpadCount,
+                                              &isApertureSpads);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Device Initialization */
-//    status = VL53L0X_PerformRefCalibration(&vl53l0x_HandleDevice,
-//                                           &VhvSettings,
-//                                           &PhaseCal);
+    status = VL53L0X_PerformRefCalibration(&vl53l0x_HandleDevice,
+                                           &VhvSettings,
+                                           &PhaseCal);
   }
 
   // Enable/Disable Sigma and Signal check
   if (status == VL53L0X_ERROR_NONE)
   {
-//    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
-//                                         VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-//                                         1);
+    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
+                                         VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+                                         1);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-//    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
-//                                         VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
-//                                         1);
+    status = VL53L0X_SetLimitCheckEnable(&vl53l0x_HandleDevice,
+                                         VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+                                         1);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-//    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
-//                                        VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
-//                                        (FixPoint1616_t)(0.25*65536));
+    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
+                                        VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE,
+                                        (FixPoint1616_t)(0.25*65536));
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-//    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
-//                                        VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
-//                                        (FixPoint1616_t)(18*65536));
+    status = VL53L0X_SetLimitCheckValue(&vl53l0x_HandleDevice,
+                                        VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE,
+                                        (FixPoint1616_t)(18*65536));
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
     /* Timing budget for High accuracy */
-//    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 200000);
+    status = VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&vl53l0x_HandleDevice, 200000);
   }
 
 /*   if (status == VL53L0X_ERROR_NONE)
@@ -643,32 +643,32 @@ static void Vl53l0xInit(void)
   {
     /* no need to do this when we use VL53L0X_PerformSingleRangingMeasurement */
     /* Setup in single ranging mode */
-//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
   }
 
   if (status == VL53L0X_ERROR_NONE)
   {
-//    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
   /* Setting interrupt on INT pin of VL53L0X */
   if (VL53L0X_ERROR_NONE == status)
   {
-//    status = VL53L0X_SetGpioConfig(&vl53l0x_HandleDevice,
-//                                   0,
-//                                   0,
-//                                   VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
-//                                   VL53L0X_INTERRUPTPOLARITY_LOW);
+    status = VL53L0X_SetGpioConfig(&vl53l0x_HandleDevice,
+                                   0,
+                                   0,
+                                   VL53L0X_GPIOFUNCTIONALITY_NEW_MEASURE_READY,
+                                   VL53L0X_INTERRUPTPOLARITY_LOW);
   }
 
   if (VL53L0X_ERROR_NONE == status)
   {
-//    status = VL53L0X_SetInterruptThresholds(&vl53l0x_HandleDevice, 0, 60, 200);
+    status = VL53L0X_SetInterruptThresholds(&vl53l0x_HandleDevice, 0, 60, 200);
   }
 
   if(VL53L0X_ERROR_NONE == status)
   {
-//    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+    status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
   }
 }
 
@@ -699,21 +699,21 @@ static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t 
 
   if (VL53L0x_MODE_SINGLE == mode)
   {
-//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_SINGLE_RANGING);
   }
   else if (VL53L0x_MODE_CONTINUOUS == mode)
   {
-//    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
+    status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING);
   }
   else if (VL53L0x_MODE_CONTINUOUS_TIMED == mode)
   {
     if(VL53L0X_ERROR_NONE == status)
     {
-//      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
+      status = VL53L0X_SetDeviceMode(&vl53l0x_HandleDevice, VL53L0X_DEVICEMODE_CONTINUOUS_TIMED_RANGING);
     }
     if(VL53L0X_ERROR_NONE == status)
     {
-//      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
+      status = VL53L0X_SetInterMeasurementPeriodMilliSeconds(&vl53l0x_HandleDevice, period);
     }
   }
   else
@@ -733,7 +733,7 @@ static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t 
   /* start measurement */
   if (status == VL53L0X_ERROR_NONE)
   {
-//    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
+    VL53L0X_StartMeasurement(&vl53l0x_HandleDevice);
   }
 
   return status;
@@ -748,10 +748,10 @@ static float GetMeasurementResult(void)
   VL53L0X_RangingMeasurementData_t measurementResult;
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
 
-//  status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+  status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
 	
 	if (VL53L0X_ERROR_NONE == status) {
-//		status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+		status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
 		return (float)measurementResult.RangeMilliMeter;
 	} else {
 		return 0;
@@ -1050,6 +1050,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+	*buffer=h08r6_range;
 
 }
 

@@ -71,10 +71,10 @@
 #ifdef H08R6
 	#define P1uart &huart4
 	#define P2uart &huart2
-	#define P3uart &huart6
-	#define P4uart &huart3
-	#define P5uart &huart1
-	#define P6uart &huart5
+	#define P3uart &huart3
+	#define P4uart &huart1
+	#define P5uart &huart5
+	#define P6uart &huart6
 #endif
 
 /* Port Definitions */
@@ -103,15 +103,15 @@
 #define USART4_AF       GPIO_AF4_USART4
 
 #define USART5_TX_PIN   GPIO_PIN_3
-#define USART5_RX_PIN   GPIO_PIN_4
-#define USART5_TX_PORT  GPIOB
-#define USART5_RX_PORT  GPIOB
+#define USART5_RX_PIN   GPIO_PIN_2
+#define USART5_TX_PORT  GPIOD
+#define USART5_RX_PORT  GPIOD
 #define USART5_AF       GPIO_AF8_USART5
 
-#define USART6_TX_PIN   GPIO_PIN_4
-#define USART6_RX_PIN   GPIO_PIN_5
-#define USART6_TX_PORT  GPIOA
-#define USART6_RX_PORT  GPIOA
+#define USART6_TX_PIN   GPIO_PIN_8
+#define USART6_RX_PIN   GPIO_PIN_9
+#define USART6_TX_PORT  GPIOB
+#define USART6_RX_PORT  GPIOB
 #define USART6_AF       GPIO_AF8_USART6
 
 /* Module-specific Definitions */
@@ -122,7 +122,7 @@
 #define _TOF_I2C2_SCL_PIN             GPIO_PIN_13
 #define _TOF_I2C2_SCL_GPIO_CLK()      __GPIOB_CLK_ENABLE();
 #define _TOF_INT_PORT                 GPIOB
-#define _TOF_INT_PIN                  GPIO_PIN_2
+#define _TOF_INT_PIN                  GPIO_PIN_1
 #define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
 #ifdef P08R6
 	#define _TOF_XSHUT_PORT               GPIOB
@@ -130,8 +130,8 @@
 	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
 #endif
 #ifdef H08R6
-	#define _TOF_XSHUT_PORT               GPIOB
-	#define _TOF_XSHUT_PIN                GPIO_PIN_12
+	#define _TOF_XSHUT_PORT               GPIOA
+	#define _TOF_XSHUT_PIN                GPIO_PIN_5
 	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
 #endif
 
@@ -156,22 +156,22 @@
 #define VL53L0X_DEFAULT_MAX_LOOP      2000
 
 #define REQ_IDLE                			0
-#define REQ_SAMPLE		                1
-#define REQ_SAMPLE_CLI                2
+#define REQ_SAMPLE		                	1
+#define REQ_SAMPLE_CLI                		2
 #define REQ_SAMPLE_VERBOSE_CLI				3
-#define REQ_SAMPLE_ARR                4
-#define REQ_STREAM_PORT_CLI           5
-#define REQ_STREAM_VERBOSE_PORT_CLI   6
-#define REQ_STREAM_PORT_ARR           7
-#define REQ_STREAM_MEMORY         		8
-#define REQ_OUT_RANGE_CLI             9
-#define REQ_OUT_RANGE_ARR             10
+#define REQ_SAMPLE_ARR                		4
+#define REQ_STREAM_PORT_CLI           		5
+#define REQ_STREAM_VERBOSE_PORT_CLI   		6
+#define REQ_STREAM_PORT_ARR           		7
+#define REQ_STREAM_MEMORY         			8
+#define REQ_OUT_RANGE_CLI            	 	9
+#define REQ_OUT_RANGE_ARR             		10
 #define REQ_TIMEOUT             			11
-#define REQ_MEASUREMENT_READY         12
-#define REQ_TIMEOUT_CLI								13
+#define REQ_MEASUREMENT_READY         		12
+#define REQ_TIMEOUT_CLI						13
 #define REQ_TIMEOUT_VERBOSE_CLI				14
-#define REQ_TIMEOUT_MEMORY						15
-#define REQ_TIMEOUT_ARR								16
+#define REQ_TIMEOUT_MEMORY					15
+#define REQ_TIMEOUT_ARR						16
 
 #define TIMERID_TIMEOUT_MEASUREMENT   0xFF
 
