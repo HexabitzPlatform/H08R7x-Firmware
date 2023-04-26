@@ -1000,6 +1000,7 @@ float Sample_ToF(void)
 */
 void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose)
 {
+
 	if (!port && !module && verbose)
 		tofMode = REQ_STREAM_VERBOSE_PORT_CLI;
 	else if (!port && !module)
@@ -1024,6 +1025,9 @@ void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t mo
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+
+	SendMeasurementResult(tofMode, h08r6_range, module, port, NULL);
+
 }
 
 /*-----------------------------------------------------------*/
