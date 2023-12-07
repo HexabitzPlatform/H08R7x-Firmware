@@ -168,48 +168,50 @@ const CLI_Command_Definition_t rangeModParamCommandDefinition =
   * @param  None
   * @retval None
   */
-void SystemClock_Config(void)
-{
-	RCC_OscInitTypeDef RCC_OscInitStruct;
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
-	RCC_PeriphCLKInitTypeDef PeriphClkInit;
+void SystemClock_Config(void){
+	  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.HSICalibrationValue =16;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL6;
-	RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
-	HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	  /** Configure the main internal regulator output voltage
+	  */
+	  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+	  /** Initializes the RCC Oscillators according to the specified parameters
+	  * in the RCC_OscInitTypeDef structure.
+	  */
+	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+	  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+	  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+	  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
+	  RCC_OscInitStruct.PLL.PLLN = 12;
+	  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+	  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+      HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1);
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-	HAL_RCC_ClockConfig(&RCC_ClkInitStruct,FLASH_LATENCY_1);
+	  /** Initializes the CPU, AHB and APB buses clocks
+	  */
+	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+	                              |RCC_CLOCKTYPE_PCLK1;
+	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1 | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART3;
-	PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK1;
-	PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-	PeriphClkInit.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-	
-	__HAL_RCC_PWR_CLK_ENABLE();
-	HAL_PWR_EnableBkUpAccess();
-	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_HSE_DIV32;
-	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-	
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
+	  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	  /** Initializes the peripherals clocks
+	  */
+	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_USART2;
+	  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+	  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C2;
+	  PeriphClkInit.I2c2ClockSelection = RCC_I2C2CLKSOURCE_PCLK1;
 
-	__SYSCFG_CLK_ENABLE();
-	
-	/* SysTick_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
+	  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+	  HAL_NVIC_SetPriority(SysTick_IRQn,0,0);
 
 }
 
@@ -292,6 +294,24 @@ void Module_Peripheral_Init(void)
   MX_USART5_UART_Init();
   MX_USART6_UART_Init();
 
+
+  //Circulating DMA Channels ON All Module
+ for(int i=1;i<=NumOfPorts;i++)
+	{
+	  if(GetUart(i)==&huart1)
+			   { index_dma[i-1]=&(DMA1_Channel1->CNDTR); }
+	  else if(GetUart(i)==&huart2)
+			   { index_dma[i-1]=&(DMA1_Channel2->CNDTR); }
+	  else if(GetUart(i)==&huart3)
+			   { index_dma[i-1]=&(DMA1_Channel3->CNDTR); }
+	  else if(GetUart(i)==&huart4)
+			   { index_dma[i-1]=&(DMA1_Channel4->CNDTR); }
+	  else if(GetUart(i)==&huart5)
+			   { index_dma[i-1]=&(DMA1_Channel5->CNDTR); }
+	  else if(GetUart(i)==&huart6)
+			   { index_dma[i-1]=&(DMA1_Channel6->CNDTR); }
+	}
+
   /* create a event group for measurement ranging */
   handleNewReadyData = xEventGroupCreate();
 
@@ -302,7 +322,7 @@ void Module_Peripheral_Init(void)
   Vl53l0xInit();
 	
 	/* Create a ToF task */
-	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal-osPriorityIdle, &ToFHandle);	
+	xTaskCreate(ToFTask, (const char *) "ToFTask", (2*configMINIMAL_STACK_SIZE), NULL, osPriorityNormal-osPriorityIdle, &ToFHandle);
 
 }
 
@@ -313,110 +333,110 @@ void initialValue(void)
 }
 /*-----------------------------------------------------------*/
 
-/* --- Save array topology and Command Snippets in Flash RO --- 
+/* --- Save array topology and Command Snippets in Flash RO ---
 */
 uint8_t SaveToRO(void)
 {
-	BOS_Status result = BOS_OK; 
+	BOS_Status result = BOS_OK;
 	HAL_StatusTypeDef FlashStatus = HAL_OK;
 	uint16_t add = 2, temp = 0;
 	uint8_t snipBuffer[sizeof(snippet_t)+1] = {0};
-	
+
 	HAL_FLASH_Unlock();
-	
+
 	/* Erase RO area */
-	FLASH_PageErase(RO_START_ADDRESS);
-	FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+	FLASH_PageErase(FLASH_BANK_1,RO_START_ADDRESS);
+	FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 	if(FlashStatus != HAL_OK) {
 		return pFlash.ErrorCode;
-	} else {			
+	} else {
 		/* Operation is completed, disable the PER Bit */
 		CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
-	}	
-	
+	}
+
 	/* Save number of modules and myID */
 	if (myID)
 	{
 		temp = (uint16_t) (N<<8) + myID;
-		HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS, temp);
-		FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+		HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, RO_START_ADDRESS, temp);
+		FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 		if (FlashStatus != HAL_OK) {
 			return pFlash.ErrorCode;
 		} else {
 			/* If the program operation is completed, disable the PG Bit */
 			CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
-		}			
-	
+		}
+
 	/* Save topology */
 		for(uint8_t i=1 ; i<=N ; i++)
 		{
 			for(uint8_t j=0 ; j<=MaxNumOfPorts ; j++)
 			{
 				if (array[i-1][0]) {
-					HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, RO_START_ADDRESS+add, array[i-1][j]);
+					HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, RO_START_ADDRESS+add, array[i-1][j]);
 					add += 2;
-					FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+					FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 					if (FlashStatus != HAL_OK) {
 						return pFlash.ErrorCode;
 					} else {
 						/* If the program operation is completed, disable the PG Bit */
 						CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
-					}		
-				}				
+					}
+				}
 			}
 		}
 	}
-	
+
 	// Save Command Snippets
 	int currentAdd = RO_MID_ADDRESS;
-	for(uint8_t s=0 ; s<numOfRecordedSnippets ; s++) 
+	for(uint8_t s=0 ; s<numOfRecordedSnippets ; s++)
 	{
-		if (snippets[s].cond.conditionType) 
+		if (snippets[s].cond.conditionType)
 		{
 			snipBuffer[0] = 0xFE;		// A marker to separate Snippets
 			memcpy( (uint8_t *)&snipBuffer[1], (uint8_t *)&snippets[s], sizeof(snippet_t));
 			// Copy the snippet struct buffer (20 x numOfRecordedSnippets). Note this is assuming sizeof(snippet_t) is even.
 			for(uint8_t j=0 ; j<(sizeof(snippet_t)/2) ; j++)
-			{		
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)&snipBuffer[j*2]);
-				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+			{
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, currentAdd, *(uint16_t *)&snipBuffer[j*2]);
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 				if (FlashStatus != HAL_OK) {
 					return pFlash.ErrorCode;
 				} else {
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
 					currentAdd += 2;
-				}				
-			}			
+				}
+			}
 			// Copy the snippet commands buffer. Always an even number. Note the string termination char might be skipped
 			for(uint8_t j=0 ; j<((strlen(snippets[s].cmd)+1)/2) ; j++)
 			{
-				HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, currentAdd, *(uint16_t *)(snippets[s].cmd+j*2));
-				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE); 
+				HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, currentAdd, *(uint16_t *)(snippets[s].cmd+j*2));
+				FlashStatus = FLASH_WaitForLastOperation((uint32_t)HAL_FLASH_TIMEOUT_VALUE);
 				if (FlashStatus != HAL_OK) {
 					return pFlash.ErrorCode;
 				} else {
 					/* If the program operation is completed, disable the PG Bit */
 					CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
 					currentAdd += 2;
-				}				
-			}				
-		}	
+				}
+			}
+		}
 	}
-	
+
 	HAL_FLASH_Lock();
-	
+
 	return result;
 }
 
-/* --- Clear array topology in SRAM and Flash RO --- 
+/* --- Clear array topology in SRAM and Flash RO ---
 */
 uint8_t ClearROtopology(void)
 {
-	// Clear the array 
+	// Clear the array
 	memset(array, 0, sizeof(array));
 	N = 1; myID = 0;
-	
+
 	return SaveToRO();
 }
 
@@ -491,13 +511,13 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
     return P1;
   else if (huart->Instance == USART2)
     return P2;
-  else if (huart->Instance == USART6)
-    return P3;
   else if (huart->Instance == USART3)
-    return P4;
+    return P3;
   else if (huart->Instance == USART1)
-    return P5;
+    return P4;
   else if (huart->Instance == USART5)
+    return P5;
+  else if (huart->Instance == USART6)
     return P6;
 
   return 0;
@@ -998,6 +1018,7 @@ float Sample_ToF(void)
 */
 void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose)
 {
+
 	if (!port && !module && verbose)
 		tofMode = REQ_STREAM_VERBOSE_PORT_CLI;
 	else if (!port && !module)
@@ -1022,6 +1043,9 @@ void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t mo
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+
+	SendMeasurementResult(tofMode, h08r6_range, module, port, NULL);
+
 }
 
 /*-----------------------------------------------------------*/
@@ -1048,6 +1072,7 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
 	h08r6_range = GetMeasurementResult();
+	*buffer=h08r6_range;
 
 }
 
@@ -1063,15 +1088,15 @@ Module_Status Stop_ToF(void)
   VL53L0X_Error status = VL53L0X_ERROR_NONE;
   VL53L0X_RangingMeasurementData_t measurementResult;
 
-  VL53L0X_StopMeasurement(&vl53l0x_HandleDevice);
+//  VL53L0X_StopMeasurement(&vl53l0x_HandleDevice);
   do{
-    status = VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &StopCompleted);
+//    status = VL53L0X_GetStopCompletedStatus(&vl53l0x_HandleDevice, &StopCompleted);
     if ((0 == StopCompleted) || (VL53L0X_ERROR_NONE != status))
     {
       break;
     }
     loop++;
-    VL53L0X_PollingDelay(&vl53l0x_HandleDevice);
+//    VL53L0X_PollingDelay(&vl53l0x_HandleDevice);
   } while (loop < VL53L0X_DEFAULT_MAX_LOOP);
 
   if (loop >= VL53L0X_DEFAULT_MAX_LOOP)
@@ -1088,11 +1113,11 @@ Module_Status Stop_ToF(void)
     {
       startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 			tofMode = REQ_IDLE;		// Stop the streaming task
-      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
+//      status = VL53L0X_GetRangingMeasurementData(&vl53l0x_HandleDevice, &measurementResult);
 
       if(VL53L0X_ERROR_NONE == status)
       {
-        status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
+//        status = VL53L0X_ClearInterruptMask(&vl53l0x_HandleDevice, 0);
       }
     }
   }

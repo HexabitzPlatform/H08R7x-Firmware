@@ -2,29 +2,31 @@
  BitzOS (BOS) V0.2.9 - Copyright (C) 2017-2023 Hexabitz
  All rights reserved
 
- File Name     : H08R6_gpio.h
- Description   : Header file contains all the functions prototypes for
- the GPIO .
-
- */
-
+ File Name          : H08R6_i2c.h
+ Description        : This file contains all the functions prototypes for
+                      the i2c
+*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __gpio_H
-#define __gpio_H
+#ifndef __i2c_H
+#define __i2c_H
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32g0xx_hal.h"
+#include "stm32f0xx_hal.h"
 
-extern void GPIO_Init(void);
-extern void IND_LED_Init(void);
+extern I2C_HandleTypeDef hi2c2;
+
+
+extern void MX_I2C_Init(void);
+extern void MX_I2C2_Init(void);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__gpio_H */
+#endif /*__i2c_H */
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
