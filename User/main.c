@@ -23,13 +23,14 @@ int main(void){
 }
 
 /*-----------------------------------------------------------*/
-
+float buffer[60];
 /* User Task */
 void UserTask(void *argument){
-
-	
+//Stream_ToF_Memory(100, 5000, buffer);
 	// put your code here, to run repeatedly.
 	while(1){
+//Stream_ToF_Port(period, timeout, port, module, verbose)
+//	Stream_ToF_Memory(200, 5000, buffer);
 
 	}
 }

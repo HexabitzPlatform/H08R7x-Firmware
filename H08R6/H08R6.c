@@ -1061,14 +1061,13 @@ void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t mo
 
 /* --- Stream measurements continuously to a memory location (triggers ST API Continuous Ranging)
 */
-void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
+void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float *buffer )
 {
 	tofMode = REQ_STREAM_MEMORY;
 	tofPeriod = period;
 	tofTimeout = timeout;
-	tofBuffer = buffer;
-	
-	
+	uint32_t BufferSize = timeout/period;
+
   if (0 == period)
   {
     SetMeasurementMode(VL53L0x_MODE_CONTINUOUS, 0, timeout);
@@ -1080,9 +1079,12 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer)
 
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
-	h08r6_range = GetMeasurementResult();
-	*buffer=h08r6_range;
 
+	for (int i = 0; i < BufferSize; ++i) {
+		HAL_Delay(period/2);
+		buffer[i] = GetMeasurementResult();
+		HAL_Delay(period/2);
+	}
 }
 
 /*-----------------------------------------------------------*/
