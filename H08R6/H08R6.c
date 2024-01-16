@@ -827,7 +827,7 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
 
   /* Get CLI output buffer */
   pcOutputString = FreeRTOS_CLIGetOutputBuffer();
-  tempData = ConvertCurrentUnit(distance);
+  tempData = GetMeasurementResult();
 	
 	if (request != REQ_SAMPLE_VERBOSE_CLI && request != REQ_STREAM_VERBOSE_PORT_CLI)
 	{
@@ -933,8 +933,10 @@ static void SendMeasurementResult(uint8_t request, float distance, uint8_t modul
       break;
 		
     case REQ_STREAM_MEMORY:
+
       memset(buffer, 0, sizeof(float));
-      memcpy((void *)&buffer[stream_index], &tempData, sizeof(float));		
+      memcpy((void *)&buffer[stream_index], &tempData, sizeof(float));
+      stream_index++;
       break;
 		
     case REQ_OUT_RANGE_CLI:
@@ -1063,10 +1065,12 @@ void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t mo
 */
 void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float *buffer )
 {
+
 	tofMode = REQ_STREAM_MEMORY;
 	tofPeriod = period;
 	tofTimeout = timeout;
-	uint32_t BufferSize = timeout/period;
+	tofBuffer = buffer;
+
 
   if (0 == period)
   {
@@ -1079,12 +1083,9 @@ void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float *buffer )
 
   startMeasurementRanging = START_MEASUREMENT_RANGING;
 	t0 = HAL_GetTick();
+//	h08r6_range = GetMeasurementResult();
+//	*buffer=h08r6_range;
 
-	for (int i = 0; i < BufferSize; ++i) {
-		HAL_Delay(period/2);
-		buffer[i] = GetMeasurementResult();
-		HAL_Delay(period/2);
-	}
 }
 
 /*-----------------------------------------------------------*/
