@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.0 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.2.9 - Copyright (C) 2017-2023 Hexabitz
  All rights reserved
 
  File Name          : H08R6_i2c.h
@@ -15,6 +15,7 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32f0xx_hal.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
