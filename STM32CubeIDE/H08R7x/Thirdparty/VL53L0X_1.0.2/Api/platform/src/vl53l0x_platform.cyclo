@@ -1,0 +1,12 @@
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:64:15:VL53L0X_LockSequenceAccess	1
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:70:15:VL53L0X_UnlockSequenceAccess	1
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:77:15:VL53L0X_WriteMulti	3
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:98:15:VL53L0X_ReadMulti	3
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:119:15:VL53L0X_WrByte	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:134:15:VL53L0X_WrWord	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:149:15:VL53L0X_WrDWord	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:164:15:VL53L0X_UpdateByte	4
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:188:15:VL53L0X_RdByte	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:203:15:VL53L0X_RdWord	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:218:16:VL53L0X_RdDWord	2
+..\..\Thirdparty\VL53L0X_1.0.2\Api\platform\src\vl53l0x_platform.c:234:15:VL53L0X_PollingDelay	2
