@@ -53,7 +53,13 @@
 									<listOptionValue builtIn="false" value="_module=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.657771675" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/Src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/vl53l1}&quot;"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32G0xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1}&quot;"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L0X_1.0.2/Api/platform/inc"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L0X_1.0.2/Api/core/inc"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32G0xx_HAL_Driver/Inc/Legacy"/>
@@ -104,7 +110,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="VL53L1" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="VL53L1"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -132,6 +139,9 @@
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.766806370;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.766806370.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1234834700;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.717254710">
 			<autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1991708182;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1991708182.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.816936460;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1238574755">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

@@ -20,7 +20,7 @@
 #include "H08R7_dma.h"
 #include "H08R7_inputs.h"
 #include "H08R7_eeprom.h"
-#include "vl53l0x_api.h"
+//#include "vl53l0x_api.h"
 
 
 /* Exported definitions -------------------------------------------------------*/
@@ -215,7 +215,7 @@ extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 
 extern uint8_t H08R7UnitMeasurement;
-extern VL53L0X_Dev_t vl53l0x_HandleDevice;
+//extern VL53L0X_Dev_t vl53l0x_HandleDevice;
 extern EventGroupHandle_t handleNewReadyData;
 extern uint8_t startMeasurementRanging;
 extern float H08R7MaxRange;
@@ -239,14 +239,14 @@ extern void MX_USART6_UART_Init(void);
    -----------------------------------------------------------------------
 */
 
-float Sample_ToF(void);
-void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
-void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
-Module_Status Stop_ToF(void);
-Module_Status SetRangeUnit(uint8_t input);
-uint8_t GetRangeUnit(void);
-void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
+//float Sample_ToF(void);
+//void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
+//void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
+//Module_Status Stop_ToF(void);
+//Module_Status SetRangeUnit(uint8_t input);
+//uint8_t GetRangeUnit(void);
+//void SetupPortForRemoteBootloaderUpdate(uint8_t port);
+//void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 /* -----------------------------------------------------------------------
   |                             Commands                                  |
    -----------------------------------------------------------------------
