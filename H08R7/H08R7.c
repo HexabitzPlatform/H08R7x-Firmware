@@ -4,7 +4,7 @@
 
     File Name     : H08R7.c
     Description   : Source code for module H08R7.
-                    IR Time-if-Flight (ToF) Sensor (ST VL53L0CX)
+                    IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
 
     Required MCU resources :
 
@@ -18,6 +18,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 #include <stdlib.h>
+
+VL53L1_Dev_t                   dev;
+VL53L1_DEV                     Dev = &dev;
+
+VL53L1_PresetModes PresetMode_User = VL53L1_PRESETMODE_AUTONOMOUS;
+VL53L1_DistanceModes DistanceMode_User = VL53L1_DISTANCEMODE_LONG;
+VL53L1_InterruptMode InterruptMode_User = INTERRUPT_DISABLE;
+dynamicZone_s dynamicZone_s_User;
+ToF_Structure ToFStructure_User;
+
+Status_TypeDef SSS=STATUS_OK;
 
 /* Define UART variables */
 UART_HandleTypeDef huart1;
@@ -537,6 +548,7 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 */
 void ToFTask(void * argument)
 {
+
 	while(1)
 	{
 		// Process data when it's ready from the sensor or when the period timer is expired
@@ -577,7 +589,28 @@ void ToFTask(void * argument)
 }
 
 /*-----------------------------------------------------------*/
-//
+void Vl53l1xInit(void) {
+	IRSensorInit(Dev);
+	dynamicZone_s_User.dynamicMultiZone_user = DYNAMIC_MZONE_OFF;
+	dynamicZone_s_User.dynamicRangingZone_user = DYNAMIC_ZONE_OFF;
+}
+/*-----------------------------------------------------------*/
+void Sample_ToF(float* Distance)
+ {
+	tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+			InterruptMode_User, dynamicZone_s_User, &ToFStructure_User);
+	*Distance = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
+
+}
+float es(void)
+ {
+	float mm;
+	tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+			InterruptMode_User, dynamicZone_s_User, &ToFStructure_User);
+	mm = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
+
+}
+
 //static void Vl53l0xInit(void)
 //{
 //  VL53L0X_Error status = VL53L0X_ERROR_NONE;

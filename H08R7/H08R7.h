@@ -21,7 +21,7 @@
 #include "H08R7_inputs.h"
 #include "H08R7_eeprom.h"
 //#include "vl53l0x_api.h"
-
+#include "Bracelet_IR_ToF.h"
 
 /* Exported definitions -------------------------------------------------------*/
 #ifdef P08R6
@@ -238,7 +238,9 @@ extern void MX_USART6_UART_Init(void);
   |                               APIs                                    |
    -----------------------------------------------------------------------
 */
-
+void Vl53l1xInit(void);
+void Sample_ToF(float* Distance);
+float es(void);
 //float Sample_ToF(void);
 //void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
 //void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
