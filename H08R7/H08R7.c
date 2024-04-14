@@ -54,7 +54,7 @@ extern uint8_t numOfRecordedSnippets;
 uint8_t H08R7UnitMeasurement = UNIT_MEASUREMENT_MM;
 EventGroupHandle_t handleNewReadyData = NULL;
 uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
-
+typedef void (*SampleMemsToPort)(uint8_t, uint8_t);
 /* Module exported parameters ------------------------------------------------*/
 float H08R7_range = 0.0f;
 float sample __attribute__((section(".mySection")));
@@ -73,6 +73,9 @@ uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
 TimerHandle_t xTimerTof = NULL;
 uint8_t stream_index=0;
+static bool stopStream = false;
+#define MIN_MEMS_PERIOD_MS				100
+#define MAX_MEMS_TIMEOUT_MS				0xFFFFFFFF
 /* Private function prototypes -----------------------------------------------*/
 //static void Vl53l0xInit(void);
 //static VL53L0X_Error SetMeasurementMode(uint8_t mode, uint32_t period, uint32_t timeout);
@@ -84,6 +87,10 @@ void ToFTask(void * argument);
 void Stream_ToF(uint32_t period, uint32_t timeout);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
+void SampleDistanceToPort(uint8_t port,uint8_t module);
+
+
+static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function);
 /* Create CLI commands --------------------------------------------------------*/
 //static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 //static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -614,6 +621,62 @@ void Sample_ToF(float* Distance)
 
 }
 
+static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function)
+{
+	Module_Status status = H08R7_OK;
+
+
+	if (period < MIN_MEMS_PERIOD_MS)
+		return H08R7_ERR_WrongParams;
+	if (port == 0)
+		return H08R7_ERR_WrongParams;
+	if (port == PcPort) // Check if CLI is not enabled at that port!
+		return H08R7_ERR_BUSY;
+
+	if (period > timeout)
+		timeout = period;
+
+	long numTimes = timeout / period;
+	stopStream = false;
+
+	while ((numTimes-- > 0) || (timeout >= MAX_MEMS_TIMEOUT_MS)) {
+		function(port, module);
+
+		vTaskDelay(pdMS_TO_TICKS(period));
+		if (stopStream) {
+			status = H0BR7_ERR_TERMINATED;
+			break;
+		}
+	}
+	return status;
+}
+void SampleDistanceToPort(uint8_t port,uint8_t module)
+{
+	float buffer[1]; // Three Samples X, Y, Z
+	static uint8_t temp[4];
+
+	Sample_ToF(buffer);
+	if(module == myID || module == 0){
+		temp[0] =*((__IO uint8_t* )(&buffer[0]) + 3);
+		temp[1] =*((__IO uint8_t* )(&buffer[0]) + 2);
+		temp[2] =*((__IO uint8_t* )(&buffer[0]) + 1);
+		temp[3] =*((__IO uint8_t* )(&buffer[0]) + 0);
+
+		writePxITMutex(port,(char* )&temp[0],4 * sizeof(uint8_t),10);
+	}
+	else{
+		messageParams[0] =port;
+		messageParams[1] =*((__IO uint8_t* )(&buffer[0]) + 3);
+		messageParams[2] =*((__IO uint8_t* )(&buffer[0]) + 2);
+		messageParams[3] =*((__IO uint8_t* )(&buffer[0]) + 1);
+		messageParams[4] =*((__IO uint8_t* )(&buffer[0]) + 0);
+		SendMessageToModule(module,CODE_PORT_FORWARD,sizeof(float) + 1);
+	}
+}
+Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout)
+{
+	return StreamMemsToPort(port, module, period, timeout, SampleDistanceToPort);
+}
 
 //static void Vl53l0xInit(void)
 //{
@@ -801,7 +864,7 @@ void Sample_ToF(float* Distance)
 //
 //  return status;
 //}
-//
+
 ///*-----------------------------------------------------------*/
 //
 ///* --- Get measurement result

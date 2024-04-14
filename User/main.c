@@ -30,9 +30,11 @@ float b ;
 /* User Task */
 void UserTask(void *argument){
 //	Vl53l1xInit();
+	StreamDistanceToPort(3, 0, 100, 5000);
 	// put your code here, to run repeatedly.
 	while(1){
-		Sample_ToF(&b);
+//		Sample_ToF(&b);
+
 
 x++;
 	}

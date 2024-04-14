@@ -198,6 +198,8 @@ typedef enum
   H08R7_ERR_WrongIntensity,
   H08R7_ERR_Timeout,
   H08R7_ERR_WrongParams,
+  H08R7_ERR_BUSY,
+  H0BR7_ERR_TERMINATED,
   H08R7_ERROR = 255
 } Module_Status;
 
@@ -243,7 +245,7 @@ extern void MX_USART6_UART_Init(void);
 */
 void Vl53l1xInit(void);
 void Sample_ToF(float* Distance);
-float es(void);
+Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout);
 //float Sample_ToF(void);
 //void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
 //void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
