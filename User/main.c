@@ -7,7 +7,7 @@
  */
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
-#include "Bracelet_IR_ToF.h"
+
 /* Private variables ---------------------------------------------------------*/
 
 /* Private function prototypes -----------------------------------------------*/
@@ -15,24 +15,25 @@
 /* Main function ------------------------------------------------------------*/
 
 int x ;
-float mm ;
+
 int main(void){
 
 	Module_Init();		//Initialize Module &  BitzOS
+
 
 	//Don't place your code here.
 	for(;;){}
 }
 
 /*-----------------------------------------------------------*/
-
+float b ;
 /* User Task */
 void UserTask(void *argument){
-	Vl53l1xInit();
+//	Vl53l1xInit();
 	// put your code here, to run repeatedly.
 	while(1){
-Sample_ToF(&mm);
-//mm= es();
+		Sample_ToF(&b);
+
 x++;
 	}
 }

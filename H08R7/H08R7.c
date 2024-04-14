@@ -39,7 +39,7 @@ UART_HandleTypeDef huart3;
 #endif
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
-
+float Dist ;
 //VL53L0X_Dev_t vl53l0x_HandleDevice;
 
 /* Exported variables */
@@ -546,38 +546,50 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 
 /* --- ToF streaming task 
 */
+
+
 void ToFTask(void * argument)
 {
+	Vl53l1xInit();
 
 	while(1)
 	{
+
+
 		// Process data when it's ready from the sensor or when the period timer is expired
 		if (tofState == REQ_MEASUREMENT_READY || (HAL_GetTick()-t0) >= tofPeriod)
 		{
 			switch (tofMode)
-			{				
-				case REQ_STREAM_MEMORY :
+			{
+			case SAMPLE_TOF:
+				tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+						InterruptMode_User, dynamicZone_s_User,
+						&ToFStructure_User);
+				Dist = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
+
+				break;
+			case REQ_STREAM_MEMORY:
 //					H08R7_range = GetMeasurementResult();
 //					SendMeasurementResult(REQ_STREAM_MEMORY, H08R7_range, 0, 0, tofBuffer);
-					break;
-				
-				case REQ_STREAM_PORT_CLI :				
+				break;
+
+			case REQ_STREAM_PORT_CLI:
 //					H08R7_range = GetMeasurementResult();
 //					SendMeasurementResult(REQ_STREAM_PORT_CLI, H08R7_range, 0, PcPort, NULL);
-					break;
-				
-				case REQ_STREAM_VERBOSE_PORT_CLI :
+				break;
+
+			case REQ_STREAM_VERBOSE_PORT_CLI:
 //					H08R7_range = GetMeasurementResult();
 //					SendMeasurementResult(REQ_STREAM_VERBOSE_PORT_CLI, H08R7_range, 0, PcPort, NULL);
-					break;
-				
-				case REQ_STREAM_PORT_ARR :
+				break;
+
+			case REQ_STREAM_PORT_ARR:
 //					H08R7_range = GetMeasurementResult();
 //					SendMeasurementResult(REQ_STREAM_PORT_ARR, H08R7_range, tofModule, tofPort, NULL);
-					break;
-				
-				default:
-					break;
+				break;
+
+			default:
+				break;
 			}
 			
 			t0 = HAL_GetTick();			// Reset the timer
@@ -590,26 +602,18 @@ void ToFTask(void * argument)
 
 /*-----------------------------------------------------------*/
 void Vl53l1xInit(void) {
-	IRSensorInit(Dev);
+	SSS=IRSensorInit(Dev);
 	dynamicZone_s_User.dynamicMultiZone_user = DYNAMIC_MZONE_OFF;
 	dynamicZone_s_User.dynamicRangingZone_user = DYNAMIC_ZONE_OFF;
 }
 /*-----------------------------------------------------------*/
 void Sample_ToF(float* Distance)
  {
-	tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
-			InterruptMode_User, dynamicZone_s_User, &ToFStructure_User);
-	*Distance = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
+	tofMode = SAMPLE_TOF;
+	*Distance = Dist;
 
 }
-float es(void)
- {
-	float mm;
-	tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
-			InterruptMode_User, dynamicZone_s_User, &ToFStructure_User);
-	mm = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
 
-}
 
 //static void Vl53l0xInit(void)
 //{
@@ -1054,7 +1058,7 @@ float es(void)
 //		return H08R7_range;
 //	}
 //}
-//
+
 ///*-----------------------------------------------------------*/
 //
 ///* --- Stream measurements continuously to a port (triggers ST API Continuous Ranging)

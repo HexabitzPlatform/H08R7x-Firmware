@@ -359,7 +359,7 @@ Status_TypeDef IRSensorInit(VL53L1_DEV Dev) {
 	ResetGPIOsPin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin);
 	HAL_Delay(2);
 	SetGPIOsPin(TOF_XSHUT_GPIO_Port, TOF_XSHUT_Pin);
-
+    HAL_Delay(2);
 	if (VL53L1_ERROR_NONE != VL53L1_WaitDeviceBooted(Dev))
 		return STATUS_ERR;
 	if (VL53L1_ERROR_NONE != VL53L1_DataInit(Dev))

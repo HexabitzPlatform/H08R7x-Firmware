@@ -8,7 +8,6 @@
 ..\..\H08R7\H08R7.c:464:15:Module_MessagingTask	4
 ..\..\H08R7\H08R7.c:511:6:RegisterModuleCLICommands	1
 ..\..\H08R7\H08R7.c:527:9:GetPort	7
-..\..\H08R7\H08R7.c:549:6:ToFTask	9
-..\..\H08R7\H08R7.c:592:6:Vl53l1xInit	1
-..\..\H08R7\H08R7.c:598:6:Sample_ToF	1
-..\..\H08R7\H08R7.c:605:7:es	1
+..\..\H08R7\H08R7.c:551:6:ToFTask	5
+..\..\H08R7\H08R7.c:604:6:Vl53l1xInit	1
+..\..\H08R7\H08R7.c:610:6:Sample_ToF	1

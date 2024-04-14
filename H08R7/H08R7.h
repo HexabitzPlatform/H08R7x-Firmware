@@ -172,6 +172,9 @@
 #define REQ_TIMEOUT_VERBOSE_CLI				14
 #define REQ_TIMEOUT_MEMORY					15
 #define REQ_TIMEOUT_ARR						16
+#define SAMPLE_TOF					     	17
+
+
 
 #define TIMERID_TIMEOUT_MEASUREMENT   0xFF
 

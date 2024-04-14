@@ -31,7 +31,7 @@
 #define TOF_PWR_GPIO_Port      GPIOE
 #define TOF_INT_Pin            GPIO_PIN_1
 #define TOF_INT_GPIO_Port      GPIOB
-#define TOF_INT_EXTI_IRQn      EXTI3_IRQn
+#define TOF_INT_EXTI_IRQn      EXTI1_IRQn
 #define TOF_XSHUT_Pin          GPIO_PIN_5
 #define TOF_XSHUT_GPIO_Port    GPIOA
 
