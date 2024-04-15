@@ -20,21 +20,21 @@ int main(void){
 
 	Module_Init();		//Initialize Module &  BitzOS
 
-
 	//Don't place your code here.
 	for(;;){}
 }
-
+void SampleDistanceBuff(uint16_t *buffer);
 /*-----------------------------------------------------------*/
 uint16_t b ;
+uint16_t s[40];
 /* User Task */
 void UserTask(void *argument){
-//	Vl53l1xInit();
-//	StreamDistanceToCLI(200,5000);
+
+	StreamDistanceToBuffer(s, 200, 5000);
 	// put your code here, to run repeatedly.
 	while(1){
-		Sample_ToF(&b);
-
+//		Sample_ToF(&b);
+//		 SampleDistanceBuff(s);
 x++;
 	}
 }

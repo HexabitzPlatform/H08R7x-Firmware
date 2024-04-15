@@ -56,6 +56,7 @@ EventGroupHandle_t handleNewReadyData = NULL;
 uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 typedef void (*SampleMemsToPort)(uint8_t, uint8_t);
 typedef void (*SampleMemsToString)(char *, size_t);
+typedef void (*SampleMemsToBuffer)(uint16_t *buffer);
 /* Module exported parameters ------------------------------------------------*/
 float H08R7_range = 0.0f;
 float temp __attribute__((section(".mySection")));
@@ -75,6 +76,7 @@ uint8_t tofPort, tofModule, tofMode, tofState;
 float *tofBuffer;
 TimerHandle_t xTimerTof = NULL;
 uint8_t stream_index=0;
+uint8_t  coun ;
 static bool stopStream = false;
 #define MIN_MEMS_PERIOD_MS				100
 #define MAX_MEMS_TIMEOUT_MS				0xFFFFFFFF
@@ -655,7 +657,7 @@ static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t per
 }
 void SampleDistanceToPort(uint8_t port,uint8_t module)
 {
-	float buffer[1]; // Three Samples X, Y, Z
+	uint16_t buffer[1]; // Three Samples X, Y, Z
 	static uint8_t temp[4];
 
 	Sample_ToF(buffer);
@@ -748,6 +750,47 @@ static Module_Status PollingSleepCLISafe(uint32_t period)
 
 	vTaskDelay(pdMS_TO_TICKS(lastDelayMS));
 	return H08R7_OK;
+}
+/*-----------------------------------------------------------*/
+
+void SampleDistanceBuff(uint16_t *buffer)
+{
+	uint16_t distance;
+	Sample_ToF(&distance);
+	*buffer = distance;
+}
+
+static Module_Status StreamMemsToBuf( uint16_t  *Buffer, uint32_t period, uint32_t timeout, SampleMemsToBuffer function)
+
+{
+	Module_Status status = H08R7_OK;
+	uint16_t buffer;
+	if (period < MIN_MEMS_PERIOD_MS)
+		return H08R7_ERR_WrongParams;
+
+	// TODO: Check if CLI is enable or not
+
+	if (period > timeout)
+		timeout = period;
+
+	long numTimes = timeout / period;
+	stopStream = false;
+
+	while ((numTimes-- > 0) || (timeout >= MAX_MEMS_TIMEOUT_MS)) {
+		function(&buffer);
+		Buffer[coun] = buffer;
+		coun++;
+		vTaskDelay(pdMS_TO_TICKS(period));
+		if (stopStream) {
+			status = H0BR7_ERR_TERMINATED;
+			break;
+		}
+	}
+	return status;
+}
+Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t period, uint32_t timeout)
+{
+	return StreamMemsToBuf(buffer, period, timeout, SampleDistanceBuff);
 }
 //static void Vl53l0xInit(void)
 //{
