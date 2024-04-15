@@ -244,8 +244,9 @@ extern void MX_USART6_UART_Init(void);
    -----------------------------------------------------------------------
 */
 void Vl53l1xInit(void);
-void Sample_ToF(float* Distance);
+void Sample_ToF(uint16_t* Distance);
 Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout);
+Module_Status StreamDistanceToCLI(uint32_t period, uint32_t timeout);
 //float Sample_ToF(void);
 //void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
 //void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);

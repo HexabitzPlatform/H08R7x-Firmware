@@ -39,7 +39,7 @@ UART_HandleTypeDef huart3;
 #endif
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
-float Dist ;
+uint16_t Dist ;
 //VL53L0X_Dev_t vl53l0x_HandleDevice;
 
 /* Exported variables */
@@ -55,8 +55,10 @@ uint8_t H08R7UnitMeasurement = UNIT_MEASUREMENT_MM;
 EventGroupHandle_t handleNewReadyData = NULL;
 uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 typedef void (*SampleMemsToPort)(uint8_t, uint8_t);
+typedef void (*SampleMemsToString)(char *, size_t);
 /* Module exported parameters ------------------------------------------------*/
 float H08R7_range = 0.0f;
+float temp __attribute__((section(".mySection")));
 float sample __attribute__((section(".mySection")));
 module_param_t modParam[NUM_MODULE_PARAMS] = {{.paramPtr=&H08R7_range, .paramFormat=FMT_FLOAT, .paramName="range"}};
 
@@ -88,8 +90,9 @@ void Stream_ToF(uint32_t period, uint32_t timeout);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 void SampleDistanceToPort(uint8_t port,uint8_t module);
-
-
+void SampleDistanceToString(char *cstring, size_t maxLen);
+static Module_Status PollingSleepCLISafe(uint32_t period);
+static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout, SampleMemsToString function);
 static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function);
 /* Create CLI commands --------------------------------------------------------*/
 //static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -614,7 +617,7 @@ void Vl53l1xInit(void) {
 	dynamicZone_s_User.dynamicRangingZone_user = DYNAMIC_ZONE_OFF;
 }
 /*-----------------------------------------------------------*/
-void Sample_ToF(float* Distance)
+void Sample_ToF(uint16_t* Distance)
  {
 	tofMode = SAMPLE_TOF;
 	*Distance = Dist;
@@ -677,7 +680,75 @@ Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t period
 {
 	return StreamMemsToPort(port, module, period, timeout, SampleDistanceToPort);
 }
+/*-----------------------------------------------------------*/
+static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout, SampleMemsToString function)
+{
+	Module_Status status = H08R7_OK;
+	int8_t *pcOutputString = NULL;
 
+	if (period < MIN_MEMS_PERIOD_MS)
+		return H08R7_ERR_WrongParams;
+
+	// TODO: Check if CLI is enable or not
+
+	if (period > timeout)
+		timeout = period;
+
+	long numTimes = timeout / period;
+	stopStream = false;
+
+	while ((numTimes-- > 0) || (timeout >= MAX_MEMS_TIMEOUT_MS)) {
+		pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+		function((char *)pcOutputString, 100);
+
+
+		writePxMutex(PcPort, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+		if (PollingSleepCLISafe(period) != H08R7_OK)
+			break;
+	}
+
+	memset((char *) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+  sprintf((char *)pcOutputString, "\r\n");
+	return status;
+}
+
+void SampleDistanceToString(char *cstring, size_t maxLen)
+{
+	char d ;
+	uint16_t distance = 0;
+	Sample_ToF(&distance);
+	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
+}
+
+Module_Status StreamDistanceToCLI(uint32_t period, uint32_t timeout)
+{
+	return StreamMemsToCLI(period, timeout, SampleDistanceToString);
+}
+static Module_Status PollingSleepCLISafe(uint32_t period)
+{
+	const unsigned DELTA_SLEEP_MS = 100; // milliseconds
+	long numDeltaDelay =  period / DELTA_SLEEP_MS;
+	unsigned lastDelayMS = period % DELTA_SLEEP_MS;
+
+	while (numDeltaDelay-- > 0) {
+		vTaskDelay(pdMS_TO_TICKS(DELTA_SLEEP_MS));
+
+		// Look for ENTER key to stop the stream
+		for (uint8_t chr=0 ; chr<MSG_RX_BUF_SIZE ; chr++)
+		{
+			if (UARTRxBuf[PcPort-1][chr] == '\r') {
+				UARTRxBuf[PcPort-1][chr] = 0;
+				return H0BR7_ERR_TERMINATED;
+			}
+		}
+
+		if (stopStream)
+			return H0BR7_ERR_TERMINATED;
+	}
+
+	vTaskDelay(pdMS_TO_TICKS(lastDelayMS));
+	return H08R7_OK;
+}
 //static void Vl53l0xInit(void)
 //{
 //  VL53L0X_Error status = VL53L0X_ERROR_NONE;
