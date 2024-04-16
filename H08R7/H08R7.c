@@ -559,7 +559,7 @@ uint8_t GetPort(UART_HandleTypeDef *huart)
 /* --- ToF streaming task 
 */
 
-
+Module_Status statusD = H08R7_OK;
 void ToFTask(void * argument)
 {
 	Vl53l1xInit();
@@ -574,9 +574,14 @@ void ToFTask(void * argument)
 			switch (tofMode)
 			{
 			case SAMPLE_TOF:
-				tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+
+				if (tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
 						InterruptMode_User, dynamicZone_s_User,
-						&ToFStructure_User);
+						&ToFStructure_User) == STATUS_OK) {
+					statusD = H08R7_OK;
+				} else {
+					statusD = H08R7_ERROR;
+				}
 				Dist = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
 
 				break;
@@ -613,16 +618,22 @@ void ToFTask(void * argument)
 }
 
 /*-----------------------------------------------------------*/
-void Vl53l1xInit(void) {
-	SSS=IRSensorInit(Dev);
+Module_Status Vl53l1xInit(void) {
+	Module_Status status = H08R7_OK;
+	if (IRSensorInit(Dev) == STATUS_OK)
+	{status = H08R7_OK;}
+	else {status = H08R7_ERROR;}
 	dynamicZone_s_User.dynamicMultiZone_user = DYNAMIC_MZONE_OFF;
 	dynamicZone_s_User.dynamicRangingZone_user = DYNAMIC_ZONE_OFF;
+	return status;
 }
 /*-----------------------------------------------------------*/
-void Sample_ToF(uint16_t* Distance)
+Module_Status Sample_ToF(uint16_t* Distance)
  {
+
 	tofMode = SAMPLE_TOF;
 	*Distance = Dist;
+	return statusD;
 
 }
 
@@ -805,8 +816,8 @@ Module_Status SampletoPort(uint8_t module,uint8_t port)
 		return H08R7_ERR_WrongParams;
 	}
 
-		Sample_ToF(&Distance);
-		if(module == myID)
+	status = Sample_ToF(&Distance);
+	if (module == myID)
 		{
 		temp[0] = (uint8_t)((*(uint32_t *) &Distance) >> 0);
 		temp[1] = (uint8_t)((*(uint32_t *) &Distance) >> 8);

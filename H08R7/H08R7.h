@@ -243,8 +243,8 @@ extern void MX_USART6_UART_Init(void);
   |                               APIs                                    |
    -----------------------------------------------------------------------
 */
-void Vl53l1xInit(void);
-void Sample_ToF(uint16_t* Distance);
+Module_Status Vl53l1xInit(void);
+Module_Status Sample_ToF(uint16_t* Distance);
 Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToCLI(uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples, uint32_t timeout);
