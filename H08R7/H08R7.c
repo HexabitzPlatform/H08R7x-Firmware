@@ -626,10 +626,10 @@ void Sample_ToF(uint16_t* Distance)
 
 }
 
-static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function)
+static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t Numofsamples, uint32_t timeout, SampleMemsToPort function)
 {
 	Module_Status status = H08R7_OK;
-
+	uint32_t period=timeout/Numofsamples;
 
 	if (period < MIN_MEMS_PERIOD_MS)
 		return H08R7_ERR_WrongParams;
@@ -662,32 +662,32 @@ void SampleDistanceToPort(uint8_t port,uint8_t module)
 
 	Sample_ToF(buffer);
 	if(module == myID || module == 0){
-		temp[0] =*((__IO uint8_t* )(&buffer[0]) + 3);
-		temp[1] =*((__IO uint8_t* )(&buffer[0]) + 2);
-		temp[2] =*((__IO uint8_t* )(&buffer[0]) + 1);
-		temp[3] =*((__IO uint8_t* )(&buffer[0]) + 0);
+		temp[0] = (uint8_t)((*(uint32_t *) &buffer) >> 0);
+		temp[1] = (uint8_t)((*(uint32_t *) &buffer) >> 8);
+		temp[2] = (uint8_t)((*(uint32_t *) &buffer) >> 16);
+		temp[3] = (uint8_t)((*(uint32_t *) &buffer) >> 24);
 
 		writePxITMutex(port,(char* )&temp[0],4 * sizeof(uint8_t),10);
 	}
 	else{
 		messageParams[0] =port;
-		messageParams[1] =*((__IO uint8_t* )(&buffer[0]) + 3);
-		messageParams[2] =*((__IO uint8_t* )(&buffer[0]) + 2);
-		messageParams[3] =*((__IO uint8_t* )(&buffer[0]) + 1);
-		messageParams[4] =*((__IO uint8_t* )(&buffer[0]) + 0);
+		messageParams[1] =(uint8_t)((*(uint32_t *) &buffer) >> 0);
+		messageParams[2] =(uint8_t)((*(uint32_t *) &buffer) >> 8);
+		messageParams[3] =(uint8_t)((*(uint32_t *) &buffer) >> 16);
+		messageParams[4] =(uint8_t)((*(uint32_t *) &buffer) >> 24);
 		SendMessageToModule(module,CODE_PORT_FORWARD,sizeof(float) + 1);
 	}
 }
-Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout)
+Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t Numofsamples, uint32_t timeout)
 {
-	return StreamMemsToPort(port, module, period, timeout, SampleDistanceToPort);
+	return StreamMemsToPort(port, module, Numofsamples, timeout, SampleDistanceToPort);
 }
 /*-----------------------------------------------------------*/
-static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout, SampleMemsToString function)
+static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout, SampleMemsToString function)
 {
 	Module_Status status = H08R7_OK;
 	int8_t *pcOutputString = NULL;
-
+	uint32_t period=timeout/Numofsamples;
 	if (period < MIN_MEMS_PERIOD_MS)
 		return H08R7_ERR_WrongParams;
 
@@ -722,9 +722,9 @@ void SampleDistanceToString(char *cstring, size_t maxLen)
 	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
 }
 
-Module_Status StreamDistanceToCLI(uint32_t period, uint32_t timeout)
+Module_Status StreamDistanceToCLI(uint32_t Numofsamples, uint32_t timeout)
 {
-	return StreamMemsToCLI(period, timeout, SampleDistanceToString);
+	return StreamMemsToCLI(Numofsamples, timeout, SampleDistanceToString);
 }
 static Module_Status PollingSleepCLISafe(uint32_t period)
 {
@@ -760,11 +760,13 @@ void SampleDistanceBuff(uint16_t *buffer)
 	*buffer = distance;
 }
 
-static Module_Status StreamMemsToBuf( uint16_t  *Buffer, uint32_t period, uint32_t timeout, SampleMemsToBuffer function)
+static Module_Status StreamMemsToBuf( uint16_t  *Buffer, uint32_t Numofsamples, uint32_t timeout, SampleMemsToBuffer function)
 
 {
 	Module_Status status = H08R7_OK;
 	uint16_t buffer;
+	uint32_t period=timeout/Numofsamples;
+
 	if (period < MIN_MEMS_PERIOD_MS)
 		return H08R7_ERR_WrongParams;
 
@@ -788,9 +790,9 @@ static Module_Status StreamMemsToBuf( uint16_t  *Buffer, uint32_t period, uint32
 	}
 	return status;
 }
-Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t period, uint32_t timeout)
+Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples, uint32_t timeout)
 {
-	return StreamMemsToBuf(buffer, period, timeout, SampleDistanceBuff);
+	return StreamMemsToBuf(buffer, Numofsamples, timeout, SampleDistanceBuff);
 }
 //static void Vl53l0xInit(void)
 //{

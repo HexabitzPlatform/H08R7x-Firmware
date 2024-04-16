@@ -20,4 +20,4 @@
 ..\..\H08R7\H08R7.c:729:22:PollingSleepCLISafe	5
 ..\..\H08R7\H08R7.c:756:6:SampleDistanceBuff	1
 ..\..\H08R7\H08R7.c:763:22:StreamMemsToBuf	6
-..\..\H08R7\H08R7.c:791:15:StreamDistanceToBuffer	1
+..\..\H08R7\H08R7.c:793:15:StreamDistanceToBuffer	1
