@@ -248,6 +248,7 @@ void Sample_ToF(uint16_t* Distance);
 Module_Status StreamDistanceToPort(uint8_t port, uint8_t module, uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToCLI(uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples, uint32_t timeout);
+Module_Status SampletoPort(uint8_t module,uint8_t port);
 //float Sample_ToF(void);
 //void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
 //void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
