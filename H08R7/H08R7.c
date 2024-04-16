@@ -476,24 +476,23 @@ uint8_t ClearROtopology(void)
 Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uint8_t dst, uint8_t shift)
 {
   Module_Status result = H08R7_OK;
-  uint32_t period;
+  uint32_t Numofsamples;
   uint32_t timeout;
   switch (code)
   {
 		case CODE_H08R7_GET_INFO:
 			break;
 		case CODE_H08R7_SAMPLE_PORT:
-//		Sample_ToF();
-//		SendMeasurementResult(REQ_SAMPLE_ARR,H08R7_range,cMessage[port - 1][1+shift],cMessage[port - 1][shift],NULL);
+			SampletoPort(cMessage[port-1][shift] ,cMessage[port-1][1+shift]);
 			break;
 		case CODE_H08R7_STREAM_PORT:
-		period = ((uint32_t) cMessage[port - 1][5 + shift] << 24) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + cMessage[port - 1][2 + shift];
-		timeout = ((uint32_t) cMessage[port - 1][9 + shift] << 24) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + cMessage[port - 1][6 + shift];
-//		Stream_ToF_Port(period,timeout,cMessage[port - 1][shift],cMessage[port - 1][1+shift],false);
+			Numofsamples = ((uint32_t) cMessage[port - 1][2 + shift] ) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t)cMessage[port - 1][5 + shift] << 24);
+			timeout = ((uint32_t) cMessage[port - 1][6 + shift] ) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t)cMessage[port - 1][9 + shift] << 24);
+			StreamDistanceToPort(cMessage[port-1][shift+1] ,cMessage[port-1][shift], Numofsamples, timeout);
 			break;
 		case CODE_H08R7_STREAM_MEM:
-		period = ((uint32_t) cMessage[port - 1][3 + shift] << 24) + ((uint32_t) cMessage[port - 1][2 + shift] << 16) + ((uint32_t) cMessage[port - 1][1 + shift] << 8) + cMessage[port - 1][shift];
-		timeout = ((uint32_t) cMessage[port - 1][7 + shift] << 24) + ((uint32_t) cMessage[port - 1][6 + shift] << 16) + ((uint32_t) cMessage[port - 1][5 + shift] << 8) + cMessage[port - 1][4 + shift];
+//		period = ((uint32_t) cMessage[port - 1][3 + shift] << 24) + ((uint32_t) cMessage[port - 1][2 + shift] << 16) + ((uint32_t) cMessage[port - 1][1 + shift] << 8) + cMessage[port - 1][shift];
+//		timeout = ((uint32_t) cMessage[port - 1][7 + shift] << 24) + ((uint32_t) cMessage[port - 1][6 + shift] << 16) + ((uint32_t) cMessage[port - 1][5 + shift] << 8) + cMessage[port - 1][4 + shift];
 //		Stream_ToF_Memory(period,timeout,&H08R7_range);
 			break;
 		case CODE_H08R7_RESULT_MEASUREMENT:
@@ -727,7 +726,6 @@ static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout, Sa
 
 void SampleDistanceToString(char *cstring, size_t maxLen)
 {
-	char d ;
 	uint16_t distance = 0;
 	Sample_ToF(&distance);
 	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
