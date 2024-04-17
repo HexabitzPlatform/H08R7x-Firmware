@@ -10,50 +10,34 @@
 
  >> USARTs 1,2,3,4,5,6 for module ports (H08R7).
  >> I2C2 for the ToF sensor.
- >> GPIOB 2 for ToF interrupt (INT).
- >> GPIOB 12 for ToF shutdown (XSHUT) in (H08R7) and GPIOB 0 in (P08R6).
+ >> GPIOB 1 for ToF interrupt (INT).
+ >> GPIOA 5 for ToF shutdown (XSHUT).
 
  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 #include <stdlib.h>
-
+/* to Vl53l1xInit   */
 VL53L1_Dev_t dev;
 VL53L1_DEV Dev = &dev;
-
 VL53L1_PresetModes PresetMode_User = VL53L1_PRESETMODE_AUTONOMOUS;
 VL53L1_DistanceModes DistanceMode_User = VL53L1_DISTANCEMODE_LONG;
 VL53L1_InterruptMode InterruptMode_User = INTERRUPT_DISABLE;
 dynamicZone_s dynamicZone_s_User;
 ToF_Structure ToFStructure_User;
-
-Status_TypeDef SSS = STATUS_OK;
-
+Module_Status statusD = H08R7_OK;
 /* Define UART variables */
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
-#ifdef H08R7
 UART_HandleTypeDef huart4;
-#endif
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
-uint16_t Dist;
-//VL53L0X_Dev_t vl53l0x_HandleDevice;
-
 /* Exported variables */
 extern FLASH_ProcessTypeDef pFlash;
 extern uint8_t numOfRecordedSnippets;
-
-/* Unit of measurement ranging
- * 0 = mm
- * 1 = cm
- * 2 = inch
- */
-uint8_t H08R7UnitMeasurement = UNIT_MEASUREMENT_MM;
 EventGroupHandle_t handleNewReadyData = NULL;
-uint8_t startMeasurementRanging = STOP_MEASUREMENT_RANGING;
 typedef void (*SampleMemsToPort)(uint8_t, uint8_t);
 typedef void (*SampleMemsToString)(char*, size_t);
 typedef void (*SampleMemsToBuffer)(uint16_t *buffer);
@@ -76,24 +60,20 @@ float *tofBuffer;
 TimerHandle_t xTimerTof = NULL;
 uint8_t stream_index = 0;
 uint8_t coun;
+uint16_t Dist;
 static bool stopStream = false;
-#define MIN_MEMS_PERIOD_MS				100
-#define MAX_MEMS_TIMEOUT_MS				0xFFFFFFFF
+
 /* Private function prototypes -----------------------------------------------*/
 void ToFTask(void *argument);
 void Stream_ToF(uint32_t period, uint32_t timeout);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void remoteBootloaderUpdate(uint8_t src, uint8_t dst, uint8_t inport,
-		uint8_t outport);
+void remoteBootloaderUpdate(uint8_t src, uint8_t dst, uint8_t inport,uint8_t outport);
 void SampleDistanceToPort(uint8_t port, uint8_t module);
 void SampleDistanceToString(char *cstring, size_t maxLen);
 static Module_Status PollingSleepCLISafe(uint32_t period);
-static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout,
-		SampleMemsToString function);
-static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
-		uint32_t period, uint32_t timeout, SampleMemsToPort function);
-static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
-		uint32_t timeout, uint8_t Port, SampleMemsToString function);
+static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout,SampleMemsToString function);
+static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,uint32_t period, uint32_t timeout, SampleMemsToPort function);
+static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,uint32_t timeout, uint8_t Port, SampleMemsToString function);
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE Vl53l1xSampleCommand(int8_t *pcWriteBuffer,
 		size_t xWriteBufferLen, const int8_t *pcCommandString);
@@ -281,9 +261,7 @@ void Module_Peripheral_Init(void) {
 	MX_USART1_UART_Init();
 	MX_USART2_UART_Init();
 	MX_USART3_UART_Init();
-#ifdef H08R7
 	MX_USART4_UART_Init();
-#endif
 	MX_USART5_UART_Init();
 	MX_USART6_UART_Init();
 
@@ -463,23 +441,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 			timeout = ((uint32_t) cMessage[port - 1][6 + shift] ) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t)cMessage[port - 1][9 + shift] << 24);
 			StreamDistanceToPort(cMessage[port-1][shift+1] ,cMessage[port-1][shift], Numofsamples, timeout);
 			break;
-		case CODE_H08R7_STREAM_MEM:
-//		period = ((uint32_t) cMessage[port - 1][3 + shift] << 24) + ((uint32_t) cMessage[port - 1][2 + shift] << 16) + ((uint32_t) cMessage[port - 1][1 + shift] << 8) + cMessage[port - 1][shift];
-//		timeout = ((uint32_t) cMessage[port - 1][7 + shift] << 24) + ((uint32_t) cMessage[port - 1][6 + shift] << 16) + ((uint32_t) cMessage[port - 1][5 + shift] << 8) + cMessage[port - 1][4 + shift];
-//		Stream_ToF_Memory(period,timeout,&H08R7_range);
-			break;
-		case CODE_H08R7_RESULT_MEASUREMENT:
-			break;
-		case CODE_H08R7_STOP_RANGING:
-//		Stop_ToF();
-			break;
-		case CODE_H08R7_SET_UNIT:
-//		SetRangeUnit(cMessage[port - 1][shift]);
-			break;
-//		case CODE_H08R7_GET_UNIT:
-//		 messageParams[0] = GetRangeUnit();
-//		 SendMessageFromPort(port, myID, dst, CODE_H08R7_RESPOND_GET_UNIT, 1);
-//		 break;
+
 		default:
 		result =H08R7_ERR_UnknownMessage;
 			break;
@@ -526,10 +488,9 @@ uint8_t GetPort(UART_HandleTypeDef *huart) {
 /* --- ToF streaming task 
  */
 
-Module_Status statusD = H08R7_OK;
 void ToFTask(void *argument) {
+	/* Initialization Tof VL53L1 */
 	Vl53l1xInit();
-
 	while (1) {
 
 		// Process data when it's ready from the sensor or when the period timer is expired
@@ -574,13 +535,6 @@ Module_Status Vl53l1xInit(void) {
 	return status;
 }
 /*-----------------------------------------------------------*/
-Module_Status Sample_ToF(uint16_t *Distance) {
-
-	tofMode = SAMPLE_TOF;
-	*Distance = Dist;
-	return statusD;
-
-}
 
 static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
 		uint32_t Numofsamples, uint32_t timeout, SampleMemsToPort function) {
@@ -611,6 +565,7 @@ static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
 	}
 	return status;
 }
+/*-----------------------------------------------------------*/
 void SampleDistanceToPort(uint8_t port, uint8_t module) {
 	uint16_t buffer[1]; // Three Samples X, Y, Z
 	static uint8_t temp[4];
@@ -631,11 +586,6 @@ void SampleDistanceToPort(uint8_t port, uint8_t module) {
 		messageParams[4] = (uint8_t) ((*(uint32_t*) &buffer) >> 24);
 		SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float) + 1);
 	}
-}
-Module_Status StreamDistanceToPort(uint8_t port, uint8_t module,
-		uint32_t Numofsamples, uint32_t timeout) {
-	return StreamMemsToPort(port, module, Numofsamples, timeout,
-			SampleDistanceToPort);
 }
 /*-----------------------------------------------------------*/
 static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
@@ -668,16 +618,17 @@ static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
 	sprintf((char*) pcOutputString, "\r\n");
 	return status;
 }
-
+/*-----------------------------------------------------------*/
 void SampleDistanceToString(char *cstring, size_t maxLen) {
 	uint16_t distance = 0;
 	Sample_ToF(&distance);
 	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
 }
-
+/*-----------------------------------------------------------*/
 Module_Status StreamDistanceToCLI(uint32_t Numofsamples, uint32_t timeout) {
 	return StreamMemsToCLI(Numofsamples, timeout, SampleDistanceToString);
 }
+/*-----------------------------------------------------------*/
 static Module_Status PollingSleepCLISafe(uint32_t period) {
 	const unsigned DELTA_SLEEP_MS = 100; // milliseconds
 	long numDeltaDelay = period / DELTA_SLEEP_MS;
@@ -708,7 +659,7 @@ void SampleDistanceBuff(uint16_t *buffer) {
 	Sample_ToF(&distance);
 	*buffer = distance;
 }
-
+/*-----------------------------------------------------------*/
 static Module_Status StreamMemsToBuf(uint16_t *Buffer, uint32_t Numofsamples,
 		uint32_t timeout, SampleMemsToBuffer function)
 
@@ -740,44 +691,7 @@ static Module_Status StreamMemsToBuf(uint16_t *Buffer, uint32_t Numofsamples,
 	}
 	return status;
 }
-Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,
-		uint32_t timeout) {
-	return StreamMemsToBuf(buffer, Numofsamples, timeout, SampleDistanceBuff);
-}
 /*-----------------------------------------------------------*/
-Module_Status SampletoPort(uint8_t module, uint8_t port) {
-	uint16_t Distance;
-	static uint8_t temp[4] = { 0 };
-	Module_Status status = H08R7_OK;
-
-	if (port == 0) {
-		return H08R7_ERR_WrongParams;
-	}
-
-	status = Sample_ToF(&Distance);
-	if (module == myID) {
-		temp[0] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
-		temp[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
-		temp[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
-		temp[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
-		writePxITMutex(port, (char*) &temp[0], 4 * sizeof(uint8_t), 10);
-	} else {
-		messageParams[0] = port;
-		messageParams[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
-		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
-		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
-		messageParams[4] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
-		SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float) + 1);
-	}
-
-	return status;
-}
-
-Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,
-		uint8_t Port) {
-	return StreamMemsToTerminal(Numofsamples, timeout, Port,
-			SampleDistanceToString);
-}
 static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
 		uint32_t timeout, uint8_t Port, SampleMemsToString function) {
 	Module_Status status = H08R7_OK;
@@ -814,6 +728,58 @@ static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
  -----------------------------------------------------------------------
  */
 
+Module_Status Sample_ToF(uint16_t *Distance) {
+
+	tofMode = SAMPLE_TOF;
+	*Distance = Dist;
+	return statusD;
+
+}
+/*-----------------------------------------------------------*/
+Module_Status StreamDistanceToPort(uint8_t port, uint8_t module,
+		uint32_t Numofsamples, uint32_t timeout) {
+	return StreamMemsToPort(port, module, Numofsamples, timeout,
+			SampleDistanceToPort);
+}
+/*-----------------------------------------------------------*/
+Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,
+		uint32_t timeout) {
+	return StreamMemsToBuf(buffer, Numofsamples, timeout, SampleDistanceBuff);
+}
+/*-----------------------------------------------------------*/
+Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,
+		uint8_t Port) {
+	return StreamMemsToTerminal(Numofsamples, timeout, Port,
+			SampleDistanceToString);
+}
+/*-----------------------------------------------------------*/
+Module_Status SampletoPort(uint8_t module, uint8_t port) {
+	uint16_t Distance;
+	static uint8_t temp[4] = { 0 };
+	Module_Status status = H08R7_OK;
+
+	if (port == 0) {
+		return H08R7_ERR_WrongParams;
+	}
+
+	status = Sample_ToF(&Distance);
+	if (module == myID) {
+		temp[0] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+		temp[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+		temp[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
+		temp[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
+		writePxITMutex(port, (char*) &temp[0], 4 * sizeof(uint8_t), 10);
+	} else {
+		messageParams[0] = port;
+		messageParams[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
+		messageParams[4] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
+		SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float) + 1);
+	}
+
+	return status;
+}
 /* -----------------------------------------------------------------------
  |                             Commands                                  |
  -----------------------------------------------------------------------
