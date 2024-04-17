@@ -14,27 +14,23 @@
 
 /* Main function ------------------------------------------------------------*/
 
-int x ;
-
-int main(void){
+int main(void) {
 
 	Module_Init();		//Initialize Module &  BitzOS
 
 	//Don't place your code here.
-	for(;;){}
+	for (;;) {
+	}
 }
 
 /*-----------------------------------------------------------*/
-uint16_t b ;
-uint16_t s[40];
-Module_Status ss;
-/* User Task */
-void UserTask(void *argument){
-	StreamDistanceToTerminal(10, 10000, 5);
-	// put your code here, to run repeatedly.
-	while(1){
 
-x++;
+/* User Task */
+void UserTask(void *argument) {
+
+	// put your code here, to run repeatedly.
+	while (1) {
+
 	}
 }
 
