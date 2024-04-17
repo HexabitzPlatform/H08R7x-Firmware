@@ -49,20 +49,13 @@ module_param_t modParam[NUM_MODULE_PARAMS] = { { .paramPtr = &H08R7_range,
 		.paramFormat = FMT_FLOAT, .paramName = "range" } };
 
 /* Private variables ---------------------------------------------------------*/
-int32_t offsetCalibration = 0;
-float H08R7MinRange = 0.0;
-float H08R7MaxRange = 8000.0;
-float H08R7BufStreamMem = 0;
 TaskHandle_t ToFHandle = NULL;
-uint32_t tofPeriod, tofTimeout, t0;
-uint8_t tofPort, tofModule, tofMode, tofState;
-float *tofBuffer;
+uint32_t tofPeriod, t0;
+uint8_t  tofMode, tofState;
 TimerHandle_t xTimerTof = NULL;
-uint8_t stream_index = 0;
 uint8_t coun;
 uint16_t Dist;
 static bool stopStream = false;
-
 /* Private function prototypes -----------------------------------------------*/
 void ToFTask(void *argument);
 void Stream_ToF(uint32_t period, uint32_t timeout);
@@ -288,8 +281,6 @@ void Module_Peripheral_Init(void) {
 	/* I2C initialization */
 	MX_I2C_Init();
 
-	/* VL53L0X initialization */
-//  Vl53l0xInit();
 	/* Create a ToF task */
 	xTaskCreate(ToFTask, (const char*) "ToFTask",
 			(2 * configMINIMAL_STACK_SIZE), NULL,
