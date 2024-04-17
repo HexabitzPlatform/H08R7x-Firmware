@@ -96,6 +96,7 @@ void SampleDistanceToString(char *cstring, size_t maxLen);
 static Module_Status PollingSleepCLISafe(uint32_t period);
 static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout, SampleMemsToString function);
 static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function);
+static Module_Status StreamMemsToTerminal(uint32_t Numofsamples, uint32_t timeout,uint8_t Port, SampleMemsToString function);
 /* Create CLI commands --------------------------------------------------------*/
 //static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 static portBASE_TYPE Vl53l1xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
@@ -804,6 +805,41 @@ Module_Status SampletoPort(uint8_t module,uint8_t port)
 		}
 
     return status;
+}
+
+Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,uint8_t Port)
+{
+	return StreamMemsToTerminal(Numofsamples, timeout,Port, SampleDistanceToString);
+}
+static Module_Status StreamMemsToTerminal(uint32_t Numofsamples, uint32_t timeout,uint8_t Port, SampleMemsToString function)
+{
+	Module_Status status = H08R7_OK;
+	int8_t *pcOutputString = NULL;
+	uint32_t period=timeout/Numofsamples;
+	if (period < MIN_MEMS_PERIOD_MS)
+		return H08R7_ERR_WrongParams;
+
+	// TODO: Check if CLI is enable or not
+
+	if (period > timeout)
+		timeout = period;
+
+	long numTimes = timeout / period;
+	stopStream = false;
+
+	while ((numTimes-- > 0) || (timeout >= MAX_MEMS_TIMEOUT_MS)) {
+		pcOutputString = FreeRTOS_CLIGetOutputBuffer();
+		function((char *)pcOutputString, 100);
+
+
+		writePxMutex(Port, (char *)pcOutputString, strlen((char *)pcOutputString), cmd500ms, HAL_MAX_DELAY);
+		if (PollingSleepCLISafe(period) != H08R7_OK)
+			break;
+	}
+
+	memset((char *) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
+  sprintf((char *)pcOutputString, "\r\n");
+	return status;
 }
 //static void Vl53l0xInit(void)
 //{
