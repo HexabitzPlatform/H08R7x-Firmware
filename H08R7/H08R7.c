@@ -98,77 +98,49 @@ static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout, SampleMe
 static Module_Status StreamMemsToPort(uint8_t port, uint8_t module, uint32_t period, uint32_t timeout, SampleMemsToPort function);
 /* Create CLI commands --------------------------------------------------------*/
 //static portBASE_TYPE demoCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
-//static portBASE_TYPE rangeModParamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l1xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l1xStreamcliCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l1xStreamportCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
+static portBASE_TYPE Vl53l1xSampleportportCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString );
 
-/* CLI command structure : demo */
-//const CLI_Command_Definition_t demoCommandDefinition =
-//{
-//	( const int8_t * ) "demo", /* The command string to type. */
-//	( const int8_t * ) "demo:\r\n Run a demo program to test module functionality\r\n\r\n",
-//	demoCommand, /* The function to run. */
-//	0 /* No parameters are expected. */
-//};
+
 ///*-----------------------------------------------------------*/
-///* CLI command structure : sample */
-//const CLI_Command_Definition_t Vl53l0xSampleCommandDefinition =
-//{
-//  ( const int8_t * ) "sample", /* The command string to type. */
-//  ( const int8_t * ) "sample:\r\nTake one sample measurement\r\n\r\n",
-//  Vl53l0xSampleCommand, /* The function to run. */
-//  0 /* No parameters are expected. */
-//};
+/* CLI command structure : sample */
+const CLI_Command_Definition_t Vl53l1xSampleCommandDefinition =
+{
+  ( const int8_t * ) "sample", /* The command string to type. */
+  ( const int8_t * ) "sample:\r\nTake one sample measurement\r\n\r\n",
+  Vl53l1xSampleCommand, /* The function to run. */
+  0 /* No parameters are expected. */
+};
+/*-----------------------------------------------------------*/
+/* CLI command structure : streamtocli */
+const CLI_Command_Definition_t Vl53l0xStreamcliCommandDefinition =
+{
+  ( const int8_t * ) "streamtocli", /* The command string to type. */
+		( const int8_t * ) "streamtocli:\r\n Take several samples measurement\r\n\r\n",
+  Vl53l1xStreamcliCommand, /* The function to run. */
+  2 /* Multiple parameters are expected. */
+};
 ///*-----------------------------------------------------------*/
-///* CLI command structure : stream */
-//const CLI_Command_Definition_t Vl53l0xStreamCommandDefinition =
-//{
-//  ( const int8_t * ) "stream", /* The command string to type. */
-//		( const int8_t * ) "stream:\r\nStream measurements to the CLI with this syntax:\n\r\tstream period(in ms) timeout(in ms)\n\r\tstream period timeout -v\t(for verbose output)\
-//\n\rOr to a specific port in a specific module with this syntax:\r\n\tstream period timeout port(p1..px) module\n\rOr to internal buffer with this syntax:\r\n\tstream period timeout \
-//buffer.\n\rBuffer here is a literal value and can be accessed in the CLI using module parameter: range\r\n\r\n",
-//  Vl53l0xStreamCommand, /* The function to run. */
-//  -1 /* Multiple parameters are expected. */
-//};
+/* CLI command structure : streamtoport */
+const CLI_Command_Definition_t Vl53l0xStreamportCommandDefinition =
+{
+  ( const int8_t * ) "streamtoport", /* The command string to type. */
+  ( const int8_t * ) "streamtoport:\r\n export several samples measurementr\n\r\n",
+  Vl53l1xStreamportCommand, /* The function to run. */
+  3 /* No parameters are expected. */
+};
 ///*-----------------------------------------------------------*/
-///* CLI command structure : stop */
-//const CLI_Command_Definition_t Vl53l0xStopCommandDefinition =
-//{
-//  ( const int8_t * ) "stop", /* The command string to type. */
-//  ( const int8_t * ) "stop:\r\nStop continuous or timed ranging\r\n\r\n",
-//  Vl53l0xStopCommand, /* The function to run. */
-//  0 /* No parameters are expected. */
-//};
-///*-----------------------------------------------------------*/
-///* CLI command structure : units */
-//const CLI_Command_Definition_t Vl53l0xUnitsCommandDefinition =
-//{
-//  ( const int8_t * ) "units", /* The command string to type. */
-//  ( const int8_t * ) "units:\r\nSetup the range output unit: mm, cm, inch\r\n\r\n",
-//  Vl53l0xUnitsCommand, /* The function to run. */
-//  1 /* one parameter is expected. */
-//};
-///*-----------------------------------------------------------*/
-///* CLI command structure : max */
-//const CLI_Command_Definition_t Vl53l0xMaxCommandDefinition =
-//{
-//  ( const int8_t * ) "max", /* The command string to type. */
-//  ( const int8_t * ) "max:\r\nCalibrate maximum distance\r\n\r\n",
-//  Vl53l0xMaxCommand, /* The function to run. */
-//  0 /* one parameter is expected. */
-//};
-///*-----------------------------------------------------------*/
-///* CLI command structure : range */
-//const CLI_Command_Definition_t rangeModParamCommandDefinition =
-//{
-//  ( const int8_t * ) "range", /* The command string to type. */
-//		( const int8_t * ) "range:\r\nDisplay the value of module parameter: range\r\n\r\n",
-//  rangeModParamCommand, /* The function to run. */
-//  0 /* one parameter is expected. */
-//};
+/* CLI command structure : sampletoport */
+const CLI_Command_Definition_t Vl53l1xSampletoportCommandDefinition =
+{
+  ( const int8_t * ) "sampletoport", /* The command string to type. */
+  ( const int8_t * ) "sampletoport:\r\n export one samples measurementr\r\n\r\n",
+  Vl53l1xSampleportportCommand, /* The function to run. */
+  1 /* one parameter is expected. */
+};
+
 
 /* -----------------------------------------------------------------------
   |                        Private Functions                              |
@@ -521,13 +493,11 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 */
 void RegisterModuleCLICommands(void)
 {
-//	FreeRTOS_CLIRegisterCommand(&demoCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&Vl53l0xSampleCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&Vl53l0xStreamCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&Vl53l0xStopCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&Vl53l0xUnitsCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&Vl53l0xMaxCommandDefinition);
-//	FreeRTOS_CLIRegisterCommand(&rangeModParamCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l1xSampleCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xStreamcliCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l0xStreamportCommandDefinition);
+	FreeRTOS_CLIRegisterCommand(&Vl53l1xSampletoportCommandDefinition);
+
 }
 
 
@@ -1458,213 +1428,87 @@ Module_Status SampletoPort(uint8_t module,uint8_t port)
 //
 ///*-----------------------------------------------------------*/
 //
-//static portBASE_TYPE Vl53l0xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
-//{
-//  /* Remove compile time warnings about unused parameters, and check the
-//  write buffer is not NULL.  NOTE - for simplicity, this example assumes the
-//  write buffer length is adequate, so does not check for buffer overflows. */
-//  ( void ) pcCommandString;
-//  ( void ) xWriteBufferLen;
-//  configASSERT( pcWriteBuffer );
-//
-//	Sample_ToF();
-//	sample=H08R7_range;
-//  SendMeasurementResult(REQ_SAMPLE_CLI, H08R7_range, 0, PcPort, NULL);
-//
-//  /* clean terminal output */
-//  memset((char *) pcWriteBuffer, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
-//
-//  /* There is no more data to return after this single string, so return pdFALSE. */
-//  return pdFALSE;
-//}
-//
-///*-----------------------------------------------------------*/
-//
-//static portBASE_TYPE Vl53l0xStreamCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
-//{
-//  static const int8_t *pcMessageBuffer = ( int8_t * ) "Streaming measurements to internal buffer. Access in the CLI using module parameter: range\n\r";
-//  static const int8_t *pcMessageModule = ( int8_t * ) "Streaming measurements to port P%d in module #%d\n\r";
-//  static const int8_t *pcMessageCLI = ( int8_t * ) "Streaming measurements to the CLI\n\n\r";
-//  static const int8_t *pcMessageError = ( int8_t * ) "Wrong parameter\r\n";
-//
-//  int8_t *pcParameterString1; /* period */
-//  int8_t *pcParameterString2; /* timeout */
-//  int8_t *pcParameterString3; /* port or buffer */
-//  int8_t *pcParameterString4; /* module */
-//  portBASE_TYPE xParameterStringLength1 = 0;
-//  portBASE_TYPE xParameterStringLength2 = 0;
-//  portBASE_TYPE xParameterStringLength3 = 0;
-//  portBASE_TYPE xParameterStringLength4 = 0;
-//  uint32_t period = 0;
-//  uint32_t timeout = 0;
-//  uint8_t port = 0;
-//  uint8_t module = 0;
-//  Module_Status result = H08R7_OK;
-//
-//  /* Remove compile time warnings about unused parameters, and check the
-//  write buffer is not NULL.  NOTE - for simplicity, this example assumes the
-//  write buffer length is adequate, so does not check for buffer overflows. */
-//  ( void ) xWriteBufferLen;
-//  configASSERT( pcWriteBuffer );
-//
-//  /* Obtain the 1st parameter string: period */
-//  pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
-//  /* Obtain the 2nd parameter string: timeout */
-//  pcParameterString2 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 2, &xParameterStringLength2);
-//  /* Obtain the 3rd parameter string: port */
-//  pcParameterString3 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 3, &xParameterStringLength3);
-//  /* Obtain the 4th parameter string: module */
-//  pcParameterString4 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 4, &xParameterStringLength4);
-//
-//  if (NULL != pcParameterString1)
-//  {
-//    period = atoi( (char *)pcParameterString1);
-//  }
-//  else
-//  {
-//    result = H08R7_ERR_WrongParams;
-//  }
-//  if (NULL != pcParameterString2)
-//  {
-//    if (!strncmp((const char *)pcParameterString2, "inf", 3))
-//    {
-//      timeout = portMAX_DELAY;
-//    }
-//    else
-//    {
-//      timeout = atoi( (char *)pcParameterString2);
-//    }
-//  }
-//  else
-//  {
-//    result = H08R7_ERR_WrongParams;
-//  }
-//
-//	/* streaming data to internal buffer (module parameter) */
-//	if (NULL != pcParameterString3 && !strncmp((const char *)pcParameterString3, "buffer", 6))
-//	{
-//		strcpy(( char * ) pcWriteBuffer, ( char * ) pcMessageBuffer);
-//		Stream_ToF_Memory(period, timeout, &H08R7_range);
-//		// Return right away here as we don't want to block the CLI
-//		return pdFALSE;
-//	}
-//	/* streaming data to port */
-//	else if (NULL != pcParameterString3 && NULL != pcParameterString4 && pcParameterString3[0] == 'p')
-//	{
-//		port = ( uint8_t ) atol( ( char * ) pcParameterString3+1 );
-//		module = atoi( (char *)pcParameterString4);
-//		sprintf( ( char * ) pcWriteBuffer, ( char * ) pcMessageModule, port, module);
-//		Stream_ToF_Port(period, timeout, port, module, false);
-//		// Return right away here as we don't want to block the CLI
-//		return pdFALSE;
-//	}
-//	/* Stream to the CLI */
-//	else if (NULL == pcParameterString4)
-//	{
-//		if (NULL != pcParameterString3 && !strncmp((const char *)pcParameterString3, "-v", 2)) {
-//			Stream_ToF_Port(period, timeout, 0, 0, true);
-//		} else {
-//			strcpy(( char * ) pcWriteBuffer, ( char * ) pcMessageCLI);
-//			writePxMutex(PcPort, (char *)pcWriteBuffer, strlen((char *)pcWriteBuffer), cmd50ms, HAL_MAX_DELAY);
-//			Stream_ToF_Port(period, timeout, 0, 0, false);
-//		}
-//		/* Wait till the end of stream */
-//		while(startMeasurementRanging != STOP_MEASUREMENT_RANGING){	Delay_ms(1); };
-//		/* clean terminal output */
-//		memset((char *) pcWriteBuffer, 0, strlen((char *)pcWriteBuffer));
-//	}
-//	else
-//	{
-//		result = H08R7_ERR_WrongParams;
-//	}
-//
-//  if (H08R7_ERR_WrongParams == result)
-//  {
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) pcMessageError);
-//  }
-//
-//  /* There is no more data to return after this single string, so return pdFALSE. */
-//  return pdFALSE;
-//}
-//
-///*-----------------------------------------------------------*/
-//
-//static portBASE_TYPE Vl53l0xStopCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
-//{
-//  Module_Status result = H08R7_OK;
-//	static const int8_t *pcMessageOK = ( int8_t * ) "Streaming stopped successfuly\r\n";
-//	static const int8_t *pcMessageError = ( int8_t * ) "Command failed! Please try again or reboot\r\n";
-//
-//
-//  /* Remove compile time warnings about unused parameters, and check the
-//  write buffer is not NULL.  NOTE - for simplicity, this example assumes the
-//  write buffer length is adequate, so does not check for buffer overflows. */
-//  ( void ) pcCommandString;
-//  ( void ) xWriteBufferLen;
-//  configASSERT( pcWriteBuffer );
-//
-//  result = Stop_ToF();
-//
-//  if (H08R7_OK == result)
-//  {
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) pcMessageOK);
-//  }
-//  else
-//  {
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) pcMessageError);
-//  }
-//
-//  /* There is no more data to return after this single string, so return pdFALSE. */
-//  return pdFALSE;
-//}
-//
-///*-----------------------------------------------------------*/
-//
-//static portBASE_TYPE Vl53l0xUnitsCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
-//{
-//  Module_Status result = H08R7_OK;
-//  int8_t *pcParameterString1;
-//  portBASE_TYPE xParameterStringLength1 = 0;
-//  static const int8_t *pcMessageWrongParam = ( int8_t * ) "Wrong parameter!\r\n";
-//
-//  /* Remove compile time warnings about unused parameters, and check the
-//  write buffer is not NULL.  NOTE - for simplicity, this example assumes the
-//  write buffer length is adequate, so does not check for buffer overflows. */
-//  ( void ) xWriteBufferLen;
-//  configASSERT( pcWriteBuffer );
-//
-//  /* 1st parameter for naming of uart port: P1 to P6 */
-//  pcParameterString1 = ( int8_t * ) FreeRTOS_CLIGetParameter (pcCommandString, 1, &xParameterStringLength1);
-//  if (!strncmp((const char *)pcParameterString1, "mm", 2))
-//  {
-//    H08R7UnitMeasurement = UNIT_MEASUREMENT_MM;
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: mm\r\n" );
-//  }
-//  else if (!strncmp((const char *)pcParameterString1, "cm", 2))
-//  {
-//    H08R7UnitMeasurement = UNIT_MEASUREMENT_CM;
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: cm\r\n" );
-//  }
-//  else if (!strncmp((const char *)pcParameterString1, "inch", 4))
-//  {
-//    H08R7UnitMeasurement = UNIT_MEASUREMENT_INCH;
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) "Used measurement unit: inch\r\n" );
-//  }
-//  else
-//  {
-//    result = H08R7_ERR_WrongParams;
-//  }
-//
-//  /* Respond to the command */
-//  if (H08R7_ERR_WrongParams == result)
-//  {
-//    strcpy( ( char * ) pcWriteBuffer, ( char * ) pcMessageWrongParam );
-//  }
-//
-//  /* There is no more data to return after this single string, so return pdFALSE. */
-//  return pdFALSE;
-//}
-//
+static portBASE_TYPE Vl53l1xSampleCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+ {
+	Module_Status status = H08R7_OK;
+
+	StreamDistanceToCLI(1, 100);
+
+	return pdFALSE;
+}
+
+/*-----------------------------------------------------------*/
+
+static portBASE_TYPE Vl53l1xStreamcliCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	Module_Status status = H08R7_OK;
+
+	uint32_t Numofsamples,pTimeout;
+	static int8_t *pcParameterString1, *pcParameterString2;
+	portBASE_TYPE xParameterStringLength1 =0, xParameterStringLength2 =0;
+
+		(void )xWriteBufferLen;
+
+
+		pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,1,&xParameterStringLength1);
+		pcParameterString2 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,2,&xParameterStringLength2);
+
+		Numofsamples =atoi(pcParameterString1);
+		pTimeout =atoi(pcParameterString2);
+		StreamDistanceToCLI(Numofsamples, pTimeout);
+
+  /* There is no more data to return after this single string, so return pdFALSE. */
+  return pdFALSE;
+}
+
+/*-----------------------------------------------------------*/
+
+static portBASE_TYPE Vl53l1xStreamportCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	Module_Status status = H08R7_OK;
+
+	uint8_t Port;
+	uint32_t Numofsamples,pTimeout;
+	static int8_t *pcParameterString1, *pcParameterString2, *pcParameterString3;
+	portBASE_TYPE xParameterStringLength1 =0, xParameterStringLength2 =0,xParameterStringLength3 =0;
+
+		(void )xWriteBufferLen;
+
+
+		pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,1,&xParameterStringLength1);
+		pcParameterString2 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,2,&xParameterStringLength2);
+		pcParameterString3 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,3,&xParameterStringLength3);
+		Port =atoi(pcParameterString1);
+		Numofsamples =atoi(pcParameterString2);
+		pTimeout =atoi(pcParameterString3);
+		StreamDistanceToPort(Port, 0, Numofsamples, pTimeout);
+
+  /* There is no more data to return after this single string, so return pdFALSE. */
+  return pdFALSE;
+}
+
+/*-----------------------------------------------------------*/
+
+static portBASE_TYPE Vl53l1xSampleportportCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )
+{
+	Module_Status status = H08R7_OK;
+	uint8_t Port;
+	static int8_t *pcParameterString1 ;
+	portBASE_TYPE xParameterStringLength1 =0;
+
+		(void )xWriteBufferLen;
+
+
+		pcParameterString1 =(int8_t* )FreeRTOS_CLIGetParameter(pcCommandString,1,&xParameterStringLength1);
+
+		Port =atoi(pcParameterString1);
+
+		SampleDistanceToPort(Port, 0);
+
+  /* There is no more data to return after this single string, so return pdFALSE. */
+  return pdFALSE;
+}
+
 ///*-----------------------------------------------------------*/
 //
 //static portBASE_TYPE Vl53l0xMaxCommand( int8_t *pcWriteBuffer, size_t xWriteBufferLen, const int8_t *pcCommandString )

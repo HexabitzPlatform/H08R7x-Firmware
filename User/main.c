@@ -30,7 +30,7 @@ uint16_t s[40];
 Module_Status ss;
 /* User Task */
 void UserTask(void *argument){
-
+//	StreamDistanceToCLI(10, 10000);
 	// put your code here, to run repeatedly.
 	while(1){
 
