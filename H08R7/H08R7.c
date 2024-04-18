@@ -55,6 +55,7 @@ uint8_t  tofMode, tofState;
 TimerHandle_t xTimerTof = NULL;
 uint8_t coun;
 uint16_t Dist;
+uint8_t flag ;
 static bool stopStream = false;
 /* Private function prototypes -----------------------------------------------*/
 void ToFTask(void *argument);
@@ -63,7 +64,7 @@ void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src, uint8_t dst, uint8_t inport,uint8_t outport);
 void SampleDistanceToPort(uint8_t port, uint8_t module);
 void SampleDistanceToString(char *cstring, size_t maxLen);
-static Module_Status PollingSleepCLISafe(uint32_t period);
+static Module_Status PollingSleepCLISafe(uint32_t period,long Numofsamples);
 static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout,SampleMemsToString function);
 static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,uint32_t period, uint32_t timeout, SampleMemsToPort function);
 static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,uint32_t timeout, uint8_t Port, SampleMemsToString function);
@@ -481,7 +482,11 @@ uint8_t GetPort(UART_HandleTypeDef *huart) {
 
 void ToFTask(void *argument) {
 	/* Initialization Tof VL53L1 */
-	Vl53l1xInit();
+	Module_Status st;
+	do {
+		st=Vl53l1xInit();
+	} while (st != H08R7_OK);
+
 	while (1) {
 
 		// Process data when it's ready from the sensor or when the period timer is expired
@@ -589,19 +594,29 @@ static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
 
 	// TODO: Check if CLI is enable or not
 
+	if (1 == flag) {
+		flag = 0;
+		static char *pcOKMessage = (int8_t*) "Stop stream !\n\r";
+		writePxITMutex(PcPort, pcOKMessage, strlen(pcOKMessage), 10);
+		return status;
+	}
+
 	if (period > timeout)
 		timeout = period;
 
 	long numTimes = timeout / period;
 	stopStream = false;
-
+	for (uint8_t chr = 0; chr < MSG_RX_BUF_SIZE; chr++) {
+			if (UARTRxBuf[PcPort - 1][chr] == '\r') {
+				UARTRxBuf[PcPort - 1][chr] = 0;
+			}
+		}
 	while ((numTimes-- > 0) || (timeout >= MAX_MEMS_TIMEOUT_MS)) {
 		pcOutputString = FreeRTOS_CLIGetOutputBuffer();
 		function((char*) pcOutputString, 100);
 
-		writePxMutex(PcPort, (char*) pcOutputString,
-				strlen((char*) pcOutputString), cmd500ms, HAL_MAX_DELAY);
-		if (PollingSleepCLISafe(period) != H08R7_OK)
+		writePxMutex(PcPort, (char*) pcOutputString,strlen((char*) pcOutputString), cmd500ms, HAL_MAX_DELAY);
+		if (PollingSleepCLISafe(period,numTimes) != H08R7_OK)
 			break;
 	}
 
@@ -610,17 +625,31 @@ static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
 	return status;
 }
 /*-----------------------------------------------------------*/
+void SampleDistanceToStringCLI(char *cstring, size_t maxLen) {
+		uint16_t distance = 0;
+	if (tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+						InterruptMode_User, dynamicZone_s_User,
+						&ToFStructure_User) == STATUS_OK) {
+					statusD = H08R7_OK;
+				} else {
+					statusD = H08R7_ERROR;
+				}
+	distance = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
+
+	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
+}
+
 void SampleDistanceToString(char *cstring, size_t maxLen) {
-	uint16_t distance = 0;
-	Sample_ToF(&distance);
+		uint16_t distance = 0;
+Sample_ToF(&distance);
 	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
 }
 /*-----------------------------------------------------------*/
 Module_Status StreamDistanceToCLI(uint32_t Numofsamples, uint32_t timeout) {
-	return StreamMemsToCLI(Numofsamples, timeout, SampleDistanceToString);
+	return StreamMemsToCLI(Numofsamples, timeout, SampleDistanceToStringCLI);
 }
 /*-----------------------------------------------------------*/
-static Module_Status PollingSleepCLISafe(uint32_t period) {
+static Module_Status PollingSleepCLISafe(uint32_t period, long Numofsamples) {
 	const unsigned DELTA_SLEEP_MS = 100; // milliseconds
 	long numDeltaDelay = period / DELTA_SLEEP_MS;
 	unsigned lastDelayMS = period % DELTA_SLEEP_MS;
@@ -629,9 +658,11 @@ static Module_Status PollingSleepCLISafe(uint32_t period) {
 		vTaskDelay(pdMS_TO_TICKS(DELTA_SLEEP_MS));
 
 		// Look for ENTER key to stop the stream
+
 		for (uint8_t chr = 0; chr < MSG_RX_BUF_SIZE; chr++) {
-			if (UARTRxBuf[PcPort - 1][chr] == '\r') {
+			if (UARTRxBuf[PcPort - 1][chr] == '\r' && Numofsamples > 0) {
 				UARTRxBuf[PcPort - 1][chr] = 0;
+				flag=1;
 				return H0BR7_ERR_TERMINATED;
 			}
 		}
@@ -705,7 +736,7 @@ static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
 
 		writePxMutex(Port, (char*) pcOutputString,
 				strlen((char*) pcOutputString), cmd500ms, HAL_MAX_DELAY);
-		if (PollingSleepCLISafe(period) != H08R7_OK)
+		if (PollingSleepCLISafe(period,numTimes) != H08R7_OK)
 			break;
 	}
 
@@ -720,11 +751,9 @@ static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
  */
 
 Module_Status Sample_ToF(uint16_t *Distance) {
-
 	tofMode = SAMPLE_TOF;
 	*Distance = Dist;
 	return statusD;
-
 }
 /*-----------------------------------------------------------*/
 Module_Status StreamDistanceToPort(uint8_t port, uint8_t module,
