@@ -1,4 +1,4 @@
 ..\..\H08R7\H08R7_gpio.c:22:6:GPIO_Init	1
-..\..\H08R7\H08R7_gpio.c:34:6:IND_LED_Init	1
-..\..\H08R7\H08R7_gpio.c:49:9:IsFactoryReset	3
-..\..\H08R7\H08R7_gpio.c:100:12:GetPortGPIOs	7
+..\..\H08R7\H08R7_gpio.c:48:6:IND_LED_Init	1
+..\..\H08R7\H08R7_gpio.c:63:9:IsFactoryReset	3
+..\..\H08R7\H08R7_gpio.c:114:12:GetPortGPIOs	7

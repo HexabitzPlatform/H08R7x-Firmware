@@ -15,4 +15,3 @@
 ..\..\H08R7\H08R7_uart.c:568:6:SwapUartPins	4
 ..\..\H08R7\H08R7_uart.c:586:12:ReadPortsDir	5
 ..\..\H08R7\H08R7_uart.c:609:12:ReadPortsDirMSG	3
-..\..\H08R7\H08R7_uart.c:626:12:UpdateMyPortsDir	3

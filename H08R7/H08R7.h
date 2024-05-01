@@ -1,11 +1,11 @@
 /*
-    BitzOS (BOS) V0.3.2 - Copyright (C) 2017-2024 Hexabitz
-    All rights reserved
+ BitzOS (BOS) V0.3.2 - Copyright (C) 2017-2024 Hexabitz
+ All rights reserved
 
-    File Name     : H08R7.h
-    Description   : Header file for module H08R7.
-                    IR Time-if-Flight (ToF) Sensor (ST VL53L0CX)
-*/
+ File Name     : H08R7.h
+ Description   : Header file for module H08R7.
+ IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
+ */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef H08R7_H
@@ -20,62 +20,37 @@
 #include "H08R7_dma.h"
 #include "H08R7_inputs.h"
 #include "H08R7_eeprom.h"
-#include "vl53l0x_api.h"
-
+#include "Application_VL53L1.h"
 
 /* Exported definitions -------------------------------------------------------*/
-#ifdef P08R6
-	#define modulePN    _P08R6
-#endif
-#ifdef H08R7
-	#define modulePN    _H08R7
-#endif
+#define modulePN    _H08R7
 
 /* Port-related definitions */
-#ifdef P08R6
-	#define NumOfPorts    5
-#endif
-#ifdef H08R7
-	#define NumOfPorts    6
-#endif
+#define NumOfPorts    6
 #define P_PROG        P2            /* ST factory bootloader UART */
-
 /* Define available ports */
 #define _P1
 #define _P2
 #define _P3
 #define _P4
 #define _P5
-#ifdef H08R7
-	#define _P6
-#endif
+#define _P6
 
 /* Define available USARTs */
 #define _Usart1 1
 #define _Usart2 1
 #define _Usart3 1
-#ifdef H08R7
-	#define _Usart4 1
-#endif
+#define _Usart4 1
 #define _Usart5 1
 #define _Usart6 1
 
 /* Port-UART mapping */
-#ifdef P08R6
-	#define P1uart &huart5
-	#define P2uart &huart2
-	#define P3uart &huart6
-	#define P4uart &huart3
-	#define P5uart &huart1
-#endif
-#ifdef H08R7
-	#define P1uart &huart4
-	#define P2uart &huart2
-	#define P3uart &huart3
-	#define P4uart &huart1
-	#define P5uart &huart5
-	#define P6uart &huart6
-#endif
+#define P1uart &huart4
+#define P2uart &huart2
+#define P3uart &huart3
+#define P4uart &huart1
+#define P5uart &huart5
+#define P6uart &huart6
 
 /* Port Definitions */
 #define USART1_TX_PIN   GPIO_PIN_9
@@ -124,135 +99,67 @@
 #define _TOF_INT_PORT                 GPIOB
 #define _TOF_INT_PIN                  GPIO_PIN_1
 #define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
-#ifdef P08R6
-	#define _TOF_XSHUT_PORT               GPIOB
-	#define _TOF_XSHUT_PIN                GPIO_PIN_0
-	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
-#endif
-#ifdef H08R7
-	#define _TOF_XSHUT_PORT               GPIOA
-	#define _TOF_XSHUT_PIN                GPIO_PIN_5
-	#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
-#endif
-
+#define _TOF_XSHUT_PORT               GPIOA
+#define _TOF_XSHUT_PIN                GPIO_PIN_5
+#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
 #define NUM_MODULE_PARAMS		1
-
-/* VL53L0X definition */
-#define VL53L0X_ADDR                  0x52
-
-#define vl53l0x_set_xshut_pin()       HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_SET)
-#define vl53l0x_reset_xshut_pin()     HAL_GPIO_WritePin(_TOF_XSHUT_PORT, _TOF_XSHUT_PIN, GPIO_PIN_RESET)
-
+/* VL53L1X definition */
+#define MIN_MEMS_PERIOD_MS				100
+#define MAX_MEMS_TIMEOUT_MS				0xFFFFFFFF
 /* Macros define for measurement ranging */
-#define EVENT_READY_MEASUREMENT_DATA  ( 1 << 0 ) /* New ready data measurement ranging */
-
-#define STOP_MEASUREMENT_RANGING      0
-#define START_MEASUREMENT_RANGING     1
-
-#define UNIT_MEASUREMENT_MM           0
-#define UNIT_MEASUREMENT_CM           1
-#define UNIT_MEASUREMENT_INCH         2
-
-#define VL53L0X_DEFAULT_MAX_LOOP      2000
-
 #define REQ_IDLE                			0
-#define REQ_SAMPLE		                	1
-#define REQ_SAMPLE_CLI                		2
-#define REQ_SAMPLE_VERBOSE_CLI				3
-#define REQ_SAMPLE_ARR                		4
-#define REQ_STREAM_PORT_CLI           		5
-#define REQ_STREAM_VERBOSE_PORT_CLI   		6
-#define REQ_STREAM_PORT_ARR           		7
-#define REQ_STREAM_MEMORY         			8
-#define REQ_OUT_RANGE_CLI            	 	9
-#define REQ_OUT_RANGE_ARR             		10
-#define REQ_TIMEOUT             			11
-#define REQ_MEASUREMENT_READY         		12
-#define REQ_TIMEOUT_CLI						13
-#define REQ_TIMEOUT_VERBOSE_CLI				14
-#define REQ_TIMEOUT_MEMORY					15
-#define REQ_TIMEOUT_ARR						16
+#define REQ_MEASUREMENT_READY         		1
+#define SAMPLE_TOF					     	2
 
-#define TIMERID_TIMEOUT_MEASUREMENT   0xFF
-
-/* declare VL53L0x state */
-#define VL53L0x_STATE_FREE            0x00
-#define VL53L0x_STATE_RUNNING         0x01
-#define VL53L0x_STATE_OUT_RANGE_MAX   0x02
-#define VL53L0x_STATE_OUT_RANGE_MIN   0x03
-
-/* Macros define VL53L0CX mode running */
-#define VL53L0x_MODE_SINGLE           0x00
-#define VL53L0x_MODE_CONTINUOUS       0x01
-#define VL53L0x_MODE_CONTINUOUS_TIMED 0x02
 
 /* Module_Status Type Definition */
-typedef enum
-{
-  H08R7_OK = 0,
-  H08R7_ERR_UnknownMessage,
-  H08R7_ERR_WrongColor,
-  H08R7_ERR_WrongIntensity,
-  H08R7_ERR_Timeout,
-  H08R7_ERR_WrongParams,
-  H08R7_ERROR = 255
+typedef enum {
+	H08R7_OK = 0,
+	H08R7_ERR_UnknownMessage,
+	H08R7_ERR_WrongColor,
+	H08R7_ERR_WrongIntensity,
+	H08R7_ERR_Timeout,
+	H08R7_ERR_WrongParams,
+	H08R7_ERR_BUSY,
+	H0BR7_ERR_TERMINATED,
+	H08R7_ERROR = 255
 } Module_Status;
 
 /* Indicator LED */
 #define _IND_LED_PORT   GPIOB
 #define _IND_LED_PIN    GPIO_PIN_7
 
-
-
 /* Export UART variables */
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
-#ifdef H08R7
-	extern UART_HandleTypeDef huart4;
-#endif
+extern UART_HandleTypeDef huart4;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
-
-extern uint8_t H08R7UnitMeasurement;
-extern VL53L0X_Dev_t vl53l0x_HandleDevice;
-extern EventGroupHandle_t handleNewReadyData;
-extern uint8_t startMeasurementRanging;
-extern float H08R7MaxRange;
-extern uint8_t tofState;
-
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);
 extern void MX_USART2_UART_Init(void);
 extern void MX_USART3_UART_Init(void);
-#ifdef H08R7
-	extern void MX_USART4_UART_Init(void);
-#endif
+extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 
-
+/* -----------------------------------------------------------------------
+ |                               APIs                                    |
+ -----------------------------------------------------------------------
+ */
+Module_Status Vl53l1xInit(void);
+Module_Status Sample_ToF(uint16_t *Distance);
+Module_Status StreamDistanceToPort(uint8_t port, uint8_t module,uint32_t Numofsamples, uint32_t timeout);
+Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,uint8_t Port);
+Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
+Module_Status SampletoPort(uint8_t module, uint8_t port);
 
 /* -----------------------------------------------------------------------
-  |                               APIs                                    |
-   -----------------------------------------------------------------------
-*/
-
-float Sample_ToF(void);
-void Stream_ToF_Port(uint32_t period, uint32_t timeout, uint8_t port, uint8_t module, bool verbose);
-void Stream_ToF_Memory(uint32_t period, uint32_t timeout, float* buffer);
-Module_Status Stop_ToF(void);
-Module_Status SetRangeUnit(uint8_t input);
-uint8_t GetRangeUnit(void);
-void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void remoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
-/* -----------------------------------------------------------------------
-  |                             Commands                                  |
-   -----------------------------------------------------------------------
-*/
-
-
+ |                             Commands                                  |
+ -----------------------------------------------------------------------
+ */
 
 #endif /* H08R7_H */
 
