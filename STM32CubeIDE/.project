@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>H08R6x</name>
+	<name>H08R7x</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -34,7 +34,7 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>H08R6</name>
+			<name>H08R7</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -119,104 +119,104 @@
 			<locationURI>PARENT-1-PROJECT_LOC/BOS/FreeRTOSConfig.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6.c</name>
+			<name>H08R7/H08R7.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6.h</name>
+			<name>H08R7/H08R7.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_MemoryMap.h</name>
+			<name>H08R7/H08R7_MemoryMap.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_MemoryMap.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_MemoryMap.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_dma.c</name>
+			<name>H08R7/H08R7_dma.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_dma.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_dma.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_dma.h</name>
+			<name>H08R7/H08R7_dma.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_dma.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_dma.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_eeprom.c</name>
+			<name>H08R7/H08R7_eeprom.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_eeprom.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_eeprom.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_eeprom.h</name>
+			<name>H08R7/H08R7_eeprom.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_eeprom.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_eeprom.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_gpio.c</name>
+			<name>H08R7/H08R7_gpio.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_gpio.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_gpio.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_gpio.h</name>
+			<name>H08R7/H08R7_gpio.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_gpio.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_gpio.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_i2c.c</name>
+			<name>H08R7/H08R7_i2c.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_i2c.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_i2c.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_i2c.h</name>
+			<name>H08R7/H08R7_i2c.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_i2c.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_i2c.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_inputs.c</name>
+			<name>H08R7/H08R7_inputs.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_inputs.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_inputs.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_inputs.h</name>
+			<name>H08R7/H08R7_inputs.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_inputs.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_inputs.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_it.c</name>
+			<name>H08R7/H08R7_it.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_it.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_it.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_rtc.c</name>
+			<name>H08R7/H08R7_rtc.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_rtc.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_rtc.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_timers.c</name>
+			<name>H08R7/H08R7_timers.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_timers.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_timers.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_uart.c</name>
+			<name>H08R7/H08R7_uart.c</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_uart.c</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_uart.c</locationURI>
 		</link>
 		<link>
-			<name>H08R6/H08R6_uart.h</name>
+			<name>H08R7/H08R7_uart.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/H08R6_uart.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/H08R7_uart.h</locationURI>
 		</link>
 		<link>
-			<name>H08R6/startup_stm32g0b1ceuxn.s</name>
+			<name>H08R7/startup_stm32g0b1ceuxn.s</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/startup_stm32g0b1ceuxn.s</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/startup_stm32g0b1ceuxn.s</locationURI>
 		</link>
 		<link>
-			<name>H08R6/stm32g0xx_hal_conf.h</name>
+			<name>H08R7/stm32g0xx_hal_conf.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/H08R6/stm32g0xx_hal_conf.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/H08R7/stm32g0xx_hal_conf.h</locationURI>
 		</link>
 		<link>
 			<name>Thirdparty/.git</name>
