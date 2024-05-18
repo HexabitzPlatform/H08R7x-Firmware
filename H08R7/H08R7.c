@@ -778,11 +778,12 @@ Module_Status SampletoPort(uint8_t module, uint8_t port) {
 	static uint8_t temp[4] = { 0 };
 	Module_Status status = H08R7_OK;
 
-	if (port == 0) {
+	if (port == 0 && module == myID) {
 		return H08R7_ERR_WrongParams;
 	}
 
 	status = Sample_ToF(&Distance);
+
 	if (module == myID) {
 		temp[0] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
 		temp[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
@@ -790,12 +791,12 @@ Module_Status SampletoPort(uint8_t module, uint8_t port) {
 		temp[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
 		writePxITMutex(port, (char*) &temp[0], 4 * sizeof(uint8_t), 10);
 	} else {
-		messageParams[0] = port;
+		messageParams[0] = FMT_UINT16;
 		messageParams[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
 		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
 		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
 		messageParams[4] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
-		SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float) + 1);
+		SendMessageToModule(module, CODE_READ_RESPONSE, sizeof(float) + 1);
 	}
 
 	return status;
