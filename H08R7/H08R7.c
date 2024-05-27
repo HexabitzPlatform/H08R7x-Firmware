@@ -431,7 +431,7 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 		case CODE_H08R7_STREAM_PORT:
 			Numofsamples = ((uint32_t) cMessage[port - 1][2 + shift] ) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t)cMessage[port - 1][5 + shift] << 24);
 			timeout = ((uint32_t) cMessage[port - 1][6 + shift] ) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t)cMessage[port - 1][9 + shift] << 24);
-			StreamDistanceToPort(cMessage[port-1][shift+1] ,cMessage[port-1][shift], Numofsamples, timeout);
+			StreamDistanceToPort( cMessage[port-1][shift],cMessage[port-1][shift+1], Numofsamples, timeout);
 			break;
 
 		default:
@@ -756,8 +756,7 @@ Module_Status Sample_ToF(uint16_t *Distance) {
 	return statusD;
 }
 /*-----------------------------------------------------------*/
-Module_Status StreamDistanceToPort(uint8_t port, uint8_t module,
-		uint32_t Numofsamples, uint32_t timeout) {
+Module_Status StreamDistanceToPort(uint8_t module,uint8_t port,uint32_t Numofsamples,uint32_t timeout) {
 	return StreamMemsToPort(port, module, Numofsamples, timeout,
 			SampleDistanceToPort);
 }
@@ -865,7 +864,7 @@ static portBASE_TYPE Vl53l1xStreamportCommand(int8_t *pcWriteBuffer,
 	Port = atoi(pcParameterString1);
 	Numofsamples = atoi(pcParameterString2);
 	pTimeout = atoi(pcParameterString3);
-	StreamDistanceToPort(Port, 0, Numofsamples, pTimeout);
+	StreamDistanceToPort(0, Port, Numofsamples, pTimeout);
 
 	/* There is no more data to return after this single string, so return pdFALSE. */
 	return pdFALSE;
