@@ -423,20 +423,19 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
   uint32_t timeout;
   switch (code)
   {
-		case CODE_H08R7_GET_INFO:
-			break;
-		case CODE_H08R7_SAMPLE_PORT:
-			SampletoPort(cMessage[port-1][shift] ,cMessage[port-1][1+shift]);
-			break;
-		case CODE_H08R7_STREAM_PORT:
+	case CODE_H08R7_GET_INFO:
+		break;
+	case CODE_H08R7_SAMPLE_PORT:
+		SampletoPort(cMessage[port - 1][shift], cMessage[port - 1][1 + shift]);
+		break;
+	case CODE_H08R7_STREAM_PORT:
 			Numofsamples = ((uint32_t) cMessage[port - 1][2 + shift] ) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t)cMessage[port - 1][5 + shift] << 24);
 			timeout = ((uint32_t) cMessage[port - 1][6 + shift] ) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t)cMessage[port - 1][9 + shift] << 24);
 			StreamDistanceToPort( cMessage[port-1][shift],cMessage[port-1][shift+1], Numofsamples, timeout);
-			break;
-
-		default:
-		result =H08R7_ERR_UnknownMessage;
-			break;
+		break;
+	default:
+		result = H08R7_ERR_UnknownMessage;
+		break;
   }
 
   return result;
@@ -780,22 +779,21 @@ Module_Status SampletoPort(uint8_t module, uint8_t port) {
 	if (port == 0 && module == myID) {
 		return H08R7_ERR_WrongParams;
 	}
-
 	status = Sample_ToF(&Distance);
 
 	if (module == myID) {
 		temp[0] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
 		temp[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
-		temp[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
-		temp[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
-		writePxITMutex(port, (char*) &temp[0], 4 * sizeof(uint8_t), 10);
+		writePxITMutex(port, (char*) &temp[0], 2 * sizeof(uint8_t), 10);
 	} else {
+		if (H08R7_OK == status)
+			messageParams[1] = BOS_OK;
+		else
+			messageParams[1] = BOS_ERROR;
 		messageParams[0] = FMT_UINT16;
-		messageParams[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
-		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
-		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 16);
-		messageParams[4] = (uint8_t) ((*(uint32_t*) &Distance) >> 24);
-		SendMessageToModule(module, CODE_READ_RESPONSE, sizeof(float) + 1);
+		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+		SendMessageToModule(module, CODE_READ_RESPONSE,2 * sizeof(uint8_t) + 2);
 	}
 
 	return status;
