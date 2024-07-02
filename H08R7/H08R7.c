@@ -49,6 +49,11 @@ module_param_t modParam[NUM_MODULE_PARAMS] = { { .paramPtr = &H08R7_range,
 		.paramFormat = FMT_FLOAT, .paramName = "range" } };
 
 /* Private variables ---------------------------------------------------------*/
+uint8_t port1, module1;
+uint8_t port2 ,module2,mode2,mode1;
+uint32_t Numofsamples1 ,timeout1;
+uint8_t port3 ,module3,mode3;
+uint32_t Numofsamples3 ,timeout3;
 TaskHandle_t ToFHandle = NULL;
 uint32_t tofPeriod, t0;
 uint8_t  tofMode, tofState;
@@ -64,10 +69,11 @@ void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src, uint8_t dst, uint8_t inport,uint8_t outport);
 void SampleDistanceToPort(uint8_t port, uint8_t module);
 void SampleDistanceToString(char *cstring, size_t maxLen);
+void SampleDistanceToStringCLI(char *cstring, size_t maxLen) ;
+Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout,SampleMemsToString function);
+Module_Status StreamMemsToPort(uint8_t module, uint8_t port,SampleMemsToPort function, uint32_t Numofsamples, uint32_t timeout);
 static Module_Status PollingSleepCLISafe(uint32_t period,long Numofsamples);
-static Module_Status StreamMemsToCLI(uint32_t period, uint32_t timeout,SampleMemsToString function);
-static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,uint32_t period, uint32_t timeout, SampleMemsToPort function);
-static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,uint32_t timeout, uint8_t Port, SampleMemsToString function);
+ Module_Status StreamMemsToTerminal(uint32_t Numofsamples,uint32_t timeout, uint8_t Port, SampleMemsToString function);
 /* Create CLI commands --------------------------------------------------------*/
 static portBASE_TYPE Vl53l1xSampleCommand(int8_t *pcWriteBuffer,
 		size_t xWriteBufferLen, const int8_t *pcCommandString);
@@ -431,7 +437,8 @@ Module_Status Module_MessagingTask(uint16_t code, uint8_t port, uint8_t src, uin
 	case CODE_H08R7_STREAM_PORT:
 			Numofsamples = ((uint32_t) cMessage[port - 1][2 + shift] ) + ((uint32_t) cMessage[port - 1][3 + shift] << 8) + ((uint32_t) cMessage[port - 1][4 + shift] << 16) + ((uint32_t)cMessage[port - 1][5 + shift] << 24);
 			timeout = ((uint32_t) cMessage[port - 1][6 + shift] ) + ((uint32_t) cMessage[port - 1][7 + shift] << 8) + ((uint32_t) cMessage[port - 1][8 + shift] << 16) + ((uint32_t)cMessage[port - 1][9 + shift] << 24);
-			StreamDistanceToPort( cMessage[port-1][shift],cMessage[port-1][shift+1], Numofsamples, timeout);
+			 StreamMemsToPort(cMessage[port-1][shift], cMessage[port-1][shift+1],
+						SampleDistanceToPort, Numofsamples, timeout);
 		break;
 	default:
 		result = H08R7_ERR_UnknownMessage;
@@ -488,7 +495,7 @@ void ToFTask(void *argument) {
 
 	while (1) {
 
-		// Process data when it's ready from the sensor or when the period timer is expired
+//		 Process data when it's ready from the sensor or when the period timer is expired
 		if (tofState == REQ_MEASUREMENT_READY
 				|| (HAL_GetTick() - t0) >= tofPeriod) {
 			switch (tofMode) {
@@ -512,6 +519,18 @@ void ToFTask(void *argument) {
 			t0 = HAL_GetTick();			// Reset the timer
 		}
 
+		switch (tofMode) {
+				case STREAM_TO_PORT:
+					 StreamMemsToPort( module1,port1,
+								SampleDistanceToPort, Numofsamples1, timeout1);
+					 break;
+				case STREAM_TO_Terminal:
+					StreamMemsToTerminal(Numofsamples3, timeout3, port3,
+							SampleDistanceToStringCLI);
+								 break;
+		}
+
+
 		tofState = REQ_IDLE;
 		taskYIELD();
 	}
@@ -531,8 +550,8 @@ Module_Status Vl53l1xInit(void) {
 }
 /*-----------------------------------------------------------*/
 
-static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
-		uint32_t Numofsamples, uint32_t timeout, SampleMemsToPort function) {
+ Module_Status StreamMemsToPort(uint8_t module, uint8_t port,
+		SampleMemsToPort function, uint32_t Numofsamples, uint32_t timeout) {
 	Module_Status status = H08R7_OK;
 	uint32_t period = timeout / Numofsamples;
 
@@ -558,6 +577,7 @@ static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
 			break;
 		}
 	}
+	tofMode = DEFAULT;
 	return status;
 }
 /*-----------------------------------------------------------*/
@@ -586,7 +606,7 @@ void SampleDistanceToPort(uint8_t port, uint8_t module) {
 
 }
 /*-----------------------------------------------------------*/
-static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
+ Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
 		SampleMemsToString function) {
 	Module_Status status = H08R7_OK;
 	int8_t *pcOutputString = NULL;
@@ -642,8 +662,10 @@ void SampleDistanceToStringCLI(char *cstring, size_t maxLen) {
 }
 
 void SampleDistanceToString(char *cstring, size_t maxLen) {
-		uint16_t distance = 0;
-Sample_ToF(&distance);
+	uint16_t distance = 0;
+	tofModeMeasurement(Dev, PresetMode_User, DistanceMode_User,
+			InterruptMode_User, dynamicZone_s_User, &ToFStructure_User);
+	distance = ToFStructure_User.ObjectNumber[0].tofDistanceMm;
 	snprintf(cstring, maxLen, "Distance: %d\r\n", distance);
 }
 /*-----------------------------------------------------------*/
@@ -716,7 +738,7 @@ static Module_Status StreamMemsToBuf(uint16_t *Buffer, uint32_t Numofsamples,
 	return status;
 }
 /*-----------------------------------------------------------*/
-static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
+ Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
 		uint32_t timeout, uint8_t Port, SampleMemsToString function) {
 	Module_Status status = H08R7_OK;
 	int8_t *pcOutputString = NULL;
@@ -744,6 +766,7 @@ static Module_Status StreamMemsToTerminal(uint32_t Numofsamples,
 
 	memset((char*) pcOutputString, 0, configCOMMAND_INT_MAX_OUTPUT_SIZE);
 	sprintf((char*) pcOutputString, "\r\n");
+	tofMode = DEFAULT;
 	return status;
 }
 
@@ -759,8 +782,13 @@ Module_Status Sample_ToF(uint16_t *Distance) {
 }
 /*-----------------------------------------------------------*/
 Module_Status StreamDistanceToPort(uint8_t module,uint8_t port,uint32_t Numofsamples,uint32_t timeout) {
-	return StreamMemsToPort(port, module, Numofsamples, timeout,
-			SampleDistanceToPort);
+	Module_Status status = H08R7_OK;
+	tofMode=STREAM_TO_PORT;
+	port1 = port ;
+	module1 =module;
+	Numofsamples1=Numofsamples;
+	timeout1=timeout;
+	return status;
 }
 /*-----------------------------------------------------------*/
 Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,
@@ -768,10 +796,13 @@ Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,
 	return StreamMemsToBuf(buffer, Numofsamples, timeout, SampleDistanceBuff);
 }
 /*-----------------------------------------------------------*/
-Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,
-		uint8_t Port) {
-	return StreamMemsToTerminal(Numofsamples, timeout, Port,
-			SampleDistanceToString);
+Module_Status StreamDistanceToTerminal(uint8_t Port ,uint32_t Numofsamples, uint32_t timeout) {
+	Module_Status status = H08R7_OK;
+	tofMode=STREAM_TO_Terminal;
+	port3 = Port ;
+	Numofsamples3=Numofsamples;
+	timeout3=timeout;
+	return status;
 }
 /*-----------------------------------------------------------*/
 Module_Status SampletoPort(uint8_t module, uint8_t port) {
@@ -865,7 +896,7 @@ static portBASE_TYPE Vl53l1xStreamportCommand(int8_t *pcWriteBuffer,
 	Port = atoi(pcParameterString1);
 	Numofsamples = atoi(pcParameterString2);
 	pTimeout = atoi(pcParameterString3);
-	StreamDistanceToPort(0, Port, Numofsamples, pTimeout);
+	StreamMemsToPort(0, Port,SampleDistanceToPort, Numofsamples, pTimeout);
 
 	/* There is no more data to return after this single string, so return pdFALSE. */
 	return pdFALSE;
