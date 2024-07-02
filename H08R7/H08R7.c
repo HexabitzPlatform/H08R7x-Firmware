@@ -562,25 +562,28 @@ static Module_Status StreamMemsToPort(uint8_t port, uint8_t module,
 }
 /*-----------------------------------------------------------*/
 void SampleDistanceToPort(uint8_t port, uint8_t module) {
-	uint16_t buffer[1]; // Three Samples X, Y, Z
+	uint16_t Distance; // Three Samples X, Y, Z
 	static uint8_t temp[4];
+	Module_Status status = H08R7_OK;
 
-	Sample_ToF(buffer);
-	if (module == myID || module == 0) {
-		temp[0] = (uint8_t) ((*(uint32_t*) &buffer) >> 0);
-		temp[1] = (uint8_t) ((*(uint32_t*) &buffer) >> 8);
-		temp[2] = (uint8_t) ((*(uint32_t*) &buffer) >> 16);
-		temp[3] = (uint8_t) ((*(uint32_t*) &buffer) >> 24);
 
-		writePxITMutex(port, (char*) &temp[0], 4 * sizeof(uint8_t), 10);
-	} else {
-		messageParams[0] = port;
-		messageParams[1] = (uint8_t) ((*(uint32_t*) &buffer) >> 0);
-		messageParams[2] = (uint8_t) ((*(uint32_t*) &buffer) >> 8);
-		messageParams[3] = (uint8_t) ((*(uint32_t*) &buffer) >> 16);
-		messageParams[4] = (uint8_t) ((*(uint32_t*) &buffer) >> 24);
-		SendMessageToModule(module, CODE_PORT_FORWARD, sizeof(float) + 1);
-	}
+		status = Sample_ToF(&Distance);
+
+		if (module == myID) {
+			temp[0] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+			temp[1] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+			writePxITMutex(port, (char*) &temp[0], 2 * sizeof(uint8_t), 10);
+		} else {
+			if (H08R7_OK == status)
+				messageParams[1] = BOS_OK;
+			else
+				messageParams[1] = BOS_ERROR;
+			messageParams[0] = FMT_UINT16;
+			messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+			messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+			SendMessageToModule(module, CODE_READ_RESPONSE,2 * sizeof(uint8_t) + 2);
+		}
+
 }
 /*-----------------------------------------------------------*/
 static Module_Status StreamMemsToCLI(uint32_t Numofsamples, uint32_t timeout,
