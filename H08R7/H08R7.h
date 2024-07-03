@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.4 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.3.5 - Copyright (C) 2017-2024 Hexabitz
  All rights reserved
 
  File Name     : H08R7.h
@@ -112,6 +112,10 @@
 #define SAMPLE_TOF					     	2
 
 
+#define STREAM_TO_PORT          1
+#define STREAM_TO_Terminal      3
+#define DEFAULT                 4
+
 /* Module_Status Type Definition */
 typedef enum {
 	H08R7_OK = 0,
@@ -152,7 +156,7 @@ extern void MX_USART6_UART_Init(void);
 Module_Status Vl53l1xInit(void);
 Module_Status Sample_ToF(uint16_t *Distance);
 Module_Status StreamDistanceToPort(uint8_t module,uint8_t port,uint32_t Numofsamples,uint32_t timeout);
-Module_Status StreamDistanceToTerminal(uint32_t Numofsamples, uint32_t timeout,uint8_t Port);
+Module_Status StreamDistanceToTerminal(uint8_t Port ,uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
 Module_Status SampletoPort(uint8_t module, uint8_t port);
 
