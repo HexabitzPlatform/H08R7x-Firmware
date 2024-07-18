@@ -825,9 +825,10 @@ Module_Status SampletoPort(uint8_t module, uint8_t port) {
 		else
 			messageParams[1] = BOS_ERROR;
 		messageParams[0] = FMT_UINT16;
-		messageParams[2] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
-		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
-		SendMessageToModule(module, CODE_READ_RESPONSE,2 * sizeof(uint8_t) + 2);
+		messageParams[2] = 1;
+		messageParams[3] = (uint8_t) ((*(uint32_t*) &Distance) >> 0);
+		messageParams[4] = (uint8_t) ((*(uint32_t*) &Distance) >> 8);
+		SendMessageToModule(module, CODE_READ_RESPONSE,2 * sizeof(uint8_t) + 3);
 	}
 
 	return status;
