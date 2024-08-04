@@ -1,4 +1,0 @@
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_api_strings.c:31:14:VL53L1_get_range_status_string	7
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_api_strings.c:80:14:VL53L1_get_pal_state_string	12
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_api_strings.c:136:14:VL53L1_get_sequence_steps_info	9
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_api_strings.c:191:14:VL53L1_get_limit_check_info	3

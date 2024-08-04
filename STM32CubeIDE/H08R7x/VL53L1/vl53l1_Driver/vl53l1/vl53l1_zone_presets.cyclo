@@ -1,3 +1,0 @@
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_zone_presets.c:30:14:VL53L1_init_zone_config_structure	4
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_zone_presets.c:82:14:VL53L1_zone_preset_xtalk_planar	1
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_zone_presets.c:134:14:VL53L1_init_zone_config_histogram_bins	2
