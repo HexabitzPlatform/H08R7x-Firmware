@@ -1,3 +1,0 @@
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_hist_char.c:34:14:VL53L1_set_calib_config	7
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_hist_char.c:112:14:VL53L1_set_hist_calib_pulse_delay	1
-..\VL53L1\vl53l1_Driver\vl53l1\vl53l1_hist_char.c:138:14:VL53L1_disable_calib_pulse_delay	1

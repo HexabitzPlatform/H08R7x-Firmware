@@ -1,4 +1,0 @@
-..\..\H08R7\H08R7_timers.c:29:6:TIM_USEC_Init	1
-..\..\H08R7\H08R7_timers.c:52:6:TIM_MSEC_Init	1
-..\..\H08R7\H08R7_timers.c:71:6:StartMicroDelay	3
-..\..\H08R7\H08R7_timers.c:89:6:StartMilliDelay	3
