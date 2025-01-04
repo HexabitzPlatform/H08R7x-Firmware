@@ -28,10 +28,50 @@ int main(void) {
 /* User Task */
 void UserTask(void *argument) {
 
+
+//	AddPortButton(MOMENTARY_NO, 2);   //Define a button connected to port P1
+//	SetButtonEvents(2, 1, 0, 3, 0, 0, 0, 0, 0,1);    // Activate a click event and a pressed_for_x event for 3 seconds
+
+
 	// put your code here, to run repeatedly.
 	while (1) {
 
+//		taskYIELD();
+
 	}
 }
+
+//void buttonClickedCallback(uint8_t port){
+//
+//	SendMessageToModule(1,CODE_PING, 0);
+//	Delay_ms(100);
+//
+//	SendMessageToModule(2,CODE_PING, 0);
+//	Delay_ms(100);
+//
+//	SendMessageToModule(1,CODE_PING, 0);
+//	Delay_ms(100);
+//
+//	messageParams[0] = 50;
+//	SendMessageToModule(1,CODE_H01R0_ON, 1);
+//	Delay_ms(500);
+//
+//	SendMessageToModule(2,CODE_PING, 0);
+//	Delay_ms(500);
+//
+//	SendMessageToModule(1,CODE_H01R0_OFF, 0);
+//	Delay_ms(100);
+//
+//	SendMessageToModule(2,CODE_PING, 0);
+//	Delay_ms(100);
+//
+//	messageParams[0] = 50;
+//	SendMessageToModule(1,CODE_H01R0_ON, 1);
+//	Delay_ms(500);
+//
+//	SendMessageToModule(1,CODE_H01R0_OFF, 0);
+//	Delay_ms(100);
+//
+//}
 
 /*-----------------------------------------------------------*/
