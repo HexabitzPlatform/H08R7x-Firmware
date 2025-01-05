@@ -133,10 +133,11 @@ int32_t VL53L0X_write_multi(uint8_t address, uint8_t index, uint8_t  *pdata, int
   buff[0] = index;
   memcpy(&buff[1],pdata, sizeof(uint8_t)*count);
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, (count + 1), HAL_MAX_DELAY);
-
-  free(buff);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, (count + 1), HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
+	free(buff);
 
   return (uint32_t)result;
 }
@@ -150,11 +151,15 @@ int32_t VL53L0X_read_multi(uint8_t address,  uint8_t index, uint8_t  *pdata, int
 {
   HAL_StatusTypeDef result = HAL_ERROR;
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
-  address |= 0x01;
-  result |= HAL_I2C_Master_Receive(&hi2c2, address, pdata, count, HAL_MAX_DELAY);
+	address |= 0x01;
+	taskENTER_CRITICAL();
+	result |= HAL_I2C_Master_Receive(&hi2c2, address, pdata, count, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   return (uint32_t)result;
 }
@@ -172,8 +177,10 @@ int32_t VL53L0X_write_byte(uint8_t address,  uint8_t index, uint8_t data)
   buff[0] = index;
   buff[1] = data;
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 2, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 2, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   return (uint32_t)result;
 }
@@ -192,8 +199,10 @@ int32_t VL53L0X_write_word(uint8_t address,  uint8_t index, uint16_t  data)
   buff[1] = (data >> 8);
   buff[2] = data & 0xFF;
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 3, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 3, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   return (uint32_t)result;
 }
@@ -214,8 +223,10 @@ int32_t VL53L0X_write_dword(uint8_t address, uint8_t index, uint32_t  data)
   buff[3] = (data >> 8);
   buff[4] = data & 0xFF;
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 5, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, buff, 5, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   return (uint32_t)result;
 }
@@ -229,11 +240,15 @@ int32_t VL53L0X_read_byte(uint8_t address,  uint8_t index, uint8_t  *pdata)
 {
   HAL_StatusTypeDef result = HAL_ERROR;
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
-  address |= 0x01;
-  result |= HAL_I2C_Master_Receive(&hi2c2, address, pdata, 1, HAL_MAX_DELAY);
+	address |= 0x01;
+	taskENTER_CRITICAL();
+	result |= HAL_I2C_Master_Receive(&hi2c2, address, pdata, 1, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   return (uint32_t)result;
 }
@@ -248,11 +263,15 @@ int32_t VL53L0X_read_word(uint8_t address,  uint8_t index, uint16_t *pdata)
   HAL_StatusTypeDef result = HAL_ERROR;
   uint8_t buff[2];
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
-  address |= 0x01;
-  result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 2, HAL_MAX_DELAY);
+	address |= 0x01;
+	taskENTER_CRITICAL();
+	result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 2, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   *pdata = buff[0];
   *pdata <<= 8;
@@ -271,11 +290,15 @@ int32_t VL53L0X_read_dword(uint8_t address, uint8_t index, uint32_t *pdata)
   HAL_StatusTypeDef result = HAL_ERROR;
   uint8_t buff[4];
 
-  address &= 0xFE;
-  result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	address &= 0xFE;
+	taskENTER_CRITICAL();
+	result = HAL_I2C_Master_Transmit(&hi2c2, address, &index, 1, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
-  address |= 0x01;
-  result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 4, HAL_MAX_DELAY);
+	address |= 0x01;
+	taskENTER_CRITICAL();
+	result |= HAL_I2C_Master_Receive(&hi2c2, address, buff, 4, HAL_MAX_DELAY);
+	taskEXIT_CRITICAL();
 
   *pdata = buff[0];
   *pdata <<= 8;
