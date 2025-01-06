@@ -9,7 +9,8 @@
 #include "BOS.h"
 
 /* Private variables ---------------------------------------------------------*/
-
+uint16_t TOFBuffer[100];
+uint16_t Index11 = 0;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Main function ------------------------------------------------------------*/
@@ -36,7 +37,11 @@ void UserTask(void *argument) {
 	// put your code here, to run repeatedly.
 	while (1) {
 
-
+		Sample_ToF(&TOFBuffer[Index11]);
+		HAL_Delay(50);
+		Index11++;
+		if (Index11 > 100)
+			Index11 = 0;
 	}
 }
 
