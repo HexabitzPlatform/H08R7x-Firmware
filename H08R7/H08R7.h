@@ -129,7 +129,9 @@
 #define STREAM_TO_PORT          1
 #define STREAM_TO_Terminal      3
 #define DEFAULT                 4
-
+/* Macros definitions */
+#define STREAM_MODE_TO_PORT      1
+#define STREAM_MODE_TO_TERMINAL  2
 /* Module_Status Type Definition */
 typedef enum {
 	H08R7_OK = 0,
@@ -169,10 +171,10 @@ extern void MX_USART6_UART_Init(void);
  */
 Module_Status Vl53l1xInit(void);
 Module_Status Sample_ToF(uint16_t *Distance);
-Module_Status StreamDistanceToPort(uint8_t module,uint8_t port,uint32_t Numofsamples,uint32_t timeout);
-Module_Status StreamDistanceToTerminal(uint8_t Port ,uint32_t Numofsamples, uint32_t timeout);
 Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
-Module_Status SampletoPort(uint8_t module, uint8_t port);
+Module_Status SampleToPort(uint8_t dstModule, uint8_t dstPort);
+Module_Status StreamToPort(uint8_t dstModule,uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
+Module_Status StreamToTerminal(uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 
 /* -----------------------------------------------------------------------
  |                             Commands                                  |
