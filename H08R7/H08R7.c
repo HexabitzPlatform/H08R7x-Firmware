@@ -83,7 +83,7 @@ static bool stopStream = false;
 /* Private function prototypes -----------------------------------------------*/
 void ToFTask(void *argument);
 void StreamTimeCallback(TimerHandle_t xTimerStream);
-Module_Status SampleToTerminal(uint8_t dstPort, SampleMemsToString dataFunction,uint32_t numOfSamples, uint32_t streamTimeout);
+Module_Status SampleToTerminal(uint8_t dstPort, SampleMemsToString dataFunction);
 void Stream_ToF(uint32_t period, uint32_t timeout);
 void SetupPortForRemoteBootloaderUpdate(uint8_t port);
 void remoteBootloaderUpdate(uint8_t src, uint8_t dst, uint8_t inport,uint8_t outport);
@@ -607,8 +607,7 @@ void StreamTimeCallback(TimerHandle_t xTimerStream) {
 	else if (STREAM_MODE_TO_TERMINAL == StreamMode) {
 		if ((SampleCount <= TerminalNumOfSamples)
 				|| (0 == TerminalNumOfSamples)) {
-			SampleToTerminal(TerminalPort, SampleDistanceToStringCLI,
-					TerminalNumOfSamples, TerminalTimeout);
+			SampleToTerminal(TerminalPort, SampleDistanceToStringCLI);
 		} else {
 			xTimerStop(xTimerStream,0);
 
@@ -824,25 +823,11 @@ static Module_Status StreamMemsToBuf(uint16_t *Buffer, uint32_t Numofsamples,
  * @param  streamTimeout: Timeout period for the operation (in milliseconds).
  * @retval Module_Status indicating success or failure of the operation.
  */
-Module_Status SampleToTerminal(uint8_t dstPort, SampleMemsToString dataFunction,
-		uint32_t numOfSamples, uint32_t streamTimeout) {
+Module_Status SampleToTerminal(uint8_t dstPort, SampleMemsToString dataFunction) {
 	Module_Status status = H08R7_OK; /* Initialize operation status as success */
 	int8_t *pcOutputString = NULL; /* Pointer to CLI output buffer */
 	uint32_t period = 0u; /* Calculated period for the operation */
 	char cstring[100] = { 0 }; /* Buffer for formatted output string */
-
-	/* Check if the number of samples is valid to avoid division by zero */
-	if (numOfSamples == 0) {
-		return H08R7_ERR_WrongParams; /* Return error for invalid sample count */
-	}
-
-	/* Calculate the period by dividing timeout by number of samples */
-	period = streamTimeout / numOfSamples;
-
-	/* Validate the calculated period against minimum allowed value */
-	if (period < MIN_MEMS_PERIOD_MS) {
-		return H08R7_ERR_WrongParams; /* Return error if period is too short */
-	}
 
 	/* Get the CLI output buffer for writing */
 	pcOutputString = FreeRTOS_CLIGetOutputBuffer();
@@ -1002,7 +987,7 @@ Module_Status StreamToTerminal(uint8_t dstPort,uint32_t numOfSamples,uint32_t st
 	Module_Status Status =H08R7_OK;
 	uint32_t SamplePeriod =0u;
 	/* Check timer handle and timeout validity */
-	if((NULL == xTimerStream) || (0 == streamTimeout)){
+	if((NULL == xTimerStream) || (0 == streamTimeout) || (0 == numOfSamples)){
 		return H08R7_ERROR; /* Assuming H08R7_ERROR is defined in Module_Status */
 	}
 
