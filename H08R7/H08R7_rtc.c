@@ -2,7 +2,7 @@
  BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
- File Name     : H01R0_rtc.c
+ File Name     : H08R7_rtc.c
  Description   : Peripheral RTC setup source file.
 
  */
