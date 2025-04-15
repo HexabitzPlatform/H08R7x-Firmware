@@ -10,15 +10,22 @@
 /* Includes ------------------------------------------------------------------*/
 #include "H08R7_inputs.h"
 
+/* Exported Variables ******************************************************/
+bool DelayButtonStateReset = false;
+bool NeedToDelayButtonStateReset = false;
+
 /* Private and global variables ----------------------------------------------*/
 /* Buttons */
-button_t button[NumOfPorts + 1] = { 0 };
-uint32_t pressCounter[NumOfPorts + 1] = { 0 };
-uint32_t releaseCounter[NumOfPorts + 1] = { 0 };
-uint8_t dblCounter[NumOfPorts + 1] = { 0 };
+Button_t Button[NUM_OF_PORTS + 1] ={0};
+uint32_t PressCounter[NUM_OF_PORTS + 1] = { 0 };
+uint32_t ReleaseCounter[NUM_OF_PORTS + 1] = { 0 };
+uint8_t dblCounter[NUM_OF_PORTS + 1] = { 0 };
 bool needToDelayButtonStateReset = false, delayButtonStateReset = false;
 ADC_HandleTypeDef hadc;
 ADC_ChannelConfTypeDef sConfig = { 0 };
+
+BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port);
+BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode);
 
 /* Private buttons function prototypes -----------------------------------------------*/
 BOS_Status CheckForTimedButtonPress(uint8_t port);
@@ -76,12 +83,12 @@ void CheckAttachedButtons(void) {
 	uint8_t connected = GPIO_PIN_RESET, state = 0;
 	static uint8_t clicked;
 
-	for (uint8_t i = 1; i <= NumOfPorts; i++) {
-		if (button[i].type)			// Only check defined butons
+	for (uint8_t i = 1; i <= NUM_OF_PORTS; i++) {
+		if (Button[i].Type)			// Only check defined butons
 		{
 			/* 1. Reset button state */
 			if (delayButtonStateReset == false)
-				button[i].state = NONE;
+				Button[i].State = NONE;
 
 			/* 2. Get button GPIOs */
 			GetPortGPIOs(i, &TX_Port, &TX_Pin, &RX_Port, &RX_Pin);
@@ -99,7 +106,7 @@ void CheckAttachedButtons(void) {
 			HAL_GPIO_WritePin((GPIO_TypeDef*) TX_Port, TX_Pin, GPIO_PIN_RESET);
 
 			/* 4. Determine button state based on port reading and button type */
-			switch (button[i].type) {
+			switch (Button[i].Type) {
 			case MOMENTARY_NO:
 				if (connected == GPIO_PIN_SET)
 					state = CLOSED;
@@ -136,23 +143,23 @@ void CheckAttachedButtons(void) {
 
 			/* 5.A. Possible change of state 1: OPEN > CLOSED or OFF >> ON */
 			if (state == CLOSED || state == ON) {
-				if (pressCounter[i] < 0xFFFF)
-					++pressCounter[i];			// Advance the debounce counter
+				if (PressCounter[i] < 0xFFFF)
+					++PressCounter[i];			// Advance the debounce counter
 				else
-					pressCounter[i] = 0;			// Reset debounce counter
+					PressCounter[i] = 0;			// Reset debounce counter
 			}
 
 			/* 5.B. Possible change of state 2: CLOSED > OPEN or ON >> OFF */
 			if (state == OPEN || state == OFF) {
-				if (releaseCounter[i] < 0xFFFF)
-					++releaseCounter[i];		// Advance the debounce counter
+				if (ReleaseCounter[i] < 0xFFFF)
+					++ReleaseCounter[i];		// Advance the debounce counter
 				else
-					releaseCounter[i] = 0;		// Reset debounce counter
+					ReleaseCounter[i] = 0;		// Reset debounce counter
 
 				if (clicked == 2
-						&& dblCounter[i] <= BOS.buttons.maxInterClickTime)// Advance the inter-click counter
+						&& dblCounter[i] <= BOS.Buttons.maxInterClickTime)// Advance the inter-click counter
 					++dblCounter[i];
-				else if (dblCounter[i] > BOS.buttons.maxInterClickTime) {
+				else if (dblCounter[i] > BOS.Buttons.maxInterClickTime) {
 					clicked = 0;
 					dblCounter[i] = 0;			// Reset the inter-click counter
 				}
@@ -161,30 +168,30 @@ void CheckAttachedButtons(void) {
 			/* Analyze state */
 
 			/* 5.C. On press: Record a click if pressed less than 1 second */
-			if (pressCounter[i] < BOS.buttons.debounce) {
+			if (PressCounter[i] < BOS.Buttons.Debounce) {
 				// This is noise. Ignore it
 			} else {
-				if (pressCounter[i] == BOS.buttons.debounce) {
-//					button[i].state = PRESSED;// Record a PRESSED event. This event is always reset on next tick.
-					++pressCounter[i];
+				if (PressCounter[i] == BOS.Buttons.Debounce) {
+//					Button[i].State = PRESSED;// Record a PRESSED event. This event is always reset on next tick.
+					++PressCounter[i];
 				}
 
-				if (releaseCounter[i] > BOS.buttons.debounce)// Reset releaseCounter if needed - to avoid masking pressCounter on NO switches
-					releaseCounter[i] = 0;
+				if (ReleaseCounter[i] > BOS.Buttons.Debounce)// Reset ReleaseCounter if needed - to avoid masking PressCounter on NO switches
+					ReleaseCounter[i] = 0;
 
-				if (pressCounter[i] > BOS.buttons.singleClickTime
-						&& pressCounter[i] < 500) {
+				if (PressCounter[i] > BOS.Buttons.SingleClickTime
+						&& PressCounter[i] < 500) {
 					if (clicked == 0)
 						clicked = 1;		// Record a possible single click
 					else if (clicked == 2) {
-						if (dblCounter[i] > BOS.buttons.minInterClickTime
+						if (dblCounter[i] > BOS.Buttons.minInterClickTime
 								&& dblCounter[i]
-										< BOS.buttons.maxInterClickTime) {
+										< BOS.Buttons.maxInterClickTime) {
 							clicked = 3;	// Record a possible double click
 							dblCounter[i] = 0;	// Reset the inter-click counter
 						}
 					}
-				} else if (pressCounter[i] >= 500 && pressCounter[i] < 0xFFFF) {
+				} else if (PressCounter[i] >= 500 && PressCounter[i] < 0xFFFF) {
 					if (clicked)
 						clicked = 0;						// Cannot be a click
 					// Process PRESSED_FOR_X_SEC events
@@ -193,48 +200,48 @@ void CheckAttachedButtons(void) {
 			}
 
 			/* 5.D. On release: Record a click if pressed less than 1 second */
-			if (releaseCounter[i] < BOS.buttons.debounce) {
+			if (ReleaseCounter[i] < BOS.Buttons.Debounce) {
 				// This is noise. Ignore it
 			} else {
-				if (releaseCounter[i] == BOS.buttons.debounce) {
-					button[i].state = RELEASED;	// Record a RELEASED event. This event is always reset on next tick.
-					++releaseCounter[i];
+				if (ReleaseCounter[i] == BOS.Buttons.Debounce) {
+					Button[i].State = RELEASED;	// Record a RELEASED event. This event is always reset on next tick.
+					++ReleaseCounter[i];
 				}
 
-				if (pressCounter[i] > BOS.buttons.debounce)	// Reset pressCounter if needed - to avoid masking releaseCounter on NC switches
-					pressCounter[i] = 0;
+				if (PressCounter[i] > BOS.Buttons.Debounce)	// Reset PressCounter if needed - to avoid masking ReleaseCounter on NC switches
+					PressCounter[i] = 0;
 
-				if (releaseCounter[i] > BOS.buttons.singleClickTime
-						&& releaseCounter[i] < 500) {
+				if (ReleaseCounter[i] > BOS.Buttons.SingleClickTime
+						&& ReleaseCounter[i] < 500) {
 					if (clicked == 1) {
-						button[i].state = CLICKED;// Record a single button click event
+						Button[i].State = CLICKED;// Record a single button click event
 						clicked = 2;			// Prepare for a double click
 					} else if (clicked == 3) {
-						button[i].state = DBL_CLICKED;// Record a double button click event
+						Button[i].State = DBL_CLICKED;// Record a double button click event
 						clicked = 0;			// Prepare for a single click
 					}
-				} else if (releaseCounter[i] >= 500
-						&& releaseCounter[i] < 0xFFFF) {
+				} else if (ReleaseCounter[i] >= 500
+						&& ReleaseCounter[i] < 0xFFFF) {
 					// Process RELEASED_FOR_Y_SEC events
 //					CheckForTimedButtonRelease(i);
 				}
 			}
 
 			/* 6. Run button callbacks if needed */
-			switch (button[i].state) {
+			switch (Button[i].State) {
 //			case PRESSED:
 //				buttonPressedCallback(i);
-//				button[i].state = NONE;
+//				Button[i].State = NONE;
 //				break;
 
 			case RELEASED:
 				buttonReleasedCallback(i);
-				button[i].state = NONE;
+				Button[i].State = NONE;
 				break;
 
 			case CLICKED:
 				if (!delayButtonStateReset
-						&& (button[i].events & BUTTON_EVENT_CLICKED)) {
+						&& (Button[i].Event & BUTTON_EVENT_CLICKED)) {
 					delayButtonStateReset = true;
 					buttonClickedCallback(i);
 				}
@@ -242,7 +249,7 @@ void CheckAttachedButtons(void) {
 
 			case DBL_CLICKED:
 				if (!delayButtonStateReset
-						&& (button[i].events & BUTTON_EVENT_DBL_CLICKED)) {
+						&& (Button[i].Event & BUTTON_EVENT_DBL_CLICKED)) {
 					delayButtonStateReset = true;
 					buttonDblClickedCallback(i);
 				}
@@ -250,21 +257,21 @@ void CheckAttachedButtons(void) {
 
 //			case PRESSED_FOR_X1_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_PRESSED_FOR_X1_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X1_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonPressedForXCallback(i, PRESSED_FOR_X1_SEC - 8);
 //				}
 //				break;
 //			case PRESSED_FOR_X2_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_PRESSED_FOR_X2_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X2_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonPressedForXCallback(i, PRESSED_FOR_X2_SEC - 8);
 //				}
 //				break;
 //			case PRESSED_FOR_X3_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_PRESSED_FOR_X3_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X3_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonPressedForXCallback(i, PRESSED_FOR_X3_SEC - 8);
 //				}
@@ -272,7 +279,7 @@ void CheckAttachedButtons(void) {
 //
 //			case RELEASED_FOR_Y1_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_RELEASED_FOR_Y1_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y1_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonReleasedForYCallback(i, RELEASED_FOR_Y1_SEC - 11);
 //				}
@@ -280,7 +287,7 @@ void CheckAttachedButtons(void) {
 //
 //			case RELEASED_FOR_Y2_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_RELEASED_FOR_Y2_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y2_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonReleasedForYCallback(i, RELEASED_FOR_Y2_SEC - 11);
 //				}
@@ -288,7 +295,7 @@ void CheckAttachedButtons(void) {
 //
 //			case RELEASED_FOR_Y3_SEC:
 //				if (!delayButtonStateReset
-//						&& (button[i].events & BUTTON_EVENT_RELEASED_FOR_Y3_SEC)) {
+//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y3_SEC)) {
 //					delayButtonStateReset = true;
 //					buttonReleasedForYCallback(i, RELEASED_FOR_Y3_SEC - 11);
 //				}
@@ -316,11 +323,11 @@ void CheckAttachedButtons(void) {
 //	t2 *= 1000;
 //	t3 *= 1000;
 //
-//	if (pressCounter[port] == t1) {
+//	if (PressCounter[port] == t1) {
 //		button[port].state = PRESSED_FOR_X1_SEC;
-//	} else if (pressCounter[port] == t2) {
+//	} else if (PressCounter[port] == t2) {
 //		button[port].state = PRESSED_FOR_X2_SEC;
-//	} else if (pressCounter[port] == t3) {
+//	} else if (PressCounter[port] == t3) {
 //		button[port].state = PRESSED_FOR_X2_SEC;
 //	}
 //
@@ -341,11 +348,11 @@ void CheckAttachedButtons(void) {
 //	t2 *= 1000;
 //	t3 *= 1000;
 //
-//	if (releaseCounter[port] == t1) {
+//	if (ReleaseCounter[port] == t1) {
 //		button[port].state = RELEASED_FOR_Y1_SEC;
-//	} else if (releaseCounter[port] == t2) {
+//	} else if (ReleaseCounter[port] == t2) {
 //		button[port].state = RELEASED_FOR_Y2_SEC;
-//	} else if (releaseCounter[port] == t3) {
+//	} else if (ReleaseCounter[port] == t3) {
 //		button[port].state = RELEASED_FOR_Y2_SEC;
 //	}
 //
@@ -358,9 +365,9 @@ void CheckAttachedButtons(void) {
  */
 void ResetAttachedButtonStates(uint8_t *deferReset) {
 	if (!*deferReset) {
-		for (uint8_t i = 1; i <= NumOfPorts; i++) {
-			if (button[i].state != NONE)
-				button[i].state = NONE;
+		for (uint8_t i = 1; i <= NUM_OF_PORTS; i++) {
+			if (Button[i].State != NONE)
+				Button[i].State = NONE;
 		}
 	}
 	//*deferReset = 0;
@@ -380,14 +387,14 @@ BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port) {
 	uint8_t temp8 = 0;
 
 	/* 1. Stop communication at this port (only if the scheduler is running) - TODO update*/
-	if (BOS_initialized) {
+	if (bosInitialized) {
 		osSemaphoreRelease(PxRxSemaphoreHandle[port]); /* Give back the semaphore if it was taken */
 		osSemaphoreRelease(PxTxSemaphoreHandle[port]);
 	}
-	portStatus[port] = PORTBUTTON;
+	PortStatus[port] = PORTBUTTON;
 
 	/* 2. Deinitialize UART (only if module is initialized) */
-	if (BOS_initialized) {
+	if (bosInitialized) {
 		HAL_UART_DeInit(GetUart(port));
 	}
 
@@ -406,7 +413,7 @@ BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port) {
 	HAL_GPIO_Init((GPIO_TypeDef*) RX_Port, &GPIO_InitStruct);
 
 	/* 4. Update button struct */
-	button[port].type = buttonType;
+	Button[port].Type = buttonType;
 
 	/* 5. Add to EEPROM if not already there */
 	res = EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1), &temp16);
@@ -447,15 +454,10 @@ BOS_Status RemovePortButton(uint8_t port) {
 	uint16_t res, temp16;
 
 	/* 1. Remove from button struct */
-	button[port].type = NONE;
-	button[port].state = NONE;
-	button[port].events = 0;
-	button[port].pressedX1Sec = 0;
-	button[port].pressedX2Sec = 0;
-	button[port].pressedX3Sec = 0;
-	button[port].releasedY1Sec = 0;
-	button[port].releasedY2Sec = 0;
-	button[port].releasedY3Sec = 0;
+	Button[port].Type = NONE;
+	Button[port].State = NONE;
+	Button[port].Event = 0;
+
 
 	/* 2. Remove from EEPROM if it's already there */
 	res = EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1), &temp16);
@@ -499,7 +501,7 @@ BOS_Status RemovePortButton(uint8_t port) {
 		result = BOS_ERROR;
 
 	/* 4. free port */
-	portStatus[port] = FREE;
+	PortStatus[port] = FREE;
 	/* Setup UART DMA */
 	DMA_MSG_RX_Setup(huart,UARTDMAHandler[port - 1]);
 
@@ -539,72 +541,72 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 	uint16_t res, temp16;
 	uint8_t temp8;
 
-	if (button[port].type == NONE)
+	if (Button[port].Type == NONE)
 		return BOS_ERR_BUTTON_NOT_DEFINED;
 
-//	button[port].pressedX1Sec = pressed_x1sec;
-//	button[port].pressedX2Sec = pressed_x2sec;
-//	button[port].pressedX3Sec = pressed_x3sec;
-//	button[port].releasedY1Sec = released_y1sec;
-//	button[port].releasedY2Sec = released_y2sec;
-//	button[port].releasedY3Sec = released_y3sec;
+//	Button[port].pressedX1Sec = pressed_x1sec;
+//	Button[port].pressedX2Sec = pressed_x2sec;
+//	Button[port].pressedX3Sec = pressed_x3sec;
+//	Button[port].releasedY1Sec = released_y1sec;
+//	Button[port].releasedY2Sec = released_y2sec;
+//	Button[port].releasedY3Sec = released_y3sec;
 
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && clicked)) {
 		if (mode == BUTTON_EVENT_MODE_OR
 				|| (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == CLICKED)) {
-		button[port].events |= BUTTON_EVENT_CLICKED;
+		Button[port].Event |= BUTTON_EVENT_CLICKED;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !clicked) {
-//		button[port].events &= ~BUTTON_EVENT_CLICKED;
+//		Button[port].Event &= ~BUTTON_EVENT_CLICKED;
 		} else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == CLICKED) {
-			button[port].events &= ~BUTTON_EVENT_CLICKED;
+			Button[port].Event &= ~BUTTON_EVENT_CLICKED;
 	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && dbl_clicked)) {
 		if (mode == BUTTON_EVENT_MODE_OR
 				|| (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == DBL_CLICKED)) {
-		button[port].events |= BUTTON_EVENT_DBL_CLICKED;
+		Button[port].Event |= BUTTON_EVENT_DBL_CLICKED;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !dbl_clicked) {
-//		button[port].events &= ~BUTTON_EVENT_DBL_CLICKED;
+//		Button[port].Event &= ~BUTTON_EVENT_DBL_CLICKED;
 //	}
 } else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == DBL_CLICKED) {
-	button[port].events &= ~BUTTON_EVENT_DBL_CLICKED;
+	Button[port].Event &= ~BUTTON_EVENT_DBL_CLICKED;
 }
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x1sec)) {
-//		button[port].events |= BUTTON_EVENT_PRESSED_FOR_X1_SEC;
+//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X1_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x1sec) {
-//		button[port].events &= ~BUTTON_EVENT_PRESSED_FOR_X1_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X1_SEC;
 //	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x2sec)) {
-//		button[port].events |= BUTTON_EVENT_PRESSED_FOR_X2_SEC;
+//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X2_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x2sec) {
-//		button[port].events &= ~BUTTON_EVENT_PRESSED_FOR_X2_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X2_SEC;
 //	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x3sec)) {
-//		button[port].events |= BUTTON_EVENT_PRESSED_FOR_X3_SEC;
+//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X3_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x3sec) {
-//		button[port].events &= ~BUTTON_EVENT_PRESSED_FOR_X3_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X3_SEC;
 //	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y1sec)) {
-//		button[port].events |= BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
+//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y1sec) {
-//		button[port].events &= ~BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
 //	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y2sec)) {
-//		button[port].events |= BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
+//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y2sec) {
-//		button[port].events &= ~BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
 //	}
 //	if (mode == BUTTON_EVENT_MODE_OR
 //			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y3sec)) {
-//		button[port].events |= BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
+//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
 //	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y3sec) {
-//		button[port].events &= ~BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
+//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
 //	}
 
 	/* Add to EEPROM */
@@ -613,8 +615,8 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 	{
 		temp8 = (uint8_t) (temp16 >> 8);					// Keep upper byte
 		/* Store event flags */
-		if ((uint8_t) (temp16) != button[port].events) {// Update only if different
-			temp16 = ((uint16_t) temp8 << 8) | (uint16_t) button[port].events;
+		if ((uint8_t) (temp16) != Button[port].Event) {// Update only if different
+			temp16 = ((uint16_t) temp8 << 8) | (uint16_t) Button[port].Event;
 			EE_WriteVariable(_EE_BUTTON_BASE + 4 * (port - 1), temp16);
 		}
 
@@ -735,7 +737,7 @@ void ADCSelectChannel(uint8_t ADC_port, char *side) {
 		else
 		{flag_ADC_Select[1]=1;}
 		HAL_UART_DeInit(GetUart(ADC_port));
-		portStatus[ADC_port] = CUSTOM;
+		PortStatus[ADC_port] = CUSTOM;
 		Channel = Get_channel(GetUart(ADC_port), side);
 		Rank_t = Get_Rank(ADC_port, side);
 		if (ADC_flag == 0)
@@ -861,7 +863,7 @@ float GetReadPrecentage(uint8_t port, float *precentageValue) {
 				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-				portStatus[port] = CUSTOM;
+				PortStatus[port] = CUSTOM;
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 			} else {
 				HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
@@ -869,7 +871,7 @@ float GetReadPrecentage(uint8_t port, float *precentageValue) {
 				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-				portStatus[port] = CUSTOM;
+				PortStatus[port] = CUSTOM;
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
 
 			}
@@ -940,7 +942,7 @@ void Deinit_ADC_Channel(uint8_t port) {
 
 	HAL_ADC_DeInit(&hadc);
 	HAL_UART_Init(GetUart(port));
-	portStatus[port] = FREE;
+	PortStatus[port] = FREE;
 	ADC_flag = 0;
 }
 

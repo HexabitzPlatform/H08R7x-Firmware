@@ -13,7 +13,7 @@
 /* Variables ---------------------------------------------------------*/
 RTC_HandleTypeDef RtcHandle;
 uint8_t bootStatus =POWER_ON_BOOT;
-extern const char *monthStringAbreviated[];
+extern const char *MonthStringAbreviated[];
 
 /* Function prototypes ----------------------------------------------*/
 BOS_Status RTC_Init(void);
@@ -94,7 +94,7 @@ BOS_Status RTC_CalendarConfig(void){
 	day =atoi(comDate + 4);
 	*(comDate + 3) =0;
 	for(uint8_t i =0; i < 12; i++){
-		if(!strcmp(comDate,monthStringAbreviated[i]))
+		if(!strcmp(comDate,MonthStringAbreviated[i]))
 			month =i + 1;
 	}
 	
@@ -119,7 +119,7 @@ BOS_Status RTC_CalendarConfig(void){
 	stimestructure.Minutes =minutes;
 	stimestructure.Seconds =seconds;
 	stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
-	BOS.hourformat =24;
+	BOS.HourFormat =24;
 	stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 	stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
 	
@@ -166,7 +166,7 @@ BOS_Status BOS_CalendarConfig(Months_e month, uint8_t monthDay, uint16_t year, W
 	if(AMPM == RTC_AM && hours <= 12){
 		HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_BKP_DR0, 1);
 		stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
-		BOS.hourformat =12;
+		BOS.HourFormat =12;
 		HAL_RTC_DeInit(&RtcHandle);
 		RtcHandle.Init.HourFormat = RTC_HOURFORMAT_12;
 		HAL_RTC_Init(&RtcHandle);
@@ -174,7 +174,7 @@ BOS_Status BOS_CalendarConfig(Months_e month, uint8_t monthDay, uint16_t year, W
 	else if(AMPM == RTC_PM && hours <= 12){
 		HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_BKP_DR0, 1);
 		stimestructure.TimeFormat = RTC_HOURFORMAT12_PM;
-		BOS.hourformat =12;
+		BOS.HourFormat =12;
 		HAL_RTC_DeInit(&RtcHandle);
 		RtcHandle.Init.HourFormat = RTC_HOURFORMAT_12;
 		HAL_RTC_Init(&RtcHandle);
@@ -182,7 +182,7 @@ BOS_Status BOS_CalendarConfig(Months_e month, uint8_t monthDay, uint16_t year, W
 	else
 	{
 		HAL_RTCEx_BKUPWrite(&RtcHandle, RTC_BKP_DR0, 0);
-		BOS.hourformat =24;
+		BOS.HourFormat =24;
 		HAL_RTC_DeInit(&RtcHandle);
 		RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
 		HAL_RTC_Init(&RtcHandle);
@@ -194,7 +194,7 @@ BOS_Status BOS_CalendarConfig(Months_e month, uint8_t monthDay, uint16_t year, W
 	if(HAL_RTC_SetDate(&RtcHandle,&sdatestructure,RTC_FORMAT_BIN) != HAL_OK)
 		return BOS_ERROR;
 	/* Save RTC hourformat and daylightsaving to EEPROM */
-	EE_WriteVariable(_EE_PARAMS_RTC,((uint16_t )BOS.hourformat << 8) | (uint16_t )BOS.buttons.minInterClickTime);
+	EE_WriteVariable(_EE_PARAMS_RTC,((uint16_t )BOS.HourFormat << 8) | (uint16_t )BOS.Buttons.minInterClickTime);
 	
 	/* Writes a data in a RTC Backup data Register1 */
 	HAL_RTCEx_BKUPWrite(&RtcHandle,RTC_BKP_DR1,0x32F2);
@@ -216,15 +216,15 @@ void GetTimeDate(void){
 	HAL_RTC_GetTime(&RtcHandle,&stimestructureget,RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&RtcHandle,&sdatestructureget,RTC_FORMAT_BIN);
 	
-	BOS.time.ampm =(stimestructureget.TimeFormat >> 7) + 1;
-	BOS.time.msec =stimestructureget.SubSeconds / 2;
-	BOS.time.seconds =stimestructureget.Seconds;
-	BOS.time.minutes =stimestructureget.Minutes;
-	BOS.time.hours =stimestructureget.Hours;
-	BOS.date.day =sdatestructureget.Date;
-	BOS.date.month =sdatestructureget.Month;
-	BOS.date.weekday =sdatestructureget.WeekDay;
-	BOS.date.year =sdatestructureget.Year + 2000;
+	BOS.Time.AMPM =(stimestructureget.TimeFormat >> 7) + 1;
+	BOS.Time.mSec =stimestructureget.SubSeconds / 2;
+	BOS.Time.Seconds =stimestructureget.Seconds;
+	BOS.Time.Minutes =stimestructureget.Minutes;
+	BOS.Time.Hours =stimestructureget.Hours;
+	BOS.Date.Day =sdatestructureget.Date;
+	BOS.Date.Month =sdatestructureget.Month;
+	BOS.Date.Weekday =sdatestructureget.WeekDay;
+	BOS.Date.Year =sdatestructureget.Year + 2000;
 }
 
 /**********************************************************************************/

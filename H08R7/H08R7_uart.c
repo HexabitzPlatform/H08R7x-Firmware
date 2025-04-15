@@ -12,9 +12,9 @@
 
 ///*  */
 //#ifndef __N
-//uint16_t arrayPortsDir[MaxNumOfModules]; /* Array ports directions */
+//uint16_t ArrayPortsDir[MaxNumOfModules]; /* Array ports directions */
 //#else
-//uint16_t arrayPortsDir[__N ];
+//uint16_t ArrayPortsDir[__N ];
 //#endif
 
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -518,6 +518,9 @@ HAL_StatusTypeDef writePxITMutex(uint8_t port,char *buffer,uint16_t n,uint32_t m
 		}
 	}
 	
+	/* Delay Between Sending Two Messages */
+	Delay_ms(5);
+
 	return result;
 }
 
@@ -560,43 +563,43 @@ UART_HandleTypeDef* GetUart(uint8_t port){
 	switch(port){
 #ifdef _P1
 		case P1:
-			return P1uart;
+			return UART_P1;
 #endif
 #ifdef _P2
 		case P2:
-			return P2uart;
+			return UART_P2;
 #endif
 #ifdef _P3
 		case P3:
-			return P3uart;
+			return UART_P3;
 #endif
 #ifdef _P4
 		case P4:
-			return P4uart;
+			return UART_P4;
 #endif
 #ifdef _P5
 		case P5:
-			return P5uart;
+			return UART_P5;
 #endif
 #ifdef _P6
 		case P6:
-			return P6uart;
+			return UART_P6;
 #endif
 #ifdef _P7
 		case P7 :
-			return P7uart;
+			return UART_P7;
 	#endif
 #ifdef _P8
 		case P8 :
-			return P8uart;
+			return UART_P8;
 	#endif
 #ifdef _P9
 		case P9 :
-			return P9uart;
+			return UART_P9;
 	#endif
 #ifdef _P10
 		case P10 :
-			return P10uart;
+			return UART_P10;
 	#endif
 		default:
 			return 0;
@@ -610,14 +613,14 @@ UART_HandleTypeDef* GetUart(uint8_t port){
 void SwapUartPins(UART_HandleTypeDef *huart,uint8_t direction){
 	if(huart != NULL){
 		if(direction == REVERSED){
-			arrayPortsDir[myID - 1] |=(0x8000 >> (GetPort(huart) - 1)); /* Set bit to one */
+			ArrayPortsDir[myID - 1] |=(0x8000 >> (GetPort(huart) - 1)); /* Set bit to one */
 			huart->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
 			huart->AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
 			HAL_UART_Init(huart);
 			HAL_UARTEx_ReceiveToIdle_DMA(huart,(uint8_t* )&UARTRxBuf[GetPort(huart) - 1],MSG_RX_BUF_SIZE);
 		}
 		else if(direction == NORMAL){
-			arrayPortsDir[myID - 1] &=(~(0x8000 >> (GetPort(huart) - 1))); /* Set bit to zero */
+			ArrayPortsDir[myID - 1] &=(~(0x8000 >> (GetPort(huart) - 1))); /* Set bit to zero */
 			huart->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
 			huart->AdvancedInit.Swap = UART_ADVFEATURE_SWAP_DISABLE;
 			HAL_UART_Init(huart);
@@ -634,13 +637,13 @@ BOS_Status ReadPortsDir(void) {
 		if (i != myID) {
 			SendMessageToModule(i, CODE_READ_PORT_DIR, 0);
 			Delay_ms_no_rtos(50);
-			if (responseStatus != BOS_OK) {
+			if (ResponseStatus != BOS_OK) {
 				result = BOS_ERR_NoResponse;
 			}
 		} else {
 			/* Check my own ports */
-			for (uint8_t p = 1; p <= NumOfPorts; p++) {
-				arrayPortsDir[myID - 1] |= (0x0000); /* Set bit to 1 */
+			for (uint8_t p = 1; p <= NUM_OF_PORTS; p++) {
+				ArrayPortsDir[myID - 1] |= (0x0000); /* Set bit to 1 */
 			}
 		}
 	}
@@ -654,9 +657,9 @@ BOS_Status ReadPortsDirMSG(uint8_t SourceModule) {
 	BOS_Status result = BOS_OK;
 	uint16_t temp =0;
 	/* Check my own ports */
-	for (int p = 1; p <= NumOfPorts; p++) {
+	for (int p = 1; p <= NUM_OF_PORTS; p++) {
 		if (GetUart(p)->AdvancedInit.Swap== UART_ADVFEATURE_SWAP_ENABLE) {
-			messageParams[temp++] = p;
+			MessageParams[temp++] = p;
 		}
 	}
 	/* Send response */
@@ -672,9 +675,9 @@ BOS_Status UpdateMyPortsDir(void)
 	BOS_Status result = BOS_OK;
 
 	/* Check port direction */
-	for (uint8_t p=1 ; p<=NumOfPorts ; p++)
+	for (uint8_t p=1 ; p<=NUM_OF_PORTS ; p++)
 	{
-		if ( !(arrayPortsDir[myID-1] & (0x8000>>(p-1))) ) {
+		if ( !(ArrayPortsDir[myID-1] & (0x8000>>(p-1))) ) {
 			/* Port is normal */
 			SwapUartPins(GetUart(p), NORMAL);
 		} else {

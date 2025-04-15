@@ -10,14 +10,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 
-uint8_t temp_length[NumOfPorts] = {0};
-uint8_t temp_index[NumOfPorts] = {0};
+uint8_t temp_length[NUM_OF_PORTS] = {0};
+uint8_t temp_index[NUM_OF_PORTS] = {0};
 uint8_t* error_restart_message = "Restarting...\r\n";
 
 
 /* External variables --------------------------------------------------------*/
-extern uint8_t UARTRxBuf[NumOfPorts][MSG_RX_BUF_SIZE];
-extern uint8_t UARTRxBufIndex[NumOfPorts];
+extern uint8_t UARTRxBuf[NUM_OF_PORTS][MSG_RX_BUF_SIZE];
+extern uint8_t UARTRxBufIndex[NUM_OF_PORTS];
 extern uint8_t WakeupFromStopFlag;
 /* External function prototypes ----------------------------------------------*/
 
@@ -45,8 +45,8 @@ void SysTick_Handler(void){
 void HardFault_Handler(void){
 	/* Loop here */
 	uint8_t* error_message = "HardFault Error\r\n";
-	writePxMutex(PcPort, (char*) error_message, 17, 0xff, 0xff);
-	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_message, 17, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_restart_message, 15, 0xff, 0xff);
 	NVIC_SystemReset();
 	for(;;){
 	};
@@ -86,7 +86,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart,uint16_t Size){
 
 	PacketLength =Size;
 	count++;
-	if(portStatus[GetPort(huart)] == STREAM) {
+	if(PortStatus[GetPort(huart)] == STREAM) {
 
 	} else {
 	  /* Notify backend task */
@@ -357,14 +357,14 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
 	
 	/* Resume streaming DMA for this UART port */
 	uint8_t port =GetPort(huart);
-	if(portStatus[port] == STREAM){
+	if(PortStatus[port] == STREAM){
 //		HAL_UART_Receive_DMA(huart,(uint8_t* )(&(dmaStreamDst[port - 1]->Instance->TDR)),huart->hdmarx->Instance->CNDTR);
 		HAL_UARTEx_ReceiveToIdle_DMA(huart,(uint8_t* )(&(dmaStreamDst[port - 1]->Instance->TDR)),huart->hdmarx->Instance->CNDTR);
 		/* Or parse the circular buffer and restart messaging DMA for this port */
 	}
 	else{
-		index_input[port - 1] = 0;
-		index_process[port - 1] = 0;
+		IndexInput[port - 1] = 0;
+		IndexProcess[port - 1] = 0;
 		memset((uint8_t* )&UARTRxBuf[port - 1], 0, MSG_RX_BUF_SIZE);
 //		HAL_UART_Receive_DMA(huart,(uint8_t* )&UARTRxBuf[port - 1] ,MSG_RX_BUF_SIZE);
 		HAL_UARTEx_ReceiveToIdle_DMA(huart,(uint8_t* )&UARTRxBuf[port - 1] ,MSG_RX_BUF_SIZE);
@@ -400,7 +400,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 //	uint8_t port_index = port_number - 1;
 //	if(Rx_Data[port_index] == 0x0D && portStatus[port_number] == FREE)
 //	{
-//		for(int i=0;i<=NumOfPorts;i++) // Free previous CLI port
+//		for(int i=0;i<=NUM_OF_PORTS;i++) // Free previous CLI port
 //		{
 //			if(portStatus[i] == CLI)
 //			{
@@ -482,8 +482,8 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask,signed char *pcTaskName){
 	(void )pcTaskName;
 	(void )pxTask;
 	uint8_t* error_message = "Stack Overflow\r\n";
-	writePxMutex(PcPort, (char*) error_message, 16, 0xff, 0xff);
-	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_message, 16, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_restart_message, 15, 0xff, 0xff);
 	NVIC_SystemReset();
 //	taskDISABLE_INTERRUPTS();
 	for(;;);
@@ -502,8 +502,8 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask,signed char *pcTaskName){
  provide information on how the remaining heap might be fragmented). */
 void vApplicationMallocFailedHook(void){
 	uint8_t* error_message = "Heap size exceeded\r\n";
-	writePxMutex(PcPort, (char*) error_message, 20, 0xff, 0xff);
-	writePxMutex(PcPort, (char*) error_restart_message, 15, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_message, 20, 0xff, 0xff);
+	writePxMutex(pcPort, (char*) error_restart_message, 15, 0xff, 0xff);
 	NVIC_SystemReset();
 //	taskDISABLE_INTERRUPTS();
 	for(;;);
