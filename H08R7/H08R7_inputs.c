@@ -912,10 +912,10 @@ uint32_t Get_channel(UART_HandleTypeDef *huart, char *side) {
 		return ADC_CHANNEL_2;
 	else if (huart->Instance == USART2 && !strcmp(side,"bottom"))
 		return ADC_CHANNEL_3;
-	else if (huart->Instance == USART6  && !strcmp(side,"top"))
-		return ADC_CHANNEL_4;
-	else if (huart->Instance == USART6 && !strcmp(side,"bottom"))
-		return ADC_CHANNEL_5;
+	else if (huart->Instance == USART3  && !strcmp(side,"top"))
+		return ADC_CHANNEL_11;
+	else if (huart->Instance == USART3 && !strcmp(side,"bottom"))
+		return ADC_CHANNEL_15;
 }
 
 void Error_Handler(void) {
