@@ -36,13 +36,13 @@
 #define _P5
 #define _P6
 
-/* Define available USARTs */
-#define _Usart1 1
-#define _Usart2 1
-#define _Usart3 1
-#define _Usart4 1
-#define _Usart5 1
-#define _Usart6 1
+/* Define Available USARTs */
+#define _USART1
+#define _USART2
+#define _USART3
+#define _USART4
+#define _USART5
+#define _USART6
 
 /* Port-UART mapping */
 #define UART_P1 &huart4
