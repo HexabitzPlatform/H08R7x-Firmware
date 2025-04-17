@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
  File Name     : BOS_inputs.c
@@ -7,20 +7,36 @@
 
  */
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes ****************************************************************/
 #include "H08R7_inputs.h"
 
 /* Exported Variables ******************************************************/
 bool DelayButtonStateReset = false;
 bool NeedToDelayButtonStateReset = false;
 
-/* Private and global variables ----------------------------------------------*/
+/* Private variables *******************************************************/
 /* Buttons */
+uint8_t dblCounter[NUM_OF_PORTS + 1] ={0};
+uint32_t PressCounter[NUM_OF_PORTS + 1] ={0};
+uint32_t ReleaseCounter[NUM_OF_PORTS + 1] ={0};
+
 Button_t Button[NUM_OF_PORTS + 1] ={0};
-uint32_t PressCounter[NUM_OF_PORTS + 1] = { 0 };
-uint32_t ReleaseCounter[NUM_OF_PORTS + 1] = { 0 };
-uint8_t dblCounter[NUM_OF_PORTS + 1] = { 0 };
-bool needToDelayButtonStateReset = false, delayButtonStateReset = false;
+
+/* ADC */
+#define VREF_CAL   ((uint16_t *)((uint32_t)0x1ffff7BA))
+#define AVG_SLOPE  4.3
+#define V25        1.41
+
+uint8_t adcSelectFlag[2] ={0};
+uint8_t adcEnableFlag =0;
+uint8_t adcChannelRank =0;
+uint16_t Channel =0;
+uint16_t adcChannelValue[4] ={0};
+uint16_t adcValueTemp =0;
+uint16_t adcValueVref =0;
+float Percentage =0.0f;
+float Current =0.0f;
+
 ADC_HandleTypeDef hadc;
 ADC_ChannelConfTypeDef sConfig = { 0 };
 
@@ -28,55 +44,124 @@ BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port);
 BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode);
 
 /* Private buttons function prototypes -----------------------------------------------*/
-BOS_Status CheckForTimedButtonPress(uint8_t port);
-BOS_Status CheckForTimedButtonRelease(uint8_t port);
-extern BOS_Status GetPortGPIOs(uint8_t port, uint32_t *TX_Port,
-		uint16_t *TX_Pin, uint32_t *RX_Port, uint16_t *RX_Pin);
+//BOS_Status CheckForTimedButtonPress(uint8_t port);
+//BOS_Status CheckForTimedButtonRelease(uint8_t port);
+BOS_Status GetPortGPIOs(uint8_t port,uint32_t *TX_Port,uint16_t *TX_Pin,uint32_t *RX_Port,uint16_t *RX_Pin);
 void buttonPressedCallback(uint8_t port);
 void buttonReleasedCallback(uint8_t port);
 void buttonClickedCallback(uint8_t port);
 void buttonDblClickedCallback(uint8_t port);
-void buttonPressedForXCallback(uint8_t port, uint8_t eventType);
-void buttonReleasedForYCallback(uint8_t port, uint8_t eventType);
 
 /* Private ADC function prototypes -----------------------------------------------*/
-
 void MX_ADC_Init(void);
 void Error_Handler(void);
-uint32_t Get_channel(UART_HandleTypeDef *huart, char *side);
-uint8_t Get_Rank(uint8_t Port, char *side);
-void ReadTempAndVref(float *temp, float *Vref);
-void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value);
-void ADCSelectChannel(uint8_t ADC_port, char *side);
-float GetReadPrecentage(uint8_t port, float *precentageValue);
-void Deinit_ADC_Channel(uint8_t port);
+uint8_t GetRank(uint8_t Port,char *side);
+// uint16_t GetPIN(UART_HandleTypeDef *huart);
+uint32_t GetChannel(UART_HandleTypeDef *huart,char *side);
 
-/* Private ADC variables -----------------------------------------------*/
-
-#define Vref_Cal ((uint16_t *)((uint32_t)0x1ffff7BA))
-#define V25  1.41
-#define Avg_Slope 4.3
-uint16_t Channel = 0;
-
-uint16_t ADCchannelvalue[4] = { 0 };
-uint16_t ADC_value_temp = 0;
-uint16_t ADC_value_Vref = 0;
-uint8_t ADC_flag = 0, Rank_t = 0;
-float percentage = 0, current = 0;
-uint8_t flag_ADC_Select[2]={0};
-/* -----------------------------------------------------------------------
- |												 Private Functions	 														|
- -----------------------------------------------------------------------
+/***************************************************************************/
+/* Private Functions *******************************************************/
+/***************************************************************************/
+/* Configure the global features of the ADC (Clock, Resolution,
+ * Data Alignment and number of conversion) to read multiple ADC
+ * channel in Port 2 and port 3 and for calculate internal temperature and internal voltage
  */
+void MX_ADC_Init(void) {
+	hadc.Instance = ADC1;
+	hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+	hadc.Init.Resolution = ADC_RESOLUTION_12B;
+	hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
+	hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+	hadc.Init.LowPowerAutoWait = DISABLE;
+	hadc.Init.LowPowerAutoPowerOff = DISABLE;
+	hadc.Init.ContinuousConvMode = ENABLE;
+	hadc.Init.DiscontinuousConvMode = DISABLE;
+	hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+	hadc.Init.DMAContinuousRequests = DISABLE;
+	hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
 
-/* --- Button press callback. DO NOT MODIFY THIS CALLBACK. 
- This function is declared as __weak to be overwritten by other implementations in user file.
- */
-__weak void buttonPressedCallback(uint8_t port) {
+	if (HAL_ADC_Init(&hadc) != HAL_OK) {
+		Error_Handler();
+	}
+	adcEnableFlag = 1;
 }
 
-/*-----------------------------------------------------------*/
+/***************************************************************************/
+void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
 
+	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+		/* ADC1 clock enable */
+		__HAL_RCC_ADC_CLK_ENABLE();
+		__HAL_RCC_GPIOA_CLK_ENABLE();
+
+		if(adcSelectFlag[0]==1){
+		GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3 ;
+		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);}
+		else{
+
+		GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 ;
+		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		}
+
+}
+
+/***************************************************************************/
+void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
+
+	if (adcHandle->Instance == ADC1) {
+
+		/* Peripheral clock disable */
+		__HAL_RCC_ADC_CLK_DISABLE();
+
+		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
+	}
+}
+
+/***************************************************************************/
+void Error_Handler(void) {
+
+	HAL_Delay(100);
+
+}
+
+/***************************************************************************/
+/* --- Get the ADC_channel Number for a given UART.
+ */
+uint32_t GetChannel(UART_HandleTypeDef *huart, char *side) {
+
+	if (huart->Instance == USART2&& !strcmp(side,"top"))
+		return ADC_CHANNEL_2;
+	else if (huart->Instance == USART2 && !strcmp(side,"bottom"))
+		return ADC_CHANNEL_3;
+	else if (huart->Instance == USART3  && !strcmp(side,"top"))
+		return ADC_CHANNEL_11;
+	else if (huart->Instance == USART3 && !strcmp(side,"bottom"))
+		return ADC_CHANNEL_15;
+}
+
+/***************************************************************************/
+uint8_t GetRank(uint8_t Port, char *side) {
+
+	if (Port == 2 && !strcmp(side,"top"))
+		adcChannelRank = 0;
+	else if (Port == 2 && !strcmp(side,"bottom"))
+		adcChannelRank = 1;
+	else if (Port == 3 && !strcmp(side,"top"))
+		adcChannelRank = 2;
+	else if (Port == 3 && !strcmp(side,"bottom"))
+		adcChannelRank = 3;
+	return adcChannelRank;
+}
+
+/***************************************************************************/
+/* BOS Exported Functions **************************************************/
+/***************************************************************************/
 void CheckAttachedButtons(void) {
 	uint32_t TX_Port, RX_Port;
 	uint16_t TX_Pin, RX_Pin;
@@ -87,7 +172,7 @@ void CheckAttachedButtons(void) {
 		if (Button[i].Type)			// Only check defined butons
 		{
 			/* 1. Reset button state */
-			if (delayButtonStateReset == false)
+			if (DelayButtonStateReset == false)
 				Button[i].State = NONE;
 
 			/* 2. Get button GPIOs */
@@ -140,7 +225,6 @@ void CheckAttachedButtons(void) {
 			}
 
 			/* 5. Debounce this state and update button struct if needed */
-
 			/* 5.A. Possible change of state 1: OPEN > CLOSED or OFF >> ON */
 			if (state == CLOSED || state == ON) {
 				if (PressCounter[i] < 0xFFFF)
@@ -166,7 +250,6 @@ void CheckAttachedButtons(void) {
 			}
 
 			/* Analyze state */
-
 			/* 5.C. On press: Record a click if pressed less than 1 second */
 			if (PressCounter[i] < BOS.Buttons.Debounce) {
 				// This is noise. Ignore it
@@ -194,8 +277,6 @@ void CheckAttachedButtons(void) {
 				} else if (PressCounter[i] >= 500 && PressCounter[i] < 0xFFFF) {
 					if (clicked)
 						clicked = 0;						// Cannot be a click
-					// Process PRESSED_FOR_X_SEC events
-//					CheckForTimedButtonPress(i);
 				}
 			}
 
@@ -220,149 +301,42 @@ void CheckAttachedButtons(void) {
 						Button[i].State = DBL_CLICKED;// Record a double button click event
 						clicked = 0;			// Prepare for a single click
 					}
-				} else if (ReleaseCounter[i] >= 500
-						&& ReleaseCounter[i] < 0xFFFF) {
-					// Process RELEASED_FOR_Y_SEC events
-//					CheckForTimedButtonRelease(i);
 				}
 			}
 
 			/* 6. Run button callbacks if needed */
 			switch (Button[i].State) {
-//			case PRESSED:
-//				buttonPressedCallback(i);
-//				Button[i].State = NONE;
-//				break;
-
 			case RELEASED:
 				buttonReleasedCallback(i);
 				Button[i].State = NONE;
 				break;
 
 			case CLICKED:
-				if (!delayButtonStateReset
+				if (!DelayButtonStateReset
 						&& (Button[i].Event & BUTTON_EVENT_CLICKED)) {
-					delayButtonStateReset = true;
+					DelayButtonStateReset = true;
 					buttonClickedCallback(i);
 				}
 				break;
 
 			case DBL_CLICKED:
-				if (!delayButtonStateReset
+				if (!DelayButtonStateReset
 						&& (Button[i].Event & BUTTON_EVENT_DBL_CLICKED)) {
-					delayButtonStateReset = true;
+					DelayButtonStateReset = true;
 					buttonDblClickedCallback(i);
 				}
 				break;
 
-//			case PRESSED_FOR_X1_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X1_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonPressedForXCallback(i, PRESSED_FOR_X1_SEC - 8);
-//				}
-//				break;
-//			case PRESSED_FOR_X2_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X2_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonPressedForXCallback(i, PRESSED_FOR_X2_SEC - 8);
-//				}
-//				break;
-//			case PRESSED_FOR_X3_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_PRESSED_FOR_X3_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonPressedForXCallback(i, PRESSED_FOR_X3_SEC - 8);
-//				}
-//				break;
-//
-//			case RELEASED_FOR_Y1_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y1_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonReleasedForYCallback(i, RELEASED_FOR_Y1_SEC - 11);
-//				}
-//				break;
-//
-//			case RELEASED_FOR_Y2_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y2_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonReleasedForYCallback(i, RELEASED_FOR_Y2_SEC - 11);
-//				}
-//				break;
-//
-//			case RELEASED_FOR_Y3_SEC:
-//				if (!delayButtonStateReset
-//						&& (Button[i].Event & BUTTON_EVENT_RELEASED_FOR_Y3_SEC)) {
-//					delayButtonStateReset = true;
-//					buttonReleasedForYCallback(i, RELEASED_FOR_Y3_SEC - 11);
-//				}
-//				break;
-
 			default:
 				break;
 			}
-		}					// Done checking this button
-	}						// Done checking all buttons
+		}
+	}
 
 }
 
-/*-----------------------------------------------------------*/
-//
-///* --- Check for timed press button events
-// */
-//BOS_Status CheckForTimedButtonPress(uint8_t port) {
-//	BOS_Status result = BOS_OK;
-//	uint32_t t1 = button[port].pressedX1Sec, t2 = button[port].pressedX2Sec,
-//			t3 = button[port].pressedX3Sec;
-//
-//	/* Convert to ms */
-//	t1 *= 1000;
-//	t2 *= 1000;
-//	t3 *= 1000;
-//
-//	if (PressCounter[port] == t1) {
-//		button[port].state = PRESSED_FOR_X1_SEC;
-//	} else if (PressCounter[port] == t2) {
-//		button[port].state = PRESSED_FOR_X2_SEC;
-//	} else if (PressCounter[port] == t3) {
-//		button[port].state = PRESSED_FOR_X2_SEC;
-//	}
-//
-//	return result;
-//}
-//
-///*-----------------------------------------------------------*/
-//
-///* --- Check for timed release button events
-// */
-//BOS_Status CheckForTimedButtonRelease(uint8_t port) {
-//	BOS_Status result = BOS_OK;
-//	uint32_t t1 = button[port].releasedY1Sec, t2 = button[port].releasedY2Sec,
-//			t3 = button[port].releasedY3Sec;
-//
-//	/* Convert to ms */
-//	t1 *= 1000;
-//	t2 *= 1000;
-//	t3 *= 1000;
-//
-//	if (ReleaseCounter[port] == t1) {
-//		button[port].state = RELEASED_FOR_Y1_SEC;
-//	} else if (ReleaseCounter[port] == t2) {
-//		button[port].state = RELEASED_FOR_Y2_SEC;
-//	} else if (ReleaseCounter[port] == t3) {
-//		button[port].state = RELEASED_FOR_Y2_SEC;
-//	}
-//
-//	return result;
-//}
-
-/*-----------------------------------------------------------*/
-
-/* --- Reset state of attached buttons to avoid recurring callbacks
- */
+/***************************************************************************/
+/* Reset state of attached buttons to avoid recurring callbacks */
 void ResetAttachedButtonStates(uint8_t *deferReset) {
 	if (!*deferReset) {
 		for (uint8_t i = 1; i <= NUM_OF_PORTS; i++) {
@@ -370,14 +344,12 @@ void ResetAttachedButtonStates(uint8_t *deferReset) {
 				Button[i].State = NONE;
 		}
 	}
-	//*deferReset = 0;
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Define a new button attached to one of array ports
- buttonType: MOMENTARY_NO, MOMENTARY_NC, ONOFF_NO, ONOFF_NC
- port: array port (P1 - Px)
+/***************************************************************************/
+/* Define a new button attached to one of array ports
+ * buttonType: MOMENTARY_NO, MOMENTARY_NC, ONOFF_NO, ONOFF_NC
+ * port: array port (P1 - Px)
  */
 BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port) {
 	BOS_Status result = BOS_OK;
@@ -444,10 +416,9 @@ BOS_Status AddPortButton(ButtonType_e buttonType, uint8_t port) {
 	return result;
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Undefine a button attached to one of array ports and restore the port to default state
- port: array port (P1 - Px)
+/***************************************************************************/
+/* Undefine a button attached to one of array ports and restore the port to default state
+ *  port: array port (P1 - Px)
  */
 BOS_Status RemovePortButton(uint8_t port) {
 	BOS_Status result = BOS_OK;
@@ -474,27 +445,27 @@ BOS_Status RemovePortButton(uint8_t port) {
 	UART_HandleTypeDef *huart = GetUart(port);
 
 	if (huart->Instance == USART1) {
-#ifdef _Usart1		
+#ifdef _USART1
 		MX_USART1_UART_Init();
 #endif
 	} else if (huart->Instance == USART2) {
-#ifdef _Usart2	
+#ifdef _USART2
 		MX_USART2_UART_Init();
 #endif
 	} else if (huart->Instance == USART3) {
-#ifdef _Usart3	
+#ifdef _USART3
 		MX_USART3_UART_Init();
 #endif
 	} else if (huart->Instance == USART4) {
-#ifdef _Usart4	
+#ifdef _USART4
 		MX_USART4_UART_Init();
 #endif
 	} else if (huart->Instance == USART5) {
-#ifdef _Usart5	
+#ifdef _USART5
 		MX_USART5_UART_Init();
 #endif
 	} else if (huart->Instance == USART6) {
-#ifdef _Usart6	
+#ifdef _USART6
 		MX_USART6_UART_Init();
 #endif
 	} else
@@ -508,8 +479,7 @@ BOS_Status RemovePortButton(uint8_t port) {
 	return result;
 }
 
-/*-----------------------------------------------------------*/
-
+/***************************************************************************/
 BOS_Status AddButton(uint8_t port, ButtonType_e buttonType, ButtonState_e buttonState)
 {
 	BOS_Status Status = BOS_OK;
@@ -520,21 +490,13 @@ BOS_Status AddButton(uint8_t port, ButtonType_e buttonType, ButtonState_e button
 	return BOS_OK;
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Setup button events and callbacks
- port: array port (P1 - Px) where the button is attached
- clicked: Single click event (1: Enable, 0: Disable)
- dbl_clicked: Double click event (1: Enable, 0: Disable)
- pressed_x1sec, pressed_x1sec, pressed_x1sec: Press time for events X1, X2 and X3 in seconds. Use 0 to disable the event.
- released_x1sec, released_x1sec, released_x1sec: Release time for events Y1, Y2 and Y3 in seconds. Use 0 to disable the event.
- mode: BUTTON_EVENT_MODE_CLEAR to clear events marked with 0, BUTTON_EVENT_MODE_OR to OR events marked with 1 with existing events.
+/***************************************************************************/
+/* Setup button events and callback:
+ * port: array port (P1 - Px) where the button is attached.
+ * buttonState: OFF, ON, OPEN, CLOSED, CLICKED, DBL_CLICKED, RELEASED.
+ * mode: BUTTON_EVENT_MODE_CLEAR to clear events marked with 0,
+ * BUTTON_EVENT_MODE_OR to OR events marked with 1 with existing events.
  */
-
-//BOS_Status SetButtonEvents(uint8_t port, uint8_t clicked, uint8_t dbl_clicked,
-//		uint8_t pressed_x1sec, uint8_t pressed_x2sec, uint8_t pressed_x3sec,
-//		uint8_t released_y1sec, uint8_t released_y2sec, uint8_t released_y3sec,
-//		uint8_t mode)
 BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode)
 {
 	BOS_Status result = BOS_OK;
@@ -544,70 +506,19 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 	if (Button[port].Type == NONE)
 		return BOS_ERR_BUTTON_NOT_DEFINED;
 
-//	Button[port].pressedX1Sec = pressed_x1sec;
-//	Button[port].pressedX2Sec = pressed_x2sec;
-//	Button[port].pressedX3Sec = pressed_x3sec;
-//	Button[port].releasedY1Sec = released_y1sec;
-//	Button[port].releasedY2Sec = released_y2sec;
-//	Button[port].releasedY3Sec = released_y3sec;
-
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && clicked)) {
-		if (mode == BUTTON_EVENT_MODE_OR
-				|| (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == CLICKED)) {
+	if (mode == BUTTON_EVENT_MODE_OR || (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == CLICKED)) {
 		Button[port].Event |= BUTTON_EVENT_CLICKED;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !clicked) {
-//		Button[port].Event &= ~BUTTON_EVENT_CLICKED;
-		} else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == CLICKED) {
-			Button[port].Event &= ~BUTTON_EVENT_CLICKED;
 	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && dbl_clicked)) {
-		if (mode == BUTTON_EVENT_MODE_OR
-				|| (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == DBL_CLICKED)) {
+	else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == CLICKED) {
+		Button[port].Event &= ~BUTTON_EVENT_CLICKED;
+	}
+
+	if (mode == BUTTON_EVENT_MODE_OR || (mode == BUTTON_EVENT_MODE_CLEAR && buttonState == DBL_CLICKED)) {
 		Button[port].Event |= BUTTON_EVENT_DBL_CLICKED;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !dbl_clicked) {
-//		Button[port].Event &= ~BUTTON_EVENT_DBL_CLICKED;
-//	}
-} else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == DBL_CLICKED) {
-	Button[port].Event &= ~BUTTON_EVENT_DBL_CLICKED;
-}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x1sec)) {
-//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X1_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x1sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X1_SEC;
-//	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x2sec)) {
-//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X2_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x2sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X2_SEC;
-//	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && pressed_x3sec)) {
-//		Button[port].Event |= BUTTON_EVENT_PRESSED_FOR_X3_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !pressed_x3sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_PRESSED_FOR_X3_SEC;
-//	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y1sec)) {
-//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y1sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y1_SEC;
-//	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y2sec)) {
-//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y2sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y2_SEC;
-//	}
-//	if (mode == BUTTON_EVENT_MODE_OR
-//			|| (mode == BUTTON_EVENT_MODE_CLEAR && released_y3sec)) {
-//		Button[port].Event |= BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
-//	} else if (mode == BUTTON_EVENT_MODE_CLEAR && !released_y3sec) {
-//		Button[port].Event &= ~BUTTON_EVENT_RELEASED_FOR_Y3_SEC;
-//	}
+	}
+	else if (mode == BUTTON_EVENT_MODE_CLEAR && !buttonState == DBL_CLICKED) {
+		Button[port].Event &= ~BUTTON_EVENT_DBL_CLICKED;
+	}
 
 	/* Add to EEPROM */
 	res = EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1), &temp16);
@@ -619,28 +530,6 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 			temp16 = ((uint16_t) temp8 << 8) | (uint16_t) Button[port].Event;
 			EE_WriteVariable(_EE_BUTTON_BASE + 4 * (port - 1), temp16);
 		}
-
-//		/* Store times - only if different */
-//		EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 1, &temp16);
-//		if (temp16
-//				!= (((uint16_t) pressed_x1sec << 8) | (uint16_t) released_y1sec))
-//			EE_WriteVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 1,
-//					((uint16_t) pressed_x1sec << 8)
-//							| (uint16_t) released_y1sec);
-//
-//		EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 2, &temp16);
-//		if (temp16
-//				!= (((uint16_t) pressed_x2sec << 8) | (uint16_t) released_y2sec))
-//			EE_WriteVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 2,
-//					((uint16_t) pressed_x2sec << 8)
-//							| (uint16_t) released_y2sec);
-//
-//		EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 3, &temp16);
-//		if (temp16
-//				!= (((uint16_t) pressed_x3sec << 8) | (uint16_t) released_y3sec))
-//			EE_WriteVariable(_EE_BUTTON_BASE + 4 * (port - 1) + 3,
-//					((uint16_t) pressed_x3sec << 8)
-//							| (uint16_t) released_y3sec);
 	}	// TODO - var does not exist after adding button!
 	else
 		// Variable does not exist. Return error
@@ -649,109 +538,37 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 	return result;
 }
 
-/* ADC init function */
 
-/** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
- * to read multiple ADC channel in Port 2 and port 3 and for calculate
- * internal temperature and internal voltage reference which is equal in stm32f0 to around 1.2v.
- *
- */
-void MX_ADC_Init(void) {
-	hadc.Instance = ADC1;
-	hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-	hadc.Init.Resolution = ADC_RESOLUTION_12B;
-	hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
-	hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-	hadc.Init.LowPowerAutoWait = DISABLE;
-	hadc.Init.LowPowerAutoPowerOff = DISABLE;
-	hadc.Init.ContinuousConvMode = ENABLE;
-	hadc.Init.DiscontinuousConvMode = DISABLE;
-	hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-	hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-	hadc.Init.DMAContinuousRequests = DISABLE;
-	hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-
-	if (HAL_ADC_Init(&hadc) != HAL_OK) {
-		Error_Handler();
-	}
-	ADC_flag = 1;
-}
-void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
-
-	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-		/* ADC1 clock enable */
-		__HAL_RCC_ADC_CLK_ENABLE();
-		__HAL_RCC_GPIOA_CLK_ENABLE();
-		/**ADC GPIO Configuration
-		 PA2     ------> ADC_IN2
-		 PA3     ------> ADC_IN3
-		 PA4     ------> ADC_IN4
-		 PA5     ------> ADC_IN5
-		 */
-		if(flag_ADC_Select[0]==1){
-		GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3 ;
-		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);}
-		else{
-
-		GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 ;
-		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-		}
-
-}
-
-
-void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
-
-	if (adcHandle->Instance == ADC1) {
-		/* USER CODE BEGIN ADC1_MspDeInit 0 */
-
-		/* USER CODE END ADC1_MspDeInit 0 */
-		/* Peripheral clock disable */
-		__HAL_RCC_ADC_CLK_DISABLE();
-
-		/**ADC GPIO Configuration
-		 PA0     ------> ADC_IN0
-		 PA1     ------> ADC_IN1
-		 */
-		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
-
-		/* USER CODE BEGIN ADC1_MspDeInit 1 */
-
-		/* USER CODE END ADC1_MspDeInit 1 */
-	}
-}
-
-/** select port 2 & port 3 for the selected ADC regular channel to be converted. */
-
+/***************************************************************************/
+/* Exported Functions ******************************************************/
+/***************************************************************************/
+/* select port 2 & port 3 for the selected ADC regular channel to be converted */
 void ADCSelectChannel(uint8_t ADC_port, char *side) {
 
 
 	if (ADC_port == 2 || ADC_port == 3) {
 		if(ADC_port == 2)
-		{flag_ADC_Select[0]=1;}
+		{adcSelectFlag[0]=1;}
 		else
-		{flag_ADC_Select[1]=1;}
+		{adcSelectFlag[1]=1;}
 		HAL_UART_DeInit(GetUart(ADC_port));
 		PortStatus[ADC_port] = CUSTOM;
-		Channel = Get_channel(GetUart(ADC_port), side);
-		Rank_t = Get_Rank(ADC_port, side);
-		if (ADC_flag == 0)
+		Channel = GetChannel(GetUart(ADC_port), side);
+		adcChannelRank = GetRank(ADC_port, side);
+		if (adcEnableFlag == 0)
 			MX_ADC_Init();
 	}
 }
+
+/***************************************************************************/
 void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value) {
 
-	if (ADC_flag == 1) {
+	if (adcEnableFlag == 1) {
 
 		/* --- Enable chosen channel to be read.*/
 
-		Channel = Get_channel(GetUart(Port), side);
-		Rank_t = Get_Rank(Port, side);
+		Channel = GetChannel(GetUart(Port), side);
+		adcChannelRank = GetRank(Port, side);
 
 		sConfig.Channel = Channel;
 		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
@@ -763,7 +580,7 @@ void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value) {
 		}
 		HAL_ADC_Start(&hadc);
 		HAL_ADC_PollForConversion(&hadc, 100);
-		ADCchannelvalue[Rank_t] = HAL_ADC_GetValue(&hadc);
+		adcChannelValue[adcChannelRank] = HAL_ADC_GetValue(&hadc);
 
 		HAL_ADC_Stop(&hadc);
 
@@ -778,13 +595,14 @@ void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value) {
 		}
 
 	}
-	*ADC_Value = (float) ADCchannelvalue[Rank_t];
+	*ADC_Value = (float) adcChannelValue[adcChannelRank];
 
 }
 
+/***************************************************************************/
 void ReadTempAndVref(float *temp, float *Vref) {
 
-	if (0 == ADC_flag)
+	if (0 == adcEnableFlag)
 		MX_ADC_Init();
 
 
@@ -800,8 +618,8 @@ void ReadTempAndVref(float *temp, float *Vref) {
 	HAL_ADC_Start(&hadc);
 
 	HAL_ADC_PollForConversion(&hadc, 100);
-	ADC_value_temp = HAL_ADC_GetValue(&hadc);
-	*temp = ((3.3 * ADC_value_temp / 4095 - V25) / Avg_Slope) + 25;
+	adcValueTemp = HAL_ADC_GetValue(&hadc);
+	*temp = ((3.3 * adcValueTemp / 4095 - V25) / AVG_SLOPE) + 25;
 
 	HAL_ADC_Stop(&hadc);
 
@@ -827,8 +645,8 @@ void ReadTempAndVref(float *temp, float *Vref) {
 
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 100);
-	ADC_value_Vref = HAL_ADC_GetValue(&hadc);
-	*Vref = 3.3 * (*Vref_Cal) / ADC_value_Vref;
+	adcValueVref = HAL_ADC_GetValue(&hadc);
+	*Vref = 3.3 * (*VREF_CAL) / adcValueVref;
 
 	HAL_ADC_Stop(&hadc);
 
@@ -842,19 +660,12 @@ void ReadTempAndVref(float *temp, float *Vref) {
 	}
 }
 
-uint16_t Get_PIN(UART_HandleTypeDef *huart) {
-
-	if (huart->Instance == USART2)
-		return GPIO_PIN_2;
-	else if (huart->Instance == USART6)
-		return GPIO_PIN_4;
-}
-
-float GetReadPrecentage(uint8_t port, float *precentageValue) {
+/***************************************************************************/
+void GetReadPrecentage(uint8_t port, float *precentageValue) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 	if (port == 2 || port == 3) {
 
-		if (0 == ADC_flag) {
+		if (0 == adcEnableFlag) {
 			MX_ADC_Init();
 			HAL_UART_DeInit(GetUart(port));
 			if (port == 3) {
@@ -876,7 +687,7 @@ float GetReadPrecentage(uint8_t port, float *precentageValue) {
 
 			}
 		}
-		Channel = Get_channel(GetUart(port), "bottom");
+		Channel = GetChannel(GetUart(port), "bottom");
 		sConfig.Channel = Channel;
 		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
 		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
@@ -886,11 +697,11 @@ float GetReadPrecentage(uint8_t port, float *precentageValue) {
 		}
 		HAL_ADC_Start(&hadc);
 		HAL_ADC_PollForConversion(&hadc, 100);
-		percentage = HAL_ADC_GetValue(&hadc);
-		percentage = 3.3 * percentage / 4095;
+		Percentage = HAL_ADC_GetValue(&hadc);
+		Percentage = 3.3 * Percentage / 4095;
 
-		current = (100 * percentage) / 3.3;
-		*precentageValue = current;
+		Current = (100 * Percentage) / 3.3;
+		*precentageValue = Current;
 		HAL_ADC_Stop(&hadc);
 
 		/* --- Disable chosen channel.*/
@@ -904,88 +715,44 @@ float GetReadPrecentage(uint8_t port, float *precentageValue) {
 	}
 }
 
-/* --- Get the ADC_channel Number for a given UART.
- */
-uint32_t Get_channel(UART_HandleTypeDef *huart, char *side) {
-
-	if (huart->Instance == USART2&& !strcmp(side,"top"))
-		return ADC_CHANNEL_2;
-	else if (huart->Instance == USART2 && !strcmp(side,"bottom"))
-		return ADC_CHANNEL_3;
-	else if (huart->Instance == USART3  && !strcmp(side,"top"))
-		return ADC_CHANNEL_11;
-	else if (huart->Instance == USART3 && !strcmp(side,"bottom"))
-		return ADC_CHANNEL_15;
-}
-
-void Error_Handler(void) {
-
-	HAL_Delay(100);
-
-}
-
-uint8_t Get_Rank(uint8_t Port, char *side) {
-
-	if (Port == 2 && !strcmp(side,"top"))
-		Rank_t = 0;
-	else if (Port == 2 && !strcmp(side,"bottom"))
-		Rank_t = 1;
-	else if (Port == 3 && !strcmp(side,"top"))
-		Rank_t = 2;
-	else if (Port == 3 && !strcmp(side,"bottom"))
-		Rank_t = 3;
-	return Rank_t;
-}
-
-
-void Deinit_ADC_Channel(uint8_t port) {
+/***************************************************************************/
+void ADCDeinitChannel(uint8_t port) {
 
 	HAL_ADC_DeInit(&hadc);
 	HAL_UART_Init(GetUart(port));
 	PortStatus[port] = FREE;
-	ADC_flag = 0;
+	adcEnableFlag = 0;
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Button release callback. DO NOT MODIFY THIS CALLBACK.
- This function is declared as __weak to be overwritten by other implementations in user file.
+/***************************************************************************/
+/* User Button Functions ***************************************************/
+/***************************************************************************/
+/* Button press callback. DO NOT MODIFY THIS CALLBACK.
+ * This function is declared as __weak to be overwritten by other implementations in user file.
  */
-__weak void buttonReleasedCallback(uint8_t port) {
+__weak void buttonPressedCallback(uint8_t port){
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Button single click callback. DO NOT MODIFY THIS CALLBACK.
- This function is declared as __weak to be overwritten by other implementations in user file.
+/***************************************************************************/
+/* Button release callback. DO NOT MODIFY THIS CALLBACK.
+ * This function is declared as __weak to be overwritten by other implementations in user file.
  */
-__weak void buttonClickedCallback(uint8_t port) {
+__weak void buttonReleasedCallback(uint8_t port){
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Button double click callback. DO NOT MODIFY THIS CALLBACK.
- This function is declared as __weak to be overwritten by other implementations in user file.
+/***************************************************************************/
+/* Button single click callback. DO NOT MODIFY THIS CALLBACK.
+ * This function is declared as __weak to be overwritten by other implementations in user file.
  */
-__weak void buttonDblClickedCallback(uint8_t port) {
+__weak void buttonClickedCallback(uint8_t port){
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Button pressed_for_x callbacks. DO NOT MODIFY THIS CALLBACK.
- This function is declared as __weak to be overwritten by other implementations in user file.
+/***************************************************************************/
+/* Button double click callback. DO NOT MODIFY THIS CALLBACK.
+ * This function is declared as __weak to be overwritten by other implementations in user file.
  */
-__weak void buttonPressedForXCallback(uint8_t port, uint8_t eventType) {
+__weak void buttonDblClickedCallback(uint8_t port){
 }
 
-/*-----------------------------------------------------------*/
-
-/* --- Button released_for_y callbacks. DO NOT MODIFY THIS CALLBACK.
- This function is declared as __weak to be overwritten by other implementations in user file.
- */
-__weak void buttonReleasedForYCallback(uint8_t port, uint8_t eventType) {
-}
-
-/* --- Port buttons state parser
- */
-/************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
+/***************************************************************************/
+/***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
