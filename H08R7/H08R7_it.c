@@ -22,7 +22,7 @@ extern uint8_t WakeupFromStopFlag;
 extern uint8_t UARTRxBuf[NUM_OF_PORTS][MSG_RX_BUF_SIZE];
 extern TaskHandle_t xCommandConsoleTaskHandle; /* CLI Task handler */
 
-
+/* Local Variables *********************************************************/
 uint16_t PacketLength = 0;
 uint8_t Count = 0;
 
