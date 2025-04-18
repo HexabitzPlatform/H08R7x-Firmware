@@ -193,6 +193,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart){
 	
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
 	if(huart->Instance == USART1){
 #ifdef _USART1
 		PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
@@ -224,11 +225,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart){
 
 		UARTDMAHandler[(GetPort(huart)-1)] = &hdma_usart1_rx;
 
-	   HAL_DMA_Init(&hdma_usart1_rx);
-
+	    HAL_DMA_Init(&hdma_usart1_rx);
 		__HAL_LINKDMA(huart,hdmarx,hdma_usart1_rx);
 
-		/* USART1 interrupt Init */
 		HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
 
@@ -245,12 +244,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart){
 
 		/* USART2 clock enable */
 		__HAL_RCC_USART2_CLK_ENABLE();
-
 		__HAL_RCC_GPIOA_CLK_ENABLE();
-		/**USART2 GPIO Configuration
-		PA2     ------> USART2_TX
-		PA3     ------> USART2_RX
-		*/
+
 		GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
 		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;

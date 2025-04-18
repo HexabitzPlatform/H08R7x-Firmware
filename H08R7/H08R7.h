@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
  File Name     : H08R7.h
@@ -90,18 +90,25 @@
 #define USART6_AF       GPIO_AF8_USART6
 
 /* Module-specific Definitions */
-#define _TOF_I2C2_SDA_PORT            GPIOB
-#define _TOF_I2C2_SDA_PIN             GPIO_PIN_14
-#define _TOF_I2C2_SDA_GPIO_CLK()      __GPIOB_CLK_ENABLE();
-#define _TOF_I2C2_SCL_PORT            GPIOB
-#define _TOF_I2C2_SCL_PIN             GPIO_PIN_13
-#define _TOF_I2C2_SCL_GPIO_CLK()      __GPIOB_CLK_ENABLE();
-#define _TOF_INT_PORT                 GPIOB
-#define _TOF_INT_PIN                  GPIO_PIN_1
-#define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
-#define _TOF_XSHUT_PORT               GPIOA
-#define _TOF_XSHUT_PIN                GPIO_PIN_5
-#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
+//#define _TOF_I2C2_SDA_PORT            GPIOB
+//#define _TOF_I2C2_SDA_PIN             GPIO_PIN_14
+//#define _TOF_I2C2_SDA_GPIO_CLK()      __GPIOB_CLK_ENABLE();
+//#define _TOF_I2C2_SCL_PORT            GPIOB
+//#define _TOF_I2C2_SCL_PIN             GPIO_PIN_13
+//#define _TOF_I2C2_SCL_GPIO_CLK()      __GPIOB_CLK_ENABLE();
+//#define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
+//#define TOF_PWR_Pin            GPIO_PIN_4
+//#define TOF_PWR_GPIO_Port      GPIOE
+//#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
+//#define TOF_INT_EXTI_IRQn      EXTI1_IRQn
+//#define STREAM_TO_PORT          1
+//#define STREAM_TO_Terminal      3
+//#define DEFAULT                 4
+
+#define TOF_XSHUT_Pin          GPIO_PIN_5
+#define TOF_XSHUT_GPIO_Port    GPIOA
+#define TOF_INT_Pin            GPIO_PIN_1
+#define TOF_INT_GPIO_Port      GPIOB
 #define NUM_MODULE_PARAMS		1
 
 #define HANDLER_ToF_I2C          hi2c2
@@ -109,13 +116,7 @@
 #define ToF_SENSOR_I2C_ADDRESS   0x52
 #define _WAITFORINT() 	         __WFI()
 
-#define TOF_PWR_Pin            GPIO_PIN_4
-#define TOF_PWR_GPIO_Port      GPIOE
-#define TOF_INT_Pin            GPIO_PIN_1
-#define TOF_INT_GPIO_Port      GPIOB
-#define TOF_INT_EXTI_IRQn      EXTI1_IRQn
-#define TOF_XSHUT_Pin          GPIO_PIN_5
-#define TOF_XSHUT_GPIO_Port    GPIOA
+
 
 /* VL53L1X definition */
 #define MIN_MEMS_PERIOD_MS				100
@@ -126,9 +127,7 @@
 #define SAMPLE_TOF					     	2
 
 
-#define STREAM_TO_PORT          1
-#define STREAM_TO_Terminal      3
-#define DEFAULT                 4
+
 /* Macros definitions */
 #define STREAM_MODE_TO_PORT      1
 #define STREAM_MODE_TO_TERMINAL  2

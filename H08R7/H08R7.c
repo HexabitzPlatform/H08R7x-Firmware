@@ -1,23 +1,47 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
  File Name     : H08R7.c
  Description   : Source code for module H08R7.
+
+ (Description_of_module)
  IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
 
  Required MCU resources :
 
+ (Description of Special module peripheral configuration):
  >> USARTs 1,2,3,4,5,6 for module ports (H08R7).
  >> I2C2 for the ToF sensor.
  >> GPIOB 1 for ToF interrupt (INT).
  >> GPIOA 5 for ToF shutdown (XSHUT).
-
  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"
 #include <stdlib.h>
+
+
+/* Exported Typedef ******************************************************/
+/* Define UART variables */
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
+UART_HandleTypeDef huart6;
+
+
+/* Private variables ---------------------------------------------------------*/
+TaskHandle_t ToFHandle = NULL;
+uint32_t tofPeriod, t0;
+uint8_t  tofMode, tofState;
+TimerHandle_t xTimerTof = NULL;
+uint8_t coun;
+uint16_t Dist=0;
+uint8_t flag ;
+static bool stopStream = false;
+
 /* to Vl53l1xInit   */
 VL53L1_Dev_t dev;
 VL53L1_DEV Dev = &dev;
@@ -45,13 +69,7 @@ uint8_t StopeCliStreamFlag = 0u;             /* Flag to stop CLI streaming */
 /* General streaming variable */
 uint32_t SampleCount = 0u;                   /* Total sample counter */
 
-/* Define UART variables */
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
-UART_HandleTypeDef huart4;
-UART_HandleTypeDef huart5;
-UART_HandleTypeDef huart6;
+
 /* Exported variables */
 extern FLASH_ProcessTypeDef pFlash;
 extern uint8_t numOfRecordedSnippets;
@@ -65,26 +83,14 @@ uint16_t H08R7_distance = 0;
 
 float temp __attribute__((section(".mySection")));
 float sample __attribute__((section(".mySection")));
-/* Exported Typedef */
+
+/* Module Parameters */
 ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] = {
     { .ParamPtr = &H08R7_distance, .ParamFormat = FMT_UINT16, .ParamName = "distance" }
 };
 
 
-/* Private variables ---------------------------------------------------------*/
-//uint8_t port1, module1;
-//uint8_t port2 ,module2,mode2,mode1;
-//uint32_t Numofsamples1 ,timeout1;
-//uint8_t port3 ,module3,mode3;
-//uint32_t Numofsamples3 ,timeout3;
-TaskHandle_t ToFHandle = NULL;
-uint32_t tofPeriod, t0;
-uint8_t  tofMode, tofState;
-TimerHandle_t xTimerTof = NULL;
-uint8_t coun;
-uint16_t Dist=0;
-uint8_t flag ;
-static bool stopStream = false;
+
 /* Private function prototypes -----------------------------------------------*/
 void ToFTask(void *argument);
 void StreamTimeCallback(TimerHandle_t xTimerStream);

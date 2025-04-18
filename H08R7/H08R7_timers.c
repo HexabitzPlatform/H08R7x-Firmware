@@ -44,6 +44,7 @@ void MX_IWDG_Init(void){
 	hiwdg.Init.Reload =1999;
 
 	HAL_IWDG_Init(&hiwdg);
+
 }
 
 /***************************************************************************/
