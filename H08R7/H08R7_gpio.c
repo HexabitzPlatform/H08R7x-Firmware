@@ -12,6 +12,7 @@
 
 /* Local Variables *********************************************************/
 BOS_Status GetPortGPIOs(uint8_t port,uint32_t *TX_Port,uint16_t *TX_Pin,uint32_t *RX_Port,uint16_t *RX_Pin);
+uint8_t IsFactoryReset(void);
 
 /***************************************************************************/
 /* Configure GPIO **********************************************************/
@@ -27,32 +28,35 @@ void GPIO_Init(void){
 	__GPIOF_CLK_ENABLE();		// for HSE and Boot0
 	
 	IND_LED_Init();
-	GPIO_InitTypeDef GPIO_InitStruct;
-
-	GPIO_InitStruct.Pin = GPIO_PIN_5;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	GPIO_InitStruct.Pin = GPIO_PIN_1;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-
+	TOF_GPIO_Init();
 }
 
 /***************************************************************************/
 /* Configure indicator LED */
 void IND_LED_Init(void){
 	GPIO_InitTypeDef GPIO_InitStruct;
-	
+
 	GPIO_InitStruct.Pin = _IND_LED_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	HAL_GPIO_Init(_IND_LED_PORT,&GPIO_InitStruct);
+}
+
+/***************************************************************************/
+void TOF_GPIO_Init(void){
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_InitStruct.Pin = TOF_XSHUT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(TOF_XSHUT_GPIO_Port, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = TOF_INT_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(TOF_INT_GPIO_Port, &GPIO_InitStruct);
 }
 
 /***************************************************************************/

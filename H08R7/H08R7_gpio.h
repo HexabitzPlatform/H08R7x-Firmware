@@ -21,6 +21,7 @@
 
 extern void GPIO_Init(void);
 extern void IND_LED_Init(void);
+extern void TOF_GPIO_Init(void);
 
 #ifdef __cplusplus
 }
