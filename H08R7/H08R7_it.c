@@ -10,12 +10,8 @@
 /* Includes ****************************************************************/
 #include "BOS.h"
 
-uint8_t temp_length[NUM_OF_PORTS] = {0};
-uint8_t temp_index[NUM_OF_PORTS] = {0};
-
 /* Local Variables *********************************************************/
 uint8_t* error_restart_message = "Restarting...\r\n";
-
 
 /* Exported Variables ******************************************************/
 extern uint8_t WakeupFromStopFlag;
