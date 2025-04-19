@@ -42,16 +42,16 @@ static bool stopStream = false;
 uint8_t PortModule = 0u;           /* Module ID for port streaming */
 uint8_t PortNumber = 0u;           /* Port number for streaming */
 uint8_t StreamMode = 0u;                     /* Streaming mode selector (port or terminal) */
-volatile uint8_t TerminalPort = 0u;          /* Port number for terminal streaming */
+uint8_t TerminalPort = 0u;          /* Port number for terminal streaming */
 // uint8_t TerminalPort =0u;
 uint8_t StopeCliStreamFlag = 0u;             /* Flag to stop CLI streaming */
-volatile uint32_t PortSamples = 0u;         /* Current sample count for port (if needed separately) */
+uint32_t PortSamples = 0u;         /* Current sample count for port (if needed separately) */
 // uint32_t PortSamples =0u;
 uint32_t SampleCount = 0u;                   /* Total sample counter */
 uint32_t TerminalTimeout = 0u;               /* Timeout value for terminal streaming */
-volatile uint32_t PortNumOfSamples = 0u;    /* Number of samples for port streaming */
+uint32_t PortNumOfSamples = 0u;    /* Number of samples for port streaming */
 // uint32_t PortNumOfSamples =0u;
-volatile uint32_t TerminalNumOfSamples = 0u; /* Number of samples for terminal streaming */
+uint32_t TerminalNumOfSamples = 0u; /* Number of samples for terminal streaming */
 //uint32_t TerminalNumOfSamples =0u;
 
 uint16_t H08R7_distance = 0;
@@ -75,9 +75,6 @@ ModuleParam_t ModuleParam[NUM_MODULE_PARAMS] = {
 };
 
 /* Exported variables */
-extern FLASH_ProcessTypeDef pFlash;
-// extern uint8_t numOfRecordedSnippets;
-// EventGroupHandle_t handleNewReadyData = NULL;
 // typedef void (*SampleMemsToPort)(uint8_t, uint8_t);
 
 /* Module exported parameters ------------------------------------------------*/
@@ -582,9 +579,6 @@ void Module_Peripheral_Init(void) {
 			dmaIndex[i - 1] = &(DMA1_Channel6->CNDTR);
 		}
 	}
-
-	/* create a event group for measurement ranging */
-	// handleNewReadyData = xEventGroupCreate();
 
 	/* I2C initialization */
 	MX_I2C_Init();
