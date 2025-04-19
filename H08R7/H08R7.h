@@ -170,11 +170,14 @@ extern void MX_USART6_UART_Init(void);
  */
 Module_Status Vl53l1xInit(void);
 Module_Status Sample_ToF(uint16_t *Distance);
-Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
+// Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
 Module_Status SampleToPort(uint8_t dstModule, uint8_t dstPort);
 Module_Status StreamToPort(uint8_t dstModule,uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 Module_Status StreamToTerminal(uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 
+
+void SetupPortForRemoteBootloaderUpdate(uint8_t port);
+void RemoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
 /* -----------------------------------------------------------------------
  |                             Commands                                  |
  -----------------------------------------------------------------------
