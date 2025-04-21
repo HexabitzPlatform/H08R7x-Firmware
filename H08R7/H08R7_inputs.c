@@ -97,18 +97,17 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
 		__HAL_RCC_GPIOA_CLK_ENABLE();
 
 		if(adcSelectFlag[0]==1){
-		GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3 ;
+		GPIO_InitStruct.Pin = ADC_CH1_PIN | ADC_CH2_PIN ;
 		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);}
+		HAL_GPIO_Init(ADC12_PORT, &GPIO_InitStruct);}
 		else{
 
-		GPIO_InitStruct.Pin = GPIO_PIN_4 | GPIO_PIN_5 ;
+		GPIO_InitStruct.Pin = ADC_CH3_PIN | ADC_CH4_PIN ;
 		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+		HAL_GPIO_Init(ADC34_PORT, &GPIO_InitStruct);
 		}
-
 }
 
 /***************************************************************************/
@@ -118,8 +117,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
 
 		/* Peripheral clock disable */
 		__HAL_RCC_ADC_CLK_DISABLE();
-
-		HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1);
+		HAL_GPIO_DeInit(ADC12_PORT, ADC_CH1_PIN);
+		HAL_GPIO_DeInit(ADC12_PORT, ADC_CH2_PIN);
+		HAL_GPIO_DeInit(ADC34_PORT, ADC_CH3_PIN);
+		HAL_GPIO_DeInit(ADC34_PORT, ADC_CH4_PIN);
 	}
 }
 
@@ -135,14 +136,14 @@ void Error_Handler(void) {
  */
 uint32_t GetChannel(UART_HandleTypeDef *huart, char *side) {
 
-	if (huart->Instance == USART2&& !strcmp(side,"top"))
-		return ADC_CHANNEL_2;
-	else if (huart->Instance == USART2 && !strcmp(side,"bottom"))
-		return ADC_CHANNEL_3;
-	else if (huart->Instance == USART3  && !strcmp(side,"top"))
-		return ADC_CHANNEL_11;
-	else if (huart->Instance == USART3 && !strcmp(side,"bottom"))
-		return ADC_CHANNEL_15;
+	if (huart->Instance == ADC_CH1_USART&& !strcmp(side,"top"))
+		return ADC_CH1_CHANNEL;
+	else if (huart->Instance == ADC_CH2_USART && !strcmp(side,"bottom"))
+		return ADC_CH2_CHANNEL;
+	else if (huart->Instance == ADC_CH3_USART  && !strcmp(side,"top"))
+		return ADC_CH3_CHANNEL;
+	else if (huart->Instance == ADC_CH3_USART && !strcmp(side,"bottom"))
+		return ADC_CH4_CHANNEL;
 }
 
 /***************************************************************************/
@@ -669,21 +670,21 @@ void GetReadPrecentage(uint8_t port, float *precentageValue) {
 			MX_ADC_Init();
 			HAL_UART_DeInit(GetUart(port));
 			if (port == 3) {
-				HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
-				GPIO_InitStruct.Pin = GPIO_PIN_4;
+				HAL_GPIO_DeInit(ADC34_PORT, ADC_CH3_PIN);
+				GPIO_InitStruct.Pin = ADC_CH3_PIN;
 				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 				PortStatus[port] = CUSTOM;
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(ADC34_PORT, ADC_CH3_PIN, GPIO_PIN_SET);
 			} else {
-				HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
-				GPIO_InitStruct.Pin = GPIO_PIN_2;
+				HAL_GPIO_DeInit(ADC12_PORT, ADC_CH1_PIN);
+				GPIO_InitStruct.Pin = ADC_CH1_PIN;
 				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+				HAL_GPIO_Init(ADC12_PORT, &GPIO_InitStruct);
 				PortStatus[port] = CUSTOM;
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, GPIO_PIN_SET);
+				HAL_GPIO_WritePin(ADC12_PORT, ADC_CH1_PIN, GPIO_PIN_SET);
 
 			}
 		}

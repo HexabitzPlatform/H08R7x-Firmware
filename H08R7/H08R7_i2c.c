@@ -76,16 +76,13 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle)
 
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**I2C2 GPIO Configuration
-    PB13     ------> I2C2_SCL
-    PB14     ------> I2C2_SDA
-    */
-    GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+
+    GPIO_InitStruct.Pin = I2C2_SCL_PIN|I2C2_SDA_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF6_I2C2;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = I2C2_AF;
+    HAL_GPIO_Init(I2C2_PORT, &GPIO_InitStruct);
 
     /* I2C2 clock enable */
     __HAL_RCC_I2C2_CLK_ENABLE();
@@ -112,9 +109,9 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
     PB13     ------> I2C2_SCL
     PB14     ------> I2C2_SDA
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_13);
+    HAL_GPIO_DeInit(I2C2_SCL_PORT, I2C2_SCL_PIN);
 
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14);
+    HAL_GPIO_DeInit(I2C2_SDA_PORT, I2C2_SDA_PIN);
 
   /* USER CODE BEGIN I2C2_MspDeInit 1 */
 
