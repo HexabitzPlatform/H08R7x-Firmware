@@ -596,7 +596,7 @@ void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value) {
 		}
 
 	}
-	*ADC_Value = (float) adcChannelValue[adcChannelRank];
+	*ADC_Value = (float) (adcChannelValue[adcChannelRank]*3.3/4095);
 
 }
 
@@ -605,7 +605,6 @@ void ReadTempAndVref(float *temp, float *Vref) {
 
 	if (0 == adcEnableFlag)
 		MX_ADC_Init();
-
 
 	/* --- Enable internal temperature channel.*/
 
