@@ -13,11 +13,11 @@
  extern "C" {
 #endif
 
- /* Includes ****************************************************************/
+/* Includes ****************************************************************/
 #include "stm32g0xx_hal.h"
 #include "BOS.h"
 
- /* Exported Functions ******************************************************/
+/* Exported Functions ******************************************************/
 extern HAL_StatusTypeDef readPxMutex(uint8_t port,char *buffer,uint16_t n,uint32_t mutexTimeout,uint32_t portTimeout);
 extern HAL_StatusTypeDef writePxMutex(uint8_t port,char *buffer,uint16_t n,uint32_t mutexTimeout,uint32_t portTimeout);
 extern HAL_StatusTypeDef readPxITMutex(uint8_t port,char *buffer,uint16_t n,uint32_t mutexTimeout);
@@ -29,4 +29,4 @@ extern BOS_Status ReadPortsDirMSG(uint8_t SourceModule);
 #endif
 #endif /*__ usart_H */
 
- /***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
+/***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
