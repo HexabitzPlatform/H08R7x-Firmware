@@ -57,44 +57,75 @@
 #define USART1_RX_PIN   GPIO_PIN_10
 #define USART1_TX_PORT  GPIOA
 #define USART1_RX_PORT  GPIOA
+#define USART1_PORT		GPIOA
 #define USART1_AF       GPIO_AF1_USART1
 
 #define USART2_TX_PIN   GPIO_PIN_2
 #define USART2_RX_PIN   GPIO_PIN_3
 #define USART2_TX_PORT  GPIOA
 #define USART2_RX_PORT  GPIOA
+#define USART2_PORT		GPIOA
 #define USART2_AF       GPIO_AF1_USART2
 
 #define USART3_TX_PIN   GPIO_PIN_10
 #define USART3_RX_PIN   GPIO_PIN_11
 #define USART3_TX_PORT  GPIOB
 #define USART3_RX_PORT  GPIOB
+#define USART3_PORT		GPIOB
 #define USART3_AF       GPIO_AF4_USART3
 
 #define USART4_TX_PIN   GPIO_PIN_0
 #define USART4_RX_PIN   GPIO_PIN_1
 #define USART4_TX_PORT  GPIOA
 #define USART4_RX_PORT  GPIOA
+#define USART4_PORT		GPIOA
 #define USART4_AF       GPIO_AF4_USART4
 
 #define USART5_TX_PIN   GPIO_PIN_3
 #define USART5_RX_PIN   GPIO_PIN_2
 #define USART5_TX_PORT  GPIOD
 #define USART5_RX_PORT  GPIOD
+#define USART5_PORT		GPIOD
 #define USART5_AF       GPIO_AF3_USART5
 
 #define USART6_TX_PIN   GPIO_PIN_8
 #define USART6_RX_PIN   GPIO_PIN_9
 #define USART6_TX_PORT  GPIOB
 #define USART6_RX_PORT  GPIOB
+#define USART6_PORT		GPIOB
 #define USART6_AF       GPIO_AF8_USART6
 
+#define ADC_CH1_PIN   	GPIO_PIN_2
+#define ADC_CH2_PIN   	GPIO_PIN_3
+#define ADC_CH3_PIN   	GPIO_PIN_4
+#define ADC_CH4_PIN   	GPIO_PIN_5
+#define ADC12_PORT  	GPIOA
+#define ADC34_PORT		GPIOA
+
+#define ADC_CH1_CHANNEL   	ADC_CHANNEL_2
+#define ADC_CH2_CHANNEL   	ADC_CHANNEL_3
+#define ADC_CH3_CHANNEL   	ADC_CHANNEL_11
+#define ADC_CH4_CHANNEL   	ADC_CHANNEL_15
+
+#define ADC_CH1_USART   	USART2
+#define ADC_CH2_USART   	USART2
+#define ADC_CH3_USART   	USART3
+#define ADC_CH4_USART   	USART3
+
+
+
+
+
 /* Module-specific Definitions */
-//#define _TOF_I2C2_SDA_PORT            GPIOB
-//#define _TOF_I2C2_SDA_PIN             GPIO_PIN_14
+#define I2C2_SCL_PIN	GPIO_PIN_13
+#define I2C2_SCL_PORT	GPIOB
+#define I2C2_SDA_PIN	GPIO_PIN_14
+#define I2C2_SDA_PORT	GPIOB
+#define I2C2_PORT		GPIOB
+#define I2C2_AF			GPIO_AF6_I2C2
+
+
 //#define _TOF_I2C2_SDA_GPIO_CLK()      __GPIOB_CLK_ENABLE();
-//#define _TOF_I2C2_SCL_PORT            GPIOB
-//#define _TOF_I2C2_SCL_PIN             GPIO_PIN_13
 //#define _TOF_I2C2_SCL_GPIO_CLK()      __GPIOB_CLK_ENABLE();
 //#define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
 //#define TOF_PWR_Pin            GPIO_PIN_4
