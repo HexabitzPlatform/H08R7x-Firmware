@@ -23,9 +23,17 @@ uint32_t ReleaseCounter[NUM_OF_PORTS + 1] ={0};
 Button_t Button[NUM_OF_PORTS + 1] ={0};
 
 /* ADC */
+#ifdef MCU_STM32F0
 #define VREF_CAL   ((uint16_t *)((uint32_t)0x1ffff7BA))
 #define AVG_SLOPE  4.3
 #define V25        1.41
+#endif
+
+#ifdef MCU_STM32G0
+#define VREF_CAL   ((uint16_t *)((uint32_t)0x1FFF75AA))
+#define AVG_SLOPE  4.3
+#define V25        1.41
+#endif
 
 uint8_t adcSelectFlag[2] ={0};
 uint8_t adcEnableFlag =0;
@@ -90,24 +98,22 @@ void MX_ADC_Init(void) {
 
 /***************************************************************************/
 void HAL_ADC_MspInit(ADC_HandleTypeDef *adcHandle) {
-
 	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
-		/* ADC1 clock enable */
-		__HAL_RCC_ADC_CLK_ENABLE();
-		__HAL_RCC_GPIOA_CLK_ENABLE();
+	/* ADC1 clock enable */
+	__HAL_RCC_ADC_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
 
-		if(adcSelectFlag[0]==1){
-		GPIO_InitStruct.Pin = ADC_CH1_PIN | ADC_CH2_PIN ;
+	if (adcSelectFlag[0] == 1) {
+		GPIO_InitStruct.Pin = ADC_CH1_PIN | ADC_CH2_PIN;
 		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(ADC12_PORT, &GPIO_InitStruct);}
-		else{
-
-		GPIO_InitStruct.Pin = ADC_CH3_PIN | ADC_CH4_PIN ;
+		HAL_GPIO_Init(ADC12_GPIO_PORT, &GPIO_InitStruct);
+	} else {
+		GPIO_InitStruct.Pin = ADC_CH3_PIN | ADC_CH4_PIN;
 		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 		GPIO_InitStruct.Pull = GPIO_NOPULL;
-		HAL_GPIO_Init(ADC34_PORT, &GPIO_InitStruct);
-		}
+		HAL_GPIO_Init(ADC34_GPIO_PORT, &GPIO_InitStruct);
+	}
 }
 
 /***************************************************************************/
@@ -117,10 +123,10 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *adcHandle) {
 
 		/* Peripheral clock disable */
 		__HAL_RCC_ADC_CLK_DISABLE();
-		HAL_GPIO_DeInit(ADC12_PORT, ADC_CH1_PIN);
-		HAL_GPIO_DeInit(ADC12_PORT, ADC_CH2_PIN);
-		HAL_GPIO_DeInit(ADC34_PORT, ADC_CH3_PIN);
-		HAL_GPIO_DeInit(ADC34_PORT, ADC_CH4_PIN);
+		HAL_GPIO_DeInit(ADC12_GPIO_PORT, ADC_CH1_PIN);
+		HAL_GPIO_DeInit(ADC12_GPIO_PORT, ADC_CH2_PIN);
+		HAL_GPIO_DeInit(ADC34_GPIO_PORT, ADC_CH3_PIN);
+		HAL_GPIO_DeInit(ADC34_GPIO_PORT, ADC_CH4_PIN);
 	}
 }
 
@@ -333,7 +339,6 @@ void CheckAttachedButtons(void) {
 			}
 		}
 	}
-
 }
 
 /***************************************************************************/
@@ -547,8 +552,8 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 void ADCSelectChannel(uint8_t ADC_port, char *side) {
 
 
-	if (ADC_port == 2 || ADC_port == 3) {
-		if(ADC_port == 2)
+	if (ADC_port == ADC12_PORT || ADC_port == ADC34_PORT) {
+		if(ADC_port == ADC12_PORT)
 		{adcSelectFlag[0]=1;}
 		else
 		{adcSelectFlag[1]=1;}
@@ -564,39 +569,45 @@ void ADCSelectChannel(uint8_t ADC_port, char *side) {
 /***************************************************************************/
 void ReadADCChannel(uint8_t Port, char *side, float *ADC_Value) {
 
-	if (adcEnableFlag == 1) {
+	if (Port == ADC12_PORT || Port == ADC34_PORT) {
+		if (adcEnableFlag == 1) {
 
-		/* --- Enable chosen channel to be read.*/
+			/* --- Enable chosen channel to be read.*/
 
-		Channel = GetChannel(GetUart(Port), side);
-		adcChannelRank = GetRank(Port, side);
+			Channel = GetChannel(GetUart(Port), side);
+			adcChannelRank = GetRank(Port, side);
 
-		sConfig.Channel = Channel;
-		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-		//sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
-		sConfig.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
-		//TOBECHECKED
-		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-			Error_Handler();
+			sConfig.Channel = Channel;
+			sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+			//sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
+			sConfig.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
+			//TOBECHECKED
+			if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+				Error_Handler();
+			}
+			HAL_ADC_Start(&hadc);
+			HAL_ADC_PollForConversion(&hadc, 100);
+			adcChannelValue[adcChannelRank] = HAL_ADC_GetValue(&hadc);
+
+			HAL_ADC_Stop(&hadc);
+
+			/* --- Disable chosen channel.*/
+			sConfig.Channel = Channel;
+			sConfig.Rank = ADC_RANK_NONE;
+			//sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
+			sConfig.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
+			//TOBECHECKED
+			if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+				Error_Handler();
+			}
+
 		}
-		HAL_ADC_Start(&hadc);
-		HAL_ADC_PollForConversion(&hadc, 100);
-		adcChannelValue[adcChannelRank] = HAL_ADC_GetValue(&hadc);
-
-		HAL_ADC_Stop(&hadc);
-
-		/* --- Disable chosen channel.*/
-		sConfig.Channel = Channel;
-		sConfig.Rank = ADC_RANK_NONE;
-		//sConfig.SamplingTime = ADC_SAMPLETIME_28CYCLES_5;
-		sConfig.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
-				//TOBECHECKED
-		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-			Error_Handler();
-		}
-
+		*ADC_Value = (float) (adcChannelValue[adcChannelRank] * 3.3 / 4095);
 	}
-	*ADC_Value = (float) (adcChannelValue[adcChannelRank]*3.3/4095);
+	else
+	{
+		// should give message that there is no ADC channel on the selected port
+	}
 
 }
 
@@ -661,58 +672,63 @@ void ReadTempAndVref(float *temp, float *Vref) {
 }
 
 /***************************************************************************/
-void GetReadPrecentage(uint8_t port, float *precentageValue) {
-	GPIO_InitTypeDef GPIO_InitStruct;
-	if (port == 2 || port == 3) {
+void GetReadPrecentage(uint8_t port, char *side, float *precentageValue) {
+	float ADC_Value;
+	ReadADCChannel(port, side, &ADC_Value);
+	*precentageValue = (ADC_Value * 100)/3.3;
 
-		if (0 == adcEnableFlag) {
-			MX_ADC_Init();
-			HAL_UART_DeInit(GetUart(port));
-			if (port == 3) {
-				HAL_GPIO_DeInit(ADC34_PORT, ADC_CH3_PIN);
-				GPIO_InitStruct.Pin = ADC_CH3_PIN;
-				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-				PortStatus[port] = CUSTOM;
-				HAL_GPIO_WritePin(ADC34_PORT, ADC_CH3_PIN, GPIO_PIN_SET);
-			} else {
-				HAL_GPIO_DeInit(ADC12_PORT, ADC_CH1_PIN);
-				GPIO_InitStruct.Pin = ADC_CH1_PIN;
-				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-				HAL_GPIO_Init(ADC12_PORT, &GPIO_InitStruct);
-				PortStatus[port] = CUSTOM;
-				HAL_GPIO_WritePin(ADC12_PORT, ADC_CH1_PIN, GPIO_PIN_SET);
-
-			}
-		}
-		Channel = GetChannel(GetUart(port), "bottom");
-		sConfig.Channel = Channel;
-		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-			Error_Handler();
-
-		}
-		HAL_ADC_Start(&hadc);
-		HAL_ADC_PollForConversion(&hadc, 100);
-		Percentage = HAL_ADC_GetValue(&hadc);
-		Percentage = 3.3 * Percentage / 4095;
-
-		Current = (100 * Percentage) / 3.3;
-		*precentageValue = Current;
-		HAL_ADC_Stop(&hadc);
-
-		/* --- Disable chosen channel.*/
-		sConfig.Channel = Channel;
-		sConfig.Rank = ADC_RANK_NONE;
-		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-			Error_Handler();
-		}
-
-	}
+//	GPIO_InitTypeDef GPIO_InitStruct;
+//	if (port == ADC12_PORT || port == ADC34_PORT) {
+//
+//		if (0 == adcEnableFlag) {
+//			MX_ADC_Init();
+//			HAL_UART_DeInit(GetUart(port));
+//			if (port == ADC34_PORT) {
+//				HAL_GPIO_DeInit(ADC34_GPIO_PORT, ADC_CH3_PIN);
+//				GPIO_InitStruct.Pin = ADC_CH3_PIN;
+//				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+//				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+//				PortStatus[port] = CUSTOM;
+//				HAL_GPIO_WritePin(ADC34_GPIO_PORT, ADC_CH3_PIN, GPIO_PIN_SET);
+//			} else {
+//				HAL_GPIO_DeInit(ADC12_GPIO_PORT, ADC_CH1_PIN);
+//				GPIO_InitStruct.Pin = ADC_CH1_PIN;
+//				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+//				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//				HAL_GPIO_Init(ADC12_GPIO_PORT, &GPIO_InitStruct);
+//				PortStatus[port] = CUSTOM;
+//				HAL_GPIO_WritePin(ADC12_GPIO_PORT, ADC_CH1_PIN, GPIO_PIN_SET);
+//			}
+//		}
+//		Channel = GetChannel(GetUart(port), "bottom");
+//		sConfig.Channel = Channel;
+//		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+//		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+//		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+//			Error_Handler();
+//
+//		}
+//		HAL_ADC_Start(&hadc);
+//		HAL_ADC_PollForConversion(&hadc, 100);
+//		Percentage = HAL_ADC_GetValue(&hadc);
+//		Percentage = 3.3 * Percentage / 4095;
+//
+//		Current = (100 * Percentage) / 3.3;
+//		*precentageValue = Current;
+//		HAL_ADC_Stop(&hadc);
+//
+//		/* --- Disable chosen channel.*/
+//		sConfig.Channel = Channel;
+//		sConfig.Rank = ADC_RANK_NONE;
+//		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+//		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
+//			Error_Handler();
+//		}
+//
+//	} else {
+//		// should give message that there is no ADC channel on the selected port
+//	}
 }
 
 /***************************************************************************/

@@ -19,7 +19,7 @@
 extern void ReadTempAndVref(float *temp,float *Vref);
 extern void ReadADCChannel(uint8_t Port,char *side,float *ADC_Value);
 extern void ADCSelectChannel(uint8_t ADC_port,char *side);
-extern void GetReadPrecentage(uint8_t port,float *precentageValue);
+extern void GetReadPrecentage(uint8_t port, char *side, float *precentageValue);
 extern void ADCDeinitChannel(uint8_t port);
 
 /************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
