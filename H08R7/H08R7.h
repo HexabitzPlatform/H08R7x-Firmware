@@ -95,22 +95,27 @@
 #define USART6_PORT		GPIOB
 #define USART6_AF       GPIO_AF8_USART6
 
-#define ADC_CH1_PIN   	GPIO_PIN_2
-#define ADC_CH2_PIN   	GPIO_PIN_3
-#define ADC_CH3_PIN   	GPIO_PIN_4
-#define ADC_CH4_PIN   	GPIO_PIN_5
-#define ADC12_PORT  	GPIOA
-#define ADC34_PORT		GPIOA
-
+#define ADC_CH1_PIN   		GPIO_PIN_2
+#define ADC_CH2_PIN   		GPIO_PIN_3
+#define ADC_CH3_PIN   		GPIO_PIN_4
+#define ADC_CH4_PIN   		GPIO_PIN_5
+#define ADC12_PORT  		P2
+#define ADC34_PORT			P3
+#define ADC12_GPIO_PORT  	GPIOA
+#define ADC34_GPIO_PORT		GPIOA
+#define ADC_CH1_USART   	USART2
+#define ADC_CH2_USART   	USART2
+#define ADC_CH3_USART   	USART3
+#define ADC_CH4_USART   	USART3
 #define ADC_CH1_CHANNEL   	ADC_CHANNEL_2
 #define ADC_CH2_CHANNEL   	ADC_CHANNEL_3
 #define ADC_CH3_CHANNEL   	ADC_CHANNEL_11
 #define ADC_CH4_CHANNEL   	ADC_CHANNEL_15
 
-#define ADC_CH1_USART   	USART2
-#define ADC_CH2_USART   	USART2
-#define ADC_CH3_USART   	USART3
-#define ADC_CH4_USART   	USART3
+#define MCU_STM32G0
+
+
+
 
 
 
@@ -124,26 +129,12 @@
 #define I2C2_PORT		GPIOB
 #define I2C2_AF			GPIO_AF6_I2C2
 
-
-//#define _TOF_I2C2_SDA_GPIO_CLK()      __GPIOB_CLK_ENABLE();
-//#define _TOF_I2C2_SCL_GPIO_CLK()      __GPIOB_CLK_ENABLE();
-//#define _TOF_INT_GPIO_CLK()           __GPIOB_CLK_ENABLE();
-//#define TOF_PWR_Pin            GPIO_PIN_4
-//#define TOF_PWR_GPIO_Port      GPIOE
-//#define _TOF_XSHUT_GPIO_CLK()         __GPIOB_CLK_ENABLE();
-//#define TOF_INT_EXTI_IRQn      EXTI1_IRQn
-//#define STREAM_TO_PORT          1
-//#define STREAM_TO_Terminal      3
-//#define DEFAULT                 4
-
 #define TOF_XSHUT_Pin          GPIO_PIN_5
 #define TOF_XSHUT_GPIO_Port    GPIOA
 #define TOF_INT_Pin            GPIO_PIN_1
 #define TOF_INT_GPIO_Port      GPIOB
 #define NUM_MODULE_PARAMS		1
-
 #define HANDLER_ToF_I2C          hi2c2
-
 #define ToF_SENSOR_I2C_ADDRESS   0x52
 #define _WAITFORINT() 	         __WFI()
 

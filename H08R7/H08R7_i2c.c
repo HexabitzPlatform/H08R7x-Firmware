@@ -28,7 +28,6 @@ void MX_I2C2_Init(void);
  */
 void MX_I2C_Init(void)
 {
-
   MX_I2C2_Init();
 }
 
