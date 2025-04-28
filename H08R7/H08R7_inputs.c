@@ -435,7 +435,6 @@ BOS_Status RemovePortButton(uint8_t port) {
 	Button[port].State = NONE;
 	Button[port].Event = 0;
 
-
 	/* 2. Remove from EEPROM if it's already there */
 	res = EE_ReadVariable(_EE_BUTTON_BASE + 4 * (port - 1), &temp16);
 	if (!res)						// This variable exists, reset all to zeros
@@ -549,8 +548,7 @@ BOS_Status SetButtonEvents(uint8_t port, ButtonState_e buttonState, uint8_t mode
 /* Exported Functions ******************************************************/
 /***************************************************************************/
 /* select port 2 & port 3 for the selected ADC regular channel to be converted */
-void ADCSelectChannel(uint8_t ADC_port, char *side) {
-
+void ADCSelectPort(uint8_t ADC_port) {
 
 	if (ADC_port == ADC12_PORT || ADC_port == ADC34_PORT) {
 		if(ADC_port == ADC12_PORT)
@@ -559,8 +557,6 @@ void ADCSelectChannel(uint8_t ADC_port, char *side) {
 		{adcSelectFlag[1]=1;}
 		HAL_UART_DeInit(GetUart(ADC_port));
 		PortStatus[ADC_port] = CUSTOM;
-		Channel = GetChannel(GetUart(ADC_port), side);
-		adcChannelRank = GetRank(ADC_port, side);
 		if (adcEnableFlag == 0)
 			MX_ADC_Init();
 	}
@@ -672,68 +668,14 @@ void ReadTempAndVref(float *temp, float *Vref) {
 }
 
 /***************************************************************************/
-void GetReadPrecentage(uint8_t port, char *side, float *precentageValue) {
+void GetReadPercentage(uint8_t port, char *side, float *precentageValue) {
 	float ADC_Value;
 	ReadADCChannel(port, side, &ADC_Value);
 	*precentageValue = (ADC_Value * 100)/3.3;
-
-//	GPIO_InitTypeDef GPIO_InitStruct;
-//	if (port == ADC12_PORT || port == ADC34_PORT) {
-//
-//		if (0 == adcEnableFlag) {
-//			MX_ADC_Init();
-//			HAL_UART_DeInit(GetUart(port));
-//			if (port == ADC34_PORT) {
-//				HAL_GPIO_DeInit(ADC34_GPIO_PORT, ADC_CH3_PIN);
-//				GPIO_InitStruct.Pin = ADC_CH3_PIN;
-//				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-//				HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-//				PortStatus[port] = CUSTOM;
-//				HAL_GPIO_WritePin(ADC34_GPIO_PORT, ADC_CH3_PIN, GPIO_PIN_SET);
-//			} else {
-//				HAL_GPIO_DeInit(ADC12_GPIO_PORT, ADC_CH1_PIN);
-//				GPIO_InitStruct.Pin = ADC_CH1_PIN;
-//				GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-//				GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-//				HAL_GPIO_Init(ADC12_GPIO_PORT, &GPIO_InitStruct);
-//				PortStatus[port] = CUSTOM;
-//				HAL_GPIO_WritePin(ADC12_GPIO_PORT, ADC_CH1_PIN, GPIO_PIN_SET);
-//			}
-//		}
-//		Channel = GetChannel(GetUart(port), "bottom");
-//		sConfig.Channel = Channel;
-//		sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
-//		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-//		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-//			Error_Handler();
-//
-//		}
-//		HAL_ADC_Start(&hadc);
-//		HAL_ADC_PollForConversion(&hadc, 100);
-//		Percentage = HAL_ADC_GetValue(&hadc);
-//		Percentage = 3.3 * Percentage / 4095;
-//
-//		Current = (100 * Percentage) / 3.3;
-//		*precentageValue = Current;
-//		HAL_ADC_Stop(&hadc);
-//
-//		/* --- Disable chosen channel.*/
-//		sConfig.Channel = Channel;
-//		sConfig.Rank = ADC_RANK_NONE;
-//		sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
-//		if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK) {
-//			Error_Handler();
-//		}
-//
-//	} else {
-//		// should give message that there is no ADC channel on the selected port
-//	}
 }
 
 /***************************************************************************/
 void ADCDeinitChannel(uint8_t port) {
-
 	HAL_ADC_DeInit(&hadc);
 	HAL_UART_Init(GetUart(port));
 	PortStatus[port] = FREE;
