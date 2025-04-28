@@ -19,6 +19,12 @@
  /* Includes ****************************************************************/
 #include "stm32g0xx_hal.h"
 
+
+#define TOF_XSHUT_Pin          GPIO_PIN_5
+#define TOF_XSHUT_GPIO_Port    GPIOA
+#define TOF_INT_Pin            GPIO_PIN_1
+#define TOF_INT_GPIO_Port      GPIOB
+
 extern void GPIO_Init(void);
 extern void IND_LED_Init(void);
 extern void TOF_GPIO_Init(void);
