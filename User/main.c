@@ -30,8 +30,8 @@ uint32_t apb1ClockFreq, ahbClockFreq, systemClockFreq;
 void UserTask(void *argument) {
 
 	// put your code here, to run repeatedly.
-	StreamToTerminal(2, 10, 1000);
-	ADCSelectChannel(2,"bottom");
+//	StreamToTerminal(2, 10, 1000);
+//	ADCSelectChannel(2,"bottom");
 	while (1) {
 
 		ReadADCChannel(2, "bottom", &readValue);
@@ -47,7 +47,7 @@ void UserTask(void *argument) {
 		 systemClockFreq = HAL_RCC_GetSysClockFreq();
 
 
-		Sample_ToF(&d);
+		SampleTOF(&d);
 	}
 }
 

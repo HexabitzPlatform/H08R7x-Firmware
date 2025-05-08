@@ -626,7 +626,7 @@ void ReadTempAndVref(float *temp, float *Vref) {
 
 	HAL_ADC_PollForConversion(&hadc, 100);
 	adcValueTemp = HAL_ADC_GetValue(&hadc);
-	*temp = ((3.3 * adcValueTemp / 4095 - V25) / AVG_SLOPE) + 25;
+//	*temp = ((3.3 * adcValueTemp / 4095 - V25) / AVG_SLOPE) + 25;
 
 	HAL_ADC_Stop(&hadc);
 
@@ -653,7 +653,7 @@ void ReadTempAndVref(float *temp, float *Vref) {
 	HAL_ADC_Start(&hadc);
 	HAL_ADC_PollForConversion(&hadc, 100);
 	adcValueVref = HAL_ADC_GetValue(&hadc);
-	*Vref = 3.3 * (*VREF_CAL) / adcValueVref;
+//	*Vref = 3.3 * (*VREF_CAL) / adcValueVref;
 
 	HAL_ADC_Stop(&hadc);
 

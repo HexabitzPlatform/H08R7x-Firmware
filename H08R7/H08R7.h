@@ -7,11 +7,11 @@
  IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion ***********************************/
 #ifndef H08R7_H
 #define H08R7_H
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes ****************************************************************/
 #include "BOS.h"
 #include "H08R7_MemoryMap.h"
 #include "H08R7_uart.h"
@@ -28,6 +28,7 @@
 /* Port-related definitions */
 #define	NUM_OF_PORTS	6
 #define P_PROG        	P2            /* ST factory bootloader UART */
+
 /* Define available ports */
 #define _P1
 #define _P2
@@ -52,14 +53,7 @@
 #define UART_P5 &huart5
 #define UART_P6 &huart6
 
-/* Export UART variables */
-extern UART_HandleTypeDef 	huart1;
-extern UART_HandleTypeDef 	huart2;
-extern UART_HandleTypeDef 	huart3;
-extern UART_HandleTypeDef 	huart4;
-extern UART_HandleTypeDef 	huart5;
-extern UART_HandleTypeDef 	huart6;
-
+/* Module-specific Hardware Definitions ************************************/
 /* Port Definitions */
 #define USART1_TX_PIN   GPIO_PIN_9
 #define USART1_RX_PIN   GPIO_PIN_10
@@ -103,39 +97,62 @@ extern UART_HandleTypeDef 	huart6;
 #define USART6_PORT		GPIOB
 #define USART6_AF       GPIO_AF8_USART6
 
+/* I2C Pin Definition */
+#define I2C2_SCL_PIN	GPIO_PIN_13
+#define I2C2_SCL_PORT	GPIOB
+#define I2C2_SDA_PIN	GPIO_PIN_14
+#define I2C2_SDA_PORT	GPIOB
+#define I2C2_PORT		GPIOB
+#define I2C2_AF			GPIO_AF6_I2C2
+
+#define HANDLER_I2C		hi2c2
+#define Instance_I2C	I2C2
+
+/* GPIO Pin Definition */
+#define TOF_XSHUT_Pin        GPIO_PIN_5
+#define TOF_XSHUT_GPIO_Port  GPIOA
+#define TOF_INT_Pin          GPIO_PIN_1
+#define TOF_INT_GPIO_Port    GPIOB
+
 /* Indicator LED */
-#define _IND_LED_PORT   GPIOB
-#define _IND_LED_PIN    GPIO_PIN_7
+#define _IND_LED_PORT        GPIOB
+#define _IND_LED_PIN         GPIO_PIN_7
 
-#define MCU_STM32G0
+/* Module-specific Macro Definitions ***************************************/
+#define ToF_SENSOR_I2C_ADDRESS 	    0x52
 
-/* Module_Status Type Definition */
-typedef enum {
-	H08R7_OK = 0,
-	H08R7_ERR_UnknownMessage,
-	H08R7_ERR_WrongColor,
-	H08R7_ERR_WrongIntensity,
-	H08R7_ERR_Timeout,
-	H08R7_ERR_WrongParams,
-	H08R7_ERR_BUSY,
-	H0BR7_ERR_TERMINATED,
-	H08R7_ERROR = 255
-} Module_Status;
-
-/* Module-specific Definitions */
 #define NUM_MODULE_PARAMS			1
 #define MIN_MEMS_PERIOD_MS			100
 #define MAX_MEMS_TIMEOUT_MS			0xFFFFFFFF
+
 /* Macros define for measurement ranging */
 #define REQ_IDLE                	0
 #define REQ_MEASUREMENT_READY      	1
 #define SAMPLE_TOF					2
+
 /* Macros definitions */
 #define STREAM_MODE_TO_PORT      	1
 #define STREAM_MODE_TO_TERMINAL  	2
 
-
 #define _WAITFORINT()				__WFI()
+
+/* Module-specific Type Definition *****************************************/
+/* Module-status Type Definition */
+typedef enum {
+	H08R7_OK = 0,
+	H08R7_ERR_UNKNOWNMESSAGE,
+	H08R7_ERR_WRONGPARAMS,
+	H0BR7_ERR_TERMINATED,
+	H08R7_ERROR = 255
+} Module_Status;
+
+/* Export UART variables */
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart5;
+extern UART_HandleTypeDef huart6;
 
 /* Define UART Init prototypes */
 extern void MX_USART1_UART_Init(void);
@@ -145,24 +162,15 @@ extern void MX_USART4_UART_Init(void);
 extern void MX_USART5_UART_Init(void);
 extern void MX_USART6_UART_Init(void);
 
-/* -----------------------------------------------------------------------
- |                               APIs                                    |
- -----------------------------------------------------------------------
- */
-Module_Status Vl53l1xInit(void);
-Module_Status Sample_ToF(uint16_t *Distance);
-// Module_Status StreamDistanceToBuffer(uint16_t *buffer, uint32_t Numofsamples,uint32_t timeout);
+/***************************************************************************/
+/***************************** General Functions ***************************/
+/***************************************************************************/
+Module_Status SampleTOF(uint16_t *Distance);
+
 Module_Status SampleToPort(uint8_t dstModule, uint8_t dstPort);
 Module_Status StreamToPort(uint8_t dstModule,uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 Module_Status StreamToTerminal(uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 
-void SetupPortForRemoteBootloaderUpdate(uint8_t port);
-void RemoteBootloaderUpdate(uint8_t src,uint8_t dst,uint8_t inport,uint8_t outport);
-/* -----------------------------------------------------------------------
- |                             Commands                                  |
- -----------------------------------------------------------------------
- */
-
 #endif /* H08R7_H */
 
-/************************ (C) COPYRIGHT HEXABITZ *****END OF FILE****/
+/***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
