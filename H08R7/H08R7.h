@@ -122,8 +122,8 @@
 #define ToF_SENSOR_I2C_ADDRESS 	    0x52
 
 #define NUM_MODULE_PARAMS			1
-#define MIN_MEMS_PERIOD_MS			100
-#define MAX_MEMS_TIMEOUT_MS			0xFFFFFFFF
+#define MIN_PERIOD_MS	    		100
+#define MAX_TIMEOUT_MS	    		0xFFFFFFFF
 
 /* Macros define for measurement ranging */
 #define REQ_IDLE                	0
@@ -170,7 +170,7 @@ Module_Status SampleTOF(uint16_t *Distance);
 Module_Status SampleToPort(uint8_t dstModule, uint8_t dstPort);
 Module_Status StreamToPort(uint8_t dstModule,uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
 Module_Status StreamToTerminal(uint8_t dstPort,uint32_t numOfSamples,uint32_t streamTimeout);
-
+Module_Status StreamToBuffer(float *buffer, uint32_t Numofsamples, uint32_t timeout);
 #endif /* H08R7_H */
 
 /***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
