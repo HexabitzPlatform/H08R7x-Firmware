@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
  File Name     : main.c
@@ -9,7 +9,7 @@
 #include "BOS.h"
 
 /* Private variables ---------------------------------------------------------*/
-
+float readValue;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Main function ------------------------------------------------------------*/
@@ -30,7 +30,12 @@ uint32_t apb1ClockFreq, ahbClockFreq, systemClockFreq;
 void UserTask(void *argument) {
 
 	// put your code here, to run repeatedly.
+//	StreamToTerminal(2, 10, 1000);
+//	ADCSelectChannel(2,"bottom");
 	while (1) {
+
+		ReadADCChannel(2, "bottom", &readValue);
+		HAL_Delay(1000);
 
 		// Get the APB1 peripheral clock frequency (used for peripherals like UART and TIMx in some cases)
 		 apb1ClockFreq = HAL_RCC_GetPCLK1Freq();
@@ -42,7 +47,7 @@ void UserTask(void *argument) {
 		 systemClockFreq = HAL_RCC_GetSysClockFreq();
 
 
-		Sample_ToF(&d);
+		SampleTOF(&d);
 	}
 }
 

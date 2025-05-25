@@ -1,5 +1,5 @@
 /*
- BitzOS (BOS) V0.3.6 - Copyright (C) 2017-2024 Hexabitz
+ BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
  
  File Name     : H08R7_dma.h
@@ -7,7 +7,7 @@
 
  */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
+/* Define to prevent recursive inclusion ***********************************/
 #ifndef H08R7_dma_H
 #define H08R7_dma_H
 
@@ -15,19 +15,17 @@
  extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
+/* Includes ****************************************************************/
 #include "stm32g0xx_hal.h"
 
-/* Check which DMA interrupt occured */
+/* Check which DMA interrupt occurred */
 #define HAL_DMA_GET_IT_SOURCE(__HANDLE__, __INTERRUPT__)  ((((__HANDLE__)->ISR & (__INTERRUPT__)) == (__INTERRUPT__)) ? SET : RESET)
 
-/* External variables --------------------------------------------------------*/
-
-/* Export DMA structs */
+/* Exported Variables ******************************************************/
 extern DMA_HandleTypeDef *UARTDMAHandler[6];
 extern CRC_HandleTypeDef hcrc;
 
-/* External function prototypes ----------------------------------------------*/
+/* External function *******************************************************/
 extern void DMA_Init(void);
 extern BOS_Status SetupMessagingRxDMAs(void);
 extern BOS_Status DMA_MSG_RX_Setup(UART_HandleTypeDef *huart,DMA_HandleTypeDef *hDMA);
@@ -43,4 +41,4 @@ extern uint8_t  CalculateCRC8(uint8_t pBuffer[], uint16_t size);
 
 #endif /* H08R7_dma_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+ /***************** (C) COPYRIGHT HEXABITZ ***** END OF FILE ****************/
