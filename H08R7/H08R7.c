@@ -878,47 +878,49 @@ Module_Status SampleTOF(uint16_t *Distance) {
 
 /***************************************************************************/
 /*
- * @brief  Samples distance data from a ToF sensor and exports it to a specified port or module.
- * @param  dstModule: The module number to export data to.
- * @param  dstPort: The port number to export data to.
- * @retval Module_Status indicating success or failure of the operation.
+ * @brief: Samples distance data from a ToF sensor and exports it to a specified port or module.
+ * @param dstModule: The module number to export data to.
+ * @param dstPort: The port number to export data to.
+ * @retval: Module status indicating success or failure of the operation.
  */
 Module_Status SampleToPort(uint8_t dstModule, uint8_t dstPort) {
-	static uint8_t temp [6] = { 0 }; /* Buffer for data transmission */
-	Module_Status status = H08R7_OK; /* Initialize operation status as success */
+    static uint8_t temp[6] = {0}; /* Buffer for data transmission */
+    Module_Status status = H08R7_OK; /* Initialize operation status as success */
 
-	/* Check if the port and module ID are valid */
-	if (dstPort == 0 && dstModule == myID) {
-		return H08R7_ERR_WRONGPARAMS; /* Return error for invalid parameters */
-	}
+    /* Check if the port and module ID are valid */
+    if (dstPort == 0 && dstModule == myID) {
+        return H08R7_ERR_WRONGPARAMS; /* Return error for invalid parameters */
+    }
 
-	/* Sample distance data from ToF sensor */
-	uint16_t distance = 0;
-	status = SampleTOF(&distance);
+    /* Sample distance data from ToF sensor */
+    uint16_t distance = 0;
+    status = SampleTOF(&distance);
 
-	/* If data is to be sent locally */
-	if (dstModule == myID || dstModule == 0) {
-		/* Pack data into temp buffer */
-		temp [0] = (uint8_t) (distance);
-		temp [1] = (uint8_t) (distance >> 8);
+    /* If data is to be sent locally */
+    if (dstModule == myID) {
+        /* Pack data into temp buffer */
+        temp[0] = (uint8_t)(distance);         /* Distance byte 0 */
+        temp[1] = (uint8_t)(distance >> 8);    /* Distance byte 1 */
 
-		writePxITMutex(dstPort, (char*) temp, sizeof(uint16_t), 10);
-	} else {
-		/* Send data to another module */
-		MessageParams [1] = (status == H08R7_OK) ? BOS_OK : BOS_ERROR;
-		MessageParams [0] = FMT_UINT16;
-		MessageParams [2] = 1;
-		MessageParams [3] = (uint8_t) (distance);
-		MessageParams [4] = (uint8_t) (distance >> 8);
+        writePxITMutex(dstPort, (char*)temp, sizeof(uint16_t), 10);
+    } else {
+        /* Send data to another module */
+        MessageParams[0] = FMT_UINT16;                                   /* Data format: uint16 */
+        MessageParams[1] = (status == H08R7_OK) ? BOS_OK : BOS_ERROR;   /* Operation status */
+        MessageParams[2] = 1;                                           /* Number of elements (distance) */
+        MessageParams[3] = (uint8_t)(CODE_H08R7_SAMPLE_PORT );          /* Command code LSB */
+        MessageParams[4] = (uint8_t)(CODE_H08R7_SAMPLE_PORT >> 8);      /* Command code MSB */
+        MessageParams[5] = (uint8_t)(distance);                         /* Distance byte 0 */
+        MessageParams[6] = (uint8_t)(distance >> 8);                    /* Distance byte 1 */
 
-		SendMessageToModule(dstModule, CODE_READ_RESPONSE, sizeof(uint16_t) + 3);
-	}
+        SendMessageToModule(dstModule, CODE_READ_RESPONSE, sizeof(uint16_t) + 5);
+    }
 
-	/* Clear the temp buffer */
-	memset(temp, 0, sizeof(temp));
+    /* Clear the temp buffer */
+    memset(temp, 0, sizeof(temp));
 
-	/* Return final status indicating success or prior error */
-	return status;
+    /* Return final status indicating success or prior error */
+    return status;
 }
 
 /***************************************************************************/
