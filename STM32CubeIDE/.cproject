@@ -53,19 +53,17 @@
 									<listOptionValue builtIn="false" value="_module=2"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.657771675" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/Src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1/vl53l1_Driver/vl53l1}&quot;"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32G0xx_HAL_Driver/Inc"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/VL53L1}&quot;"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L0X_1.0.2/Api/platform/inc"/>
-									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L0X_1.0.2/Api/core/inc"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/EEPROM_Emul/Porting/STM32G0"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/EEPROM_Emul/Core"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/STM32G0xx_HAL_Driver/Inc/Legacy"/>
 									<listOptionValue builtIn="false" value="../../H08R7"/>
 									<listOptionValue builtIn="false" value="../../BOS"/>
 									<listOptionValue builtIn="false" value="../../User"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L1"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L1/vl53l1_Driver"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L1/vl53l1_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="../../Thirdparty/VL53L1/vl53l1_Driver/vl53l1"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/STM32G0xx/Include"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/CMSIS/STM32G0xx/Device/ST/STM32G0xx/Include"/>
 									<listOptionValue builtIn="false" value="../../Thirdparty/Middleware/STM32G0xx/FreeRTOS/Source/include"/>
@@ -111,7 +109,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="VL53L1" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="VL53L1"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
