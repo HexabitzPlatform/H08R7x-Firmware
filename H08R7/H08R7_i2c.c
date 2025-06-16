@@ -2,11 +2,11 @@
  BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
- File Name          : H08R7_i2c.c
- Description        : This file provides code for the configuration
-                      of the I2C instances.
-
-  */
+ File Name  : H08R7_i2c.c
+ Description: Configures I2C2 instance for module H08R7.
+ I2C: Initializes I2C2 with 100 kHz, 7-bit addressing, and analog filter enabled.
+ GPIO: Sets up SCL and SDA pins (PB13, PB14) in open-drain alternate function mode.
+*/
 
 /* Includes ------------------------------------------------------------------*/
 #include "BOS.h"

@@ -2,10 +2,12 @@
  BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
- File Name     : H08R7_inputs.c
- Description   : Source code for Bitz digital and analog inputs.
-
+ File Name  : H08R7_inputs.c
+ Description: Manages digital and analog inputs.
+ Buttons: Add, remove, detect events (press, release, click, double-click).
+ ADC: Reads analog inputs, temperature, voltage on ports P1, P2.
  */
+
 
 /* Includes ****************************************************************/
 #include "H08R7_inputs.h"

@@ -2,9 +2,9 @@
  BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
- File Name     : H08R7.h
- Description   : Header file for module H08R7.
- IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
+ File Name  : H08R7.h
+ Description: Header file for H08R7 module, supporting IR Time-of-Flight (ToF) sensor (ST VL53L1CX).
+ Module: Declares functions, macros, and types for VL53L1CX distance measurement.
  */
 
 /* Define to prevent recursive inclusion ***********************************/

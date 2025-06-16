@@ -2,17 +2,12 @@
  BitzOS (BOS) V0.4.0 - Copyright (C) 2017-2025 Hexabitz
  All rights reserved
 
- File Name     : H08R7.c
- Description   : Source code for module H08R7.
+ File Name  : H08R7.c
+ Description: Source code for H08R7 module, implementing IR Time-of-Flight (ToF) sensor (ST VL53L1CX).
+ Module: Manages VL53L1CX for distance measurement with autonomous or long-distance modes.
+ Peripherals: Configures UARTs (1-6), I2C2, GPIO, and DMA for sensor communication and data streaming.
 
- (Description_of_module)
- IR Time-if-Flight (ToF) Sensor (ST VL53L1CX)
-
- (Description of Special module peripheral configuration):
- >>
- >>
- >>
- */
+*/
 
 /* Includes ****************************************************************/
 #include "BOS.h"
